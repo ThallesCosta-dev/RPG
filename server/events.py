@@ -77,6 +77,7 @@ CREATE TABLE IF NOT EXISTS chamadas_llm (
 """
 
 CRONICA_MAX_RODADAS = 6
+CHAT_MAX = 60
 
 
 # ====================================================================== projeção
@@ -95,6 +96,7 @@ def estado_inicial(sala_id: str, sistema_id: str, campanha_id: str) -> dict:
         "jogadores": {},
         "memoria": None,
         "cronica": [],
+        "chat": [],
     }
 
 
@@ -124,6 +126,17 @@ def aplicar(estado: dict, ev: dict) -> dict:
             pers[ev["personagem_id"]] = copy.deepcopy(ev["personagem"])
     elif t == "personagem_adicionado":
         pers[ev["personagem"]["id"]] = copy.deepcopy(ev["personagem"])
+    elif t == "jogador_personagem":
+        j = estado["jogadores"].get(ev["player_id"])
+        if j:
+            j["personagem_id"] = ev["personagem_id"]
+            if ev.get("papel"):
+                j["papel"] = ev["papel"]
+    elif t == "chat":
+        estado.setdefault("chat", []).append({"id": ev.get("id"), "de": ev["de"], "nome": ev["nome"], "personagem_id": ev.get("personagem_id"),
+                                              "texto": ev["texto"], "para": ev.get("para"), "npc": ev.get("npc", False),
+                                              "rodada": ev.get("rodada", estado["rodada"]), "ts": ev.get("ts")})
+        del estado["chat"][:-CHAT_MAX]
     elif t == "personagem_removido":
         pers.pop(ev["personagem_id"], None)
         estado["iniciativa"] = [i for i in estado["iniciativa"] if i != ev["personagem_id"]]
@@ -289,6 +302,15 @@ class EventStore:
                   "personagem_id": personagem_id}
             if personagem:
                 ev["personagem"] = personagem
+            self.anexar(sala_id, [ev])
+
+    def definir_personagem(self, sala_id: str, player_id: str, personagem_id: str, papel: str | None = None) -> None:
+        with self._lock:
+            if papel:
+                self._con.execute("UPDATE jogadores SET papel=? WHERE sala_id=? AND player_id=?", (papel, sala_id, player_id))
+            ev = {"tipo": "jogador_personagem", "player_id": player_id, "personagem_id": personagem_id}
+            if papel:
+                ev["papel"] = papel
             self.anexar(sala_id, [ev])
 
     def jogadores(self, sala_id: str) -> list[dict]:

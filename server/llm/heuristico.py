@@ -19,6 +19,19 @@ class HeuristicoProvider:
         return PlanoRodada.model_validate(plano)
 
     async def narrar_stream(self, ctx: Contexto) -> AsyncIterator[str]:
+        if ctx.tipo == "dialogo":
+            npc = ctx.dados.get("npc", {})
+            postura = npc.get("postura")
+            if npc.get("caido"):
+                fala = "..."
+            elif npc.get("faccao") == "inimigo" and postura in ("agressivo", None):
+                fala = f"{npc.get('nome', 'O inimigo')} rosna e não responde com palavras."
+            elif postura == "rendido":
+                fala = "Eu me rendo! Não me matem... pergunte o que quiser."
+            else:
+                fala = f"{npc.get('nome', 'O personagem')} encara você em silêncio por um momento e assente devagar."
+            yield fala
+            return
         acoes = ctx.dados.get("acoes_log", [])
         estado = ctx.dados.get("estado", {})
         falas = []

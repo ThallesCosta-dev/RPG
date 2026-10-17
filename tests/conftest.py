@@ -13,6 +13,10 @@ from server.events import EventStore  # noqa: E402
 from server.motor import Motor  # noqa: E402
 
 
+def pytest_addoption(parser):
+    parser.addoption("--regravar", action="store_true", default=False, help="regrava os golden tests")
+
+
 @pytest.fixture(autouse=True)
 def semente():
     rules_engine.usar_semente(1234)

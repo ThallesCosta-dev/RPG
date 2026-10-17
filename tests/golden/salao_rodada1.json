@@ -1,0 +1,463 @@
+{
+ "sistema_id": "tormenta20",
+ "campanha_id": "coracao-de-rubi",
+ "seed": 2026,
+ "estado": {
+  "sala_id": "g",
+  "sistema_id": "tormenta20",
+  "campanha_id": "coracao-de-rubi",
+  "rodada": 0,
+  "modo": "exploracao",
+  "cena": {
+   "id": "salao_do_trono",
+   "nome": "Salão do Trono Profanado",
+   "descricao": "O antigo salão real de Valkar, agora coberto de estandartes orcs rasgados. Um lustre de ferro pende de uma corrente enferrujada sobre o centro do salão. Kargath está sentado no trono quebrado, com o Coração de Rubi brilhando em seu peito.",
+   "tema": "medieval",
+   "tilemap": [
+    "####################",
+    "#..................#",
+    "#..P............P..#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..........CC......#",
+    "D..................#",
+    "#..................#",
+    "#...........~~.....#",
+    "#....^^^....~~.....#",
+    "#....^^^....~~.....#",
+    "#..P........~~..P..#",
+    "#...........~~.....#",
+    "#########DD#########"
+   ],
+   "largura": 20,
+   "altura": 15,
+   "imagem_url": null
+  },
+  "obstaculos": [],
+  "personagens": {
+   "player_thorin": {
+    "id": "player_thorin",
+    "nome": "Thorin",
+    "tipo": "jogador",
+    "faccao": "aliado",
+    "classe": "Guerreiro anão",
+    "cor": "#c0392b",
+    "icone": "🪓",
+    "x": 6,
+    "y": 5,
+    "barras": {
+     "pv": {
+      "atual": 45,
+      "max": 45
+     },
+     "pm": {
+      "atual": 6,
+      "max": 6
+     }
+    },
+    "defesa": 19,
+    "deslocamento": 6,
+    "iniciativa_bonus": 2,
+    "ataques": [
+     {
+      "id": "machado_batalha",
+      "nome": "Machado de Batalha",
+      "bonus": 8,
+      "dano": "1d8+5",
+      "tipo_dano": "corte",
+      "alcance": 1,
+      "margem_critico": 20,
+      "mult_critico": 3
+     },
+     {
+      "id": "machadinha_arremesso",
+      "nome": "Machadinha (arremesso)",
+      "bonus": 6,
+      "dano": "1d6+3",
+      "tipo_dano": "corte",
+      "alcance": 4
+     }
+    ],
+    "pericias": {
+     "luta": 8,
+     "atletismo": 7,
+     "fortitude": 8,
+     "intimidacao": 4,
+     "percepcao": 2,
+     "guerra": 3
+    },
+    "condicoes": [],
+    "caido": false,
+    "voz": null,
+    "postura": null
+   },
+   "player_lia": {
+    "id": "player_lia",
+    "nome": "Lia",
+    "tipo": "jogador",
+    "faccao": "aliado",
+    "classe": "Caçadora elfa",
+    "cor": "#27ae60",
+    "icone": "🏹",
+    "x": 2,
+    "y": 9,
+    "barras": {
+     "pv": {
+      "atual": 28,
+      "max": 28
+     },
+     "pm": {
+      "atual": 10,
+      "max": 10
+     }
+    },
+    "defesa": 17,
+    "deslocamento": 9,
+    "iniciativa_bonus": 5,
+    "ataques": [
+     {
+      "id": "arco_longo",
+      "nome": "Arco Longo",
+      "bonus": 9,
+      "dano": "1d8+3",
+      "tipo_dano": "perfuracao",
+      "alcance": 20,
+      "margem_critico": 20,
+      "mult_critico": 3
+     },
+     {
+      "id": "espada_curta",
+      "nome": "Espada Curta",
+      "bonus": 6,
+      "dano": "1d6+2",
+      "tipo_dano": "corte",
+      "alcance": 1
+     }
+    ],
+    "pericias": {
+     "pontaria": 9,
+     "furtividade": 8,
+     "percepcao": 7,
+     "sobrevivencia": 6,
+     "acrobacia": 6,
+     "reflexos": 7
+    },
+    "condicoes": [],
+    "caido": false,
+    "voz": null,
+    "postura": null
+   },
+   "boss_orc": {
+    "id": "boss_orc",
+    "nome": "Kargath, o Destruidor",
+    "tipo": "npc",
+    "faccao": "inimigo",
+    "cor": "#7f1d1d",
+    "icone": "👹",
+    "voz": "grave",
+    "postura": "agressivo",
+    "personalidade": "Chefe orc brutal e orgulhoso. Zomba dos inimigos, nunca recua enquanto tiver mais da metade dos PV. Serve a alguém que chama de 'o Rubro'.",
+    "barras": {
+     "pv": {
+      "atual": 110,
+      "max": 110
+     }
+    },
+    "defesa": 18,
+    "deslocamento": 6,
+    "iniciativa_bonus": 3,
+    "ataques": [
+     {
+      "id": "machado_serrilhado",
+      "nome": "Machado Serrilhado",
+      "bonus": 11,
+      "dano": "2d8+6",
+      "tipo_dano": "corte",
+      "alcance": 1,
+      "condicoes_ao_acertar": [
+       "sangrando"
+      ]
+     },
+     {
+      "id": "machadinha",
+      "nome": "Machadinha Arremessada",
+      "bonus": 8,
+      "dano": "1d6+4",
+      "tipo_dano": "corte",
+      "alcance": 4
+     }
+    ],
+    "pericias": {
+     "luta": 11,
+     "intimidacao": 8,
+     "fortitude": 10,
+     "percepcao": 3
+    },
+    "condicoes": [],
+    "caido": false,
+    "x": 6,
+    "y": 4
+   },
+   "goblin_arqueiro": {
+    "id": "goblin_arqueiro",
+    "nome": "Arqueiro Goblin",
+    "tipo": "npc",
+    "faccao": "inimigo",
+    "cor": "#5b7c2a",
+    "icone": "👺",
+    "voz": "agudo",
+    "postura": "cauteloso",
+    "personalidade": "Covarde e esperto. Prefere atirar de longe e foge se ficar ferido.",
+    "barras": {
+     "pv": {
+      "atual": 9,
+      "max": 9
+     }
+    },
+    "defesa": 15,
+    "deslocamento": 6,
+    "iniciativa_bonus": 4,
+    "ataques": [
+     {
+      "id": "arco_curto",
+      "nome": "Arco Curto",
+      "bonus": 5,
+      "dano": "1d6+1",
+      "tipo_dano": "perfuracao",
+      "alcance": 18
+     },
+     {
+      "id": "adaga",
+      "nome": "Adaga",
+      "bonus": 3,
+      "dano": "1d4",
+      "tipo_dano": "perfuracao",
+      "alcance": 1
+     }
+    ],
+    "pericias": {
+     "pontaria": 5,
+     "furtividade": 7,
+     "percepcao": 4
+    },
+    "condicoes": [],
+    "caido": false,
+    "x": 15,
+    "y": 3
+   },
+   "goblin_arqueiro_2": {
+    "id": "goblin_arqueiro_2",
+    "nome": "Goblin Batedor",
+    "tipo": "npc",
+    "faccao": "inimigo",
+    "cor": "#5b7c2a",
+    "icone": "👺",
+    "voz": "agudo",
+    "postura": "cauteloso",
+    "personalidade": "Segue o arqueiro. Ataca quem estiver mais ferido.",
+    "barras": {
+     "pv": {
+      "atual": 9,
+      "max": 9
+     }
+    },
+    "defesa": 15,
+    "deslocamento": 6,
+    "iniciativa_bonus": 4,
+    "ataques": [
+     {
+      "id": "arco_curto",
+      "nome": "Arco Curto",
+      "bonus": 5,
+      "dano": "1d6+1",
+      "tipo_dano": "perfuracao",
+      "alcance": 18
+     },
+     {
+      "id": "adaga",
+      "nome": "Adaga",
+      "bonus": 3,
+      "dano": "1d4",
+      "tipo_dano": "perfuracao",
+      "alcance": 1
+     }
+    ],
+    "pericias": {
+     "pontaria": 5,
+     "furtividade": 7,
+     "percepcao": 4
+    },
+    "condicoes": [],
+    "caido": false,
+    "x": 3,
+    "y": 3
+   }
+  },
+  "iniciativa": [],
+  "jogadores": {
+   "u1": {
+    "player_id": "u1",
+    "nome": "T",
+    "papel": "host",
+    "personagem_id": "player_thorin",
+    "conectado": true
+   },
+   "u2": {
+    "player_id": "u2",
+    "nome": "A",
+    "papel": "jogador",
+    "personagem_id": "player_lia",
+    "conectado": true
+   }
+  },
+  "memoria": null,
+  "cronica": [],
+  "chat": []
+ },
+ "acoes": {
+  "u1": {
+   "slots": {
+    "padrao": {
+     "tipo": "ataque",
+     "ataque_id": "machado_batalha",
+     "alvo_id": "boss_orc",
+     "rolagem_id": "r-d4794e"
+    },
+    "livre": {
+     "tipo": "fala",
+     "texto": "Pela honra do meu clã!"
+    }
+   }
+  },
+  "u2": {
+   "slots": {
+    "padrao": {
+     "tipo": "criativa",
+     "texto": "Atiro na corrente do lustre para ele cair em cima do orc!"
+    }
+   }
+  }
+ },
+ "plano": {
+  "intencoes_npcs": [
+   {
+    "npc_id": "boss_orc",
+    "acao": "atacar",
+    "alvo_id": "player_thorin",
+    "ataque_ou_habilidade_id": "machado_serrilhado",
+    "destino_x": null,
+    "destino_y": null,
+    "se_alvo_invalido": "mais_proximo",
+    "postura": "agressivo"
+   },
+   {
+    "npc_id": "goblin_arqueiro",
+    "acao": "atacar",
+    "alvo_id": "player_thorin",
+    "ataque_ou_habilidade_id": "arco_curto",
+    "destino_x": null,
+    "destino_y": null,
+    "se_alvo_invalido": "mais_proximo",
+    "postura": "cauteloso"
+   },
+   {
+    "npc_id": "goblin_arqueiro_2",
+    "acao": "atacar",
+    "alvo_id": "player_lia",
+    "ataque_ou_habilidade_id": "arco_curto",
+    "destino_x": null,
+    "destino_y": null,
+    "se_alvo_invalido": "mais_ferido",
+    "postura": "cauteloso"
+   }
+  ],
+  "arbitragens": [
+   {
+    "personagem_id": "player_lia",
+    "pericia": "pontaria",
+    "dificuldade": "media",
+    "motivo": "Atirar na corrente para derrubar o lustre sobre o orc",
+    "efeito_sucesso": "dano_ambiental_medio",
+    "efeito_falha": "nenhum",
+    "alvos": [
+     "boss_orc"
+    ]
+   }
+  ],
+  "iniciar_combate": true,
+  "mudar_cena_para": null
+ },
+ "rolagens": {
+  "u1": {
+   "padrao": {
+    "expressao": "1d20+8",
+    "total": 12,
+    "termos": [
+     {
+      "termo": "1d20",
+      "dados": [
+       4
+      ],
+      "mantidos": [
+       4
+      ]
+     },
+     {
+      "termo": "+8"
+     }
+    ],
+    "id": "r-d4794e"
+   }
+  }
+ },
+ "esperado": {
+  "tipos": [
+   "rodada_iniciada",
+   "iniciativa",
+   "iniciativa",
+   "iniciativa",
+   "iniciativa",
+   "iniciativa",
+   "combate_iniciado",
+   "ataque",
+   "ataque",
+   "dano",
+   "condicao",
+   "teste",
+   "ataque",
+   "dano",
+   "dano",
+   "ataque",
+   "fala",
+   "condicao_tick",
+   "log_rodada",
+   "rodada_concluida"
+  ],
+  "log": [
+   "Combate! Ordem de iniciativa: Arqueiro Goblin, Kargath, o Destruidor, Lia, Goblin Batedor, Thorin",
+   "Arqueiro Goblin ataca Thorin com Arco Curto: 13 contra Defesa 19 → ERRO",
+   "Kargath, o Destruidor ataca Thorin com Machado Serrilhado: 31 contra Defesa 19 → CRÍTICO; 33 de dano e condição sangrando (Thorin 12/45)",
+   "Lia, ação criativa \"Atiro na corrente do lustre para ele cair em cima do orc!\": pontaria CD 15 → 10, FALHA",
+   "Goblin Batedor ataca Lia com Arco Curto: 25 contra Defesa 17 → CRÍTICO; 3 de dano (Lia 25/28)",
+   "Thorin sofre 3 de dano contínuo (12/45)",
+   "Thorin ataca Kargath, o Destruidor com Machado de Batalha: 12 contra Defesa 18 → ERRO",
+   "Thorin diz: \"Pela honra do meu clã!\""
+  ],
+  "danos": [
+   [
+    "player_thorin",
+    33
+   ],
+   [
+    "player_lia",
+    3
+   ],
+   [
+    "player_thorin",
+    3
+   ]
+  ],
+  "rejeitadas": []
+ }
+}

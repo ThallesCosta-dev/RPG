@@ -16,7 +16,8 @@ from typing import Any
 from . import context_builder as cb
 from .llm.schemas import Contexto, LayoutMapa, Memoria
 from .rules_engine import vivo
-from .tts_engine import resolver_vozes
+from .tts_engine import TAG_FALA, resolver_vozes
+import secrets
 
 log = logging.getLogger("ai_vtt.sala")
 
@@ -73,6 +74,10 @@ class Sala:
         self._rodada: asyncio.Task | None = None
         self._tarefas_fundo: set[asyncio.Task] = set()
         self.ultimo_log: list[dict] = []
+        self._dialogo_em_curso: str | None = None
+        self.revisar_arbitragens = False                 # §7.4: Host pode alterar a arbitragem antes da resolução
+        self.prazo_revisao_s = float(os.getenv("TIMEOUT_REVISAO_ARBITRAGEM", "45"))
+        self._revisao: asyncio.Future | None = None
         self.ultima_narracao_rodada: int | None = None
         self.ultima_memoria_rodada = 0
 
@@ -91,6 +96,7 @@ class Sala:
         estado = self.estado_cliente()
         j = estado["jogadores"].get(player_id, {})
         return {"type": "room_state", "fase": self.fase, "prazo": self.prazo, "state": estado, "config": self.sistema.config,
+                "revisar_arbitragens": self.revisar_arbitragens,
                 "campanha": {"id": self.campanha.id, "nome": self.campanha.nome, "tema": self.campanha.tema},
                 "eu": {"player_id": player_id, "papel": j.get("papel", "espectador"), "personagem_id": j.get("personagem_id")},
                 "nivel_ia": self.llm.nivel() if hasattr(self.llm, "nivel") else 4, "prontos": sorted(self.acoes)}
@@ -275,6 +281,8 @@ class Sala:
             ctx = cb.montar_contexto_planejamento(estado, acoes, rolagens, opcoes, self.motor, self.sistema, self.campanha, self.rag, ultimas)
             plano = await self.llm.planejar(ctx)
             plano = plano.model_dump() if hasattr(plano, "model_dump") else plano
+            if self.revisar_arbitragens and plano.get("arbitragens"):
+                plano["arbitragens"] = await self._revisao_do_host(estado, plano["arbitragens"])
 
             # 2) O motor resolve tudo em ordem de iniciativa → eventos → Event Store
             eventos, log_acoes = self.motor.resolver_rodada(estado, acoes, plano, rolagens, opcoes)
@@ -309,6 +317,41 @@ class Sala:
                     self._pausar()
                 else:
                     self.iniciar_planejamento()
+
+    async def _revisao_do_host(self, estado: dict, arbitragens: list[dict]) -> list[dict]:
+        """Mostra as arbitragens ao Host e espera `editar_arbitragem`/`aprovar_arbitragens` (ou o prazo)."""
+        host = next((pid for pid, j in estado["jogadores"].items() if j.get("papel") == "host" and pid in self.clientes), None)
+        if host is None:
+            return arbitragens
+        self._revisao = asyncio.get_running_loop().create_future()
+        prazo = time.time() + self.prazo_revisao_s
+        self.enviar(host, {"type": "arbitragens", "rodada": estado["rodada"] + 1, "prazo": prazo, "arbitragens": arbitragens,
+                           "catalogo": sorted(self.motor.catalogo), "faixas": ["facil", "media", "dificil", "muito_dificil"]})
+        self.broadcast({"type": "phase", "fase": Fase.RESOLVENDO, "aguardando_host": True, "prazo": prazo})
+        try:
+            editadas = await asyncio.wait_for(self._revisao, timeout=self.prazo_revisao_s)
+        except asyncio.TimeoutError:
+            editadas = None
+        finally:
+            self._revisao = None
+        if not editadas:
+            return arbitragens
+        por_personagem = {a.get("personagem_id"): a for a in arbitragens}
+        out = []
+        for e in editadas:
+            base = por_personagem.get(e.get("personagem_id"))
+            if base is None:
+                continue
+            nova = dict(base)
+            for k in ("pericia", "dificuldade", "efeito_sucesso", "efeito_falha", "motivo"):
+                if isinstance(e.get(k), str):
+                    nova[k] = e[k][:200]
+            if isinstance(e.get("alvos"), list):
+                nova["alvos"] = [str(a) for a in e["alvos"]][:8]
+            if e.get("remover"):
+                continue
+            out.append(nova)
+        return out
 
     async def _narrar(self, estado: dict, log_acoes: list[dict], ultimas: list[dict]):
         ctx = cb.montar_contexto_narracao(estado, log_acoes, self.sistema, self.campanha, ultimas, rag=self.rag)
@@ -351,6 +394,71 @@ class Sala:
                 self.broadcast({"type": "scene_image", "cena_id": cena["id"], "imagem_url": url})
         except Exception:
             log.exception("geração de mapa falhou")
+
+    # ------------------------------------------------------------------ chat
+    async def chat(self, player_id: str, texto: str, para: str | None = None):
+        texto = " ".join(str(texto or "").split())[:500]
+        if not texto:
+            self.enviar(player_id, {"type": "error", "code": "mensagem_invalida", "msg": "texto vazio"})
+            return
+        estado = self.store.estado_atual(self.sala_id)
+        j = estado["jogadores"].get(player_id)
+        if j is None:
+            return
+        pid = j.get("personagem_id")
+        falante = estado["personagens"].get(pid or "") or {"nome": j["nome"], "id": None}
+        npc = None
+        if para:
+            npc = estado["personagens"].get(str(para))
+            if npc is None or npc.get("tipo") != "npc":
+                self.enviar(player_id, {"type": "error", "code": "npc_invalido"})
+                return
+            if not pid:
+                self.enviar(player_id, {"type": "error", "code": "sem_personagem", "msg": "espectadores falam só com a mesa"})
+                return
+        ev = {"tipo": "chat", "id": "c-" + secrets.token_hex(4), "de": player_id, "nome": falante["nome"], "personagem_id": pid,
+              "texto": texto, "para": npc["id"] if npc else None, "npc": False, "ts": time.time()}
+        self.store.anexar(self.sala_id, [ev], snapshot=False)
+        self.broadcast({"type": "chat_message", **{k: v for k, v in ev.items() if k != "tipo"}})
+        if npc is None:
+            return
+        if self.fase in (Fase.RESOLVENDO, Fase.NARRANDO):
+            self.enviar(player_id, {"type": "error", "code": "npc_ocupado", "msg": "espere a rodada terminar"})
+            return
+        if self._dialogo_em_curso:
+            self.enviar(player_id, {"type": "error", "code": "npc_ocupado", "msg": f"{self._dialogo_em_curso} ainda está respondendo"})
+            return
+        self._dialogo_em_curso = npc["nome"]
+        self.broadcast({"type": "chat_typing", "personagem_id": npc["id"], "nome": npc["nome"]})
+        self._fundo(self._responder_npc(estado, npc, falante, texto))
+
+    async def _responder_npc(self, estado: dict, npc: dict, falante: dict, texto: str):
+        try:
+            ctx = cb.montar_contexto_dialogo(estado, npc, falante, texto, self.sistema, self.campanha, self.rag,
+                                             self.store.ultimas_rodadas(self.sala_id, 2))
+            resposta = await asyncio.wait_for(self.llm.responder(ctx), timeout=60)
+            resposta = " ".join(TAG_FALA.sub("", resposta).replace("[VOZ:NARRADOR]", "").split())[:600] or "..."
+            await self._falar_npc(npc, resposta, para=falante.get("id"))
+        except Exception:
+            log.exception("diálogo com NPC falhou")
+            self.broadcast({"type": "chat_typing", "personagem_id": npc["id"], "nome": npc["nome"], "fim": True})
+        finally:
+            self._dialogo_em_curso = None
+
+    async def _falar_npc(self, npc: dict, texto: str, para: str | None = None, por_host: bool = False):
+        audio_url = None
+        if self.gpu.tem_handler("tts"):
+            vozes = resolver_vozes(self.voices, self.store.estado_atual(self.sala_id))
+            try:
+                audio_id = await self.gpu.submeter(0, ("tts", texto, vozes.get(npc["id"]) or vozes["NARRADOR"]))
+                audio_url = f"/audio/{audio_id}" if audio_id else None
+            except Exception:
+                log.warning("TTS do diálogo falhou", exc_info=True)
+        ev = {"tipo": "chat", "id": "c-" + secrets.token_hex(4), "de": npc["id"], "nome": npc["nome"], "personagem_id": npc["id"],
+              "texto": texto, "para": para, "npc": True, "ts": time.time()}
+        self.store.anexar(self.sala_id, [ev], snapshot=False)
+        self.broadcast({"type": "chat_message", **{k: v for k, v in ev.items() if k != "tipo"}, "audio_url": audio_url,
+                        "voz": npc.get("voz"), "por_host": por_host})
 
     # ------------------------------------------------------------------ Host
     def _pausar(self):                               # chamar com self.lock adquirido
@@ -444,6 +552,21 @@ class Sala:
                 self.broadcast({"type": "nivel_ia", "nivel": self.llm.nivel(), "provedor": getattr(self.llm, "ultimo_provedor", "-")})
             case "nova_narracao" if self.fase in (Fase.PLANEJAMENTO, Fase.PAUSADO) and self.ultimo_log:
                 self._fundo(self._renarrar())
+            case "revisar_arbitragens":
+                self.revisar_arbitragens = bool(cmd.get("ativo"))
+                self.enviar(player_id, {"type": "config_sala", "revisar_arbitragens": self.revisar_arbitragens})
+            case "editar_arbitragem" | "aprovar_arbitragens":
+                if self._revisao is not None and not self._revisao.done():
+                    self._revisao.set_result(cmd.get("arbitragens") if comando == "editar_arbitragem" else None)
+                else:
+                    self.enviar(player_id, {"type": "error", "code": "sem_revisao_pendente"})
+            case "falar_como_npc":
+                estado = self.store.estado_atual(self.sala_id)
+                npc = estado["personagens"].get(str(cmd.get("personagem_id") or ""))
+                texto = " ".join(str(cmd.get("texto") or "").split())[:500]
+                if npc is None or npc.get("tipo") != "npc" or not texto:
+                    raise ValueError("NPC ou texto inválido")
+                self._fundo(self._falar_npc(npc, texto, por_host=True))
             case "kick":
                 alvo = cmd.get("player_id")
                 cli = self.clientes.get(alvo or "")

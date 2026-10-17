@@ -147,3 +147,41 @@ O token vai em `localStorage` e no `?token=` do WS. O `player_id` sai sempre do 
 | `editar_personagem` | `personagem_id, campos: {x?, y?, barras?, condicoes?, caido?}` |
 | `mudar_nivel_ia` | `nivel: 1\|2\|3\|4` |
 | `nova_narracao` | — (re-narra a última rodada) |
+
+## 6. Chat da mesa e diálogo com NPCs
+
+### Cliente → Servidor
+| type | campos |
+|---|---|
+| `chat` | `texto` (≤ 500), `para: null \| <npc_id>` — `para` exige ter personagem; só um NPC responde por vez e nunca durante `resolvendo`/`narrando` (erro `npc_ocupado`) |
+
+### Servidor → Cliente
+| type | campos | quando |
+|---|---|---|
+| `chat_message` | `id, de (player_id ou npc_id), nome, personagem_id, texto, para, npc: bool, ts, audio_url?, voz?, por_host?` | toda mensagem (de jogador, de NPC via IA, ou do Host falando como NPC) |
+| `chat_typing` | `personagem_id, nome, fim?` | o NPC começou (ou desistiu) de responder |
+
+`state.chat` traz as últimas 60 mensagens (mesmo formato, sem `audio_url`) para quem entra depois. Mensagens de NPC com `audio_url` devem entrar na mesma fila de áudio da narração (voz do NPC), sem bloquear o chat.
+
+Comando do Host: `falar_como_npc {personagem_id, texto}` → `chat_message` com `npc: true, por_host: true`.
+
+### Revisão de arbitragens pelo Host (§7.4)
+- `host_command {comando:"revisar_arbitragens", ativo: bool}` liga/desliga (padrão: desligado; `room_state.revisar_arbitragens` informa o estado). Resposta: `config_sala {revisar_arbitragens}`.
+- Quando ligado e o Planejador devolve arbitragens, o servidor manda SÓ ao Host `arbitragens {rodada, prazo, arbitragens: [{personagem_id, pericia, dificuldade, motivo, efeito_sucesso, efeito_falha, alvos}], catalogo: string[], faixas: string[]}` e a todos `phase {fase:"resolvendo", aguardando_host:true, prazo}`.
+- O Host responde com `host_command {comando:"editar_arbitragem", arbitragens:[...]}` (mesmo formato; `remover:true` descarta uma) ou `{comando:"aprovar_arbitragens"}`. Sem resposta até `prazo`, a rodada segue com as arbitragens originais.
+
+## 7. Fichas de personagem
+
+| método | rota | corpo / resposta |
+|---|---|---|
+| GET | `/api/sistemas/{sistema_id}/modelo-ficha` | `{sistema_id, sistema_nome, atributos: string[], pericias: string[], barras: [{id,nome}], campo_defesa, tipos_dano: string[], icones: string[], limites, expressao_ataque, exemplo_dano}` |
+| GET | `/api/sistemas/{sistema_id}/fichas` | fichas salvas (reutilizáveis entre mesas): `[{id,nome,classe,icone,cor}]` |
+| DELETE | `/api/sistemas/{sistema_id}/fichas/{id}` | apaga uma ficha salva |
+| POST | `/api/salas/{id}/fichas` | `{convite?, ficha}` + opcional `Authorization: Bearer` → `{personagem_id, ficha}`; 400 com a lista de erros em `detail` |
+| POST | `/api/salas/{id}/personagem` | `{personagem_id}` (token) → vincula um personagem disponível a quem ainda não tem (host incluído) |
+
+`ficha` enviada: `{nome, classe?, icone?, cor? (#rrggbb), historia?, atributos: {ATR: int}, barras: {pv: max, pm: max…}, defesa, deslocamento, iniciativa_bonus, pericias: {nome: bônus} (só perícias do modelo), ataques: [{nome, bonus, dano: "1d8+3", tipo_dano, alcance}]}`.
+
+Com **token** (jogador já na sala sem personagem, ou o Host): a ficha é criada e vinculada na hora; o servidor manda um novo `room_state`. Com **convite** (antes de entrar): a ficha aparece em `personagens_disponiveis` com `origem: "sala"` e o jogador entra com `/entrar {personagem_id}`.
+
+`GET /lobby` agora devolve `origem: "campanha" | "sala" | "salva"` em cada personagem disponível. O Host pode criar a mesa sem `personagem_id` e escolher ou criar a ficha depois pelo painel.

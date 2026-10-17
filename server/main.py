@@ -42,6 +42,15 @@ class NovaSala(BaseModel):
     personagem_id: str | None = None
 
 
+class NovaFicha(BaseModel):
+    convite: str | None = None
+    ficha: dict
+
+
+class EscolhaPersonagem(BaseModel):
+    personagem_id: str
+
+
 class Entrada(BaseModel):
     convite: str
     nome: str = Field(min_length=1, max_length=40)
@@ -91,6 +100,56 @@ async def entrar(sala_id: str, corpo: Entrada):
         raise HTTPException(403, str(exc))
     except ValueError as exc:
         raise HTTPException(400, str(exc))
+
+
+@app.get("/api/sistemas/{sistema_id}/modelo-ficha")
+async def modelo_ficha(sistema_id: str):
+    try:
+        return appctx.modelo_ficha(sistema_id)
+    except KeyError:
+        raise HTTPException(404, "sistema inexistente")
+
+
+@app.get("/api/sistemas/{sistema_id}/fichas")
+async def fichas_salvas(sistema_id: str):
+    return [{"id": f["id"], "nome": f["nome"], "classe": f.get("classe", ""), "icone": f.get("icone", ""), "cor": f.get("cor", "")}
+            for f in appctx.fichas.listar(sistema_id)]
+
+
+@app.delete("/api/sistemas/{sistema_id}/fichas/{ficha_id}")
+async def apagar_ficha(sistema_id: str, ficha_id: str):
+    if not appctx.fichas.apagar(sistema_id, ficha_id):
+        raise HTTPException(404)
+    return {"ok": True}
+
+
+@app.post("/api/salas/{sala_id}/fichas")
+async def criar_ficha(sala_id: str, corpo: NovaFicha, authorization: str | None = Header(default=None)):
+    """Cria uma ficha validada pelo system_config. Com token: vincula ao jogador (se ele não tiver personagem).
+    Com convite: fica disponível no lobby para `/entrar`."""
+    ident = validar_token((authorization or "").removeprefix("Bearer ").strip(), sala_id)
+    try:
+        ficha = appctx.criar_ficha(sala_id, corpo.ficha, ident.player_id if ident else None, corpo.convite)
+    except KeyError:
+        raise HTTPException(404, "sala inexistente")
+    except PermissionError as exc:
+        raise HTTPException(403, str(exc))
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    return {"personagem_id": ficha["id"], "ficha": ficha}
+
+
+@app.post("/api/salas/{sala_id}/personagem")
+async def escolher_personagem(sala_id: str, corpo: EscolhaPersonagem, ident=Depends(_ident_http)):
+    try:
+        ficha = appctx.escolher_personagem(sala_id, ident.player_id, corpo.personagem_id)
+    except KeyError:
+        raise HTTPException(404)
+    except PermissionError as exc:
+        raise HTTPException(403, str(exc))
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    return {"personagem_id": ficha["id"]}
 
 
 @app.post("/api/salas/{sala_id}/convites")
@@ -191,6 +250,8 @@ async def despachar(sala, player_id: str, msg: dict):
             await sala.desconfirmar(player_id)
         case "host_command":
             await sala.comando_host(player_id, msg)
+        case "chat":
+            await sala.chat(player_id, msg.get("texto", ""), msg.get("para"))
         case "ping":
             import time
             sala.enviar(player_id, {"type": "pong", "t": time.time()})

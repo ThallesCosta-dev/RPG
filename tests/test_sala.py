@@ -169,3 +169,46 @@ async def test_comandos_host_pausa_desfaz_edita(sala):
     await sala.comando_host("u1", {"comando": "xyz"})
     assert (await ult(w1, "error"))["code"] == "comando_invalido"
     await sala.encerrar()
+
+
+@pytest.mark.asyncio
+async def test_revisao_de_arbitragem_pelo_host(sala):
+    """§7.4: com a revisão ligada, o Host vê as arbitragens do Planejador e pode editá-las antes da resolução."""
+    class PlanejadorComArbitragem:
+        nome = "gemini"; ativo = True; modelo_atual = "fake"
+        async def planejar(self, ctx):
+            from server.llm.schemas import PlanoRodada
+            return PlanoRodada.model_validate({"intencoes_npcs": [], "arbitragens": [
+                {"personagem_id": "player_lia", "pericia": "pontaria", "dificuldade": "media", "motivo": "lustre",
+                 "efeito_sucesso": "dano_ambiental_medio", "efeito_falha": "nenhum", "alvos": ["boss_orc"]}],
+                "iniciar_combate": False, "mudar_cena_para": None})
+        async def narrar_stream(self, ctx):
+            yield "[VOZ:NARRADOR] [EVENTO:e1] Feito."
+    sala.llm.provedores.insert(0, PlanejadorComArbitragem())
+    sala.timeout_combate = sala.timeout_exploracao = 30
+    w1, w2 = WSFalso(), WSFalso()
+    await sala.conectar("u1", w1)
+    await sala.conectar("u2", w2)
+    await sala.comando_host("u1", {"comando": "revisar_arbitragens", "ativo": True})
+    assert (await ult(w1, "config_sala"))["revisar_arbitragens"] is True
+    await sala.comando_host("u1", {"comando": "iniciar"})
+    await asyncio.sleep(0.02)
+    await sala.confirmar("u1", {"slots": {"padrao": {"tipo": "defender"}}})
+    await sala.confirmar("u2", {"slots": {"padrao": {"tipo": "criativa", "texto": "Atiro na corrente do lustre!"}}})
+    arb = None
+    for _ in range(100):
+        await asyncio.sleep(0.02)
+        arb = w1.ultima("arbitragens")
+        if arb:
+            break
+    assert arb and arb["arbitragens"][0]["efeito_sucesso"] == "dano_ambiental_medio" and "nenhum" in arb["catalogo"]
+    assert w2.ultima("arbitragens") is None                                   # só o Host vê
+    assert (await ult(w2, "phase"))["aguardando_host"] is True
+    editada = dict(arb["arbitragens"][0], dificuldade="dificil", efeito_sucesso="dano_ambiental_forte")
+    await sala.comando_host("u1", {"comando": "editar_arbitragem", "arbitragens": [editada]})
+    await _espera(lambda: w2.ultima("round_log") is not None)
+    texto = " ".join(a["texto"] for a in w2.ultima("round_log")["acoes"])
+    assert "CD 20" in texto                                                    # dificil → CD 20 da tabela
+    await sala.comando_host("u1", {"comando": "aprovar_arbitragens"})
+    assert (await ult(w1, "error"))["code"] == "sem_revisao_pendente"
+    await sala.encerrar()

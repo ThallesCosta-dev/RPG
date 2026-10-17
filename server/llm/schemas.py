@@ -122,7 +122,7 @@ class ExtracaoCampanha(BaseModel):
 @dataclass
 class Contexto:
     """O que um provedor recebe. `dados` carrega estado/opções para o provedor heurístico."""
-    tipo: Literal["planejar", "narrar", "memoria", "mapa", "extrair"]
+    tipo: Literal["planejar", "narrar", "memoria", "mapa", "extrair", "dialogo"]
     system_prompt: str
     conteudo: str
     sala_id: str | None = None

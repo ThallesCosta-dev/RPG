@@ -172,6 +172,13 @@ class CadeiaProvedores:
                 if falou:          # já narrou uma parte: encerra; o state_sync mantém o tabuleiro certo
                     return
 
+    async def responder(self, ctx: Contexto) -> str:
+        """Texto curto (diálogo de NPC): junta o stream do primeiro provedor que responder."""
+        partes: list[str] = []
+        async for t in self.narrar_stream(ctx):
+            partes.append(t)
+        return " ".join("".join(partes).split())
+
     async def estruturado(self, ctx: Contexto):
         """Memória, layout de mapa e extração de cartuchos: JSON validado por `ctx.schema`. None se só o heurístico restar e ele não souber."""
         for p in self._disponiveis():
