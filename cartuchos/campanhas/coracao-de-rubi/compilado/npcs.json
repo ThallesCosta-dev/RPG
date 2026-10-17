@@ -1,0 +1,71 @@
+{
+  "boss_orc": {
+    "id": "boss_orc", "nome": "Kargath, o Destruidor", "tipo": "npc", "faccao": "inimigo",
+    "cor": "#7f1d1d", "icone": "👹", "voz": "grave", "postura": "agressivo",
+    "personalidade": "Chefe orc brutal e orgulhoso. Zomba dos inimigos, nunca recua enquanto tiver mais da metade dos PV. Serve a alguém que chama de 'o Rubro'.",
+    "barras": {"pv": {"atual": 110, "max": 110}},
+    "defesa": 18, "deslocamento": 6, "iniciativa_bonus": 3,
+    "ataques": [
+      {"id": "machado_serrilhado", "nome": "Machado Serrilhado", "bonus": 11, "dano": "2d8+6", "tipo_dano": "corte", "alcance": 1, "condicoes_ao_acertar": ["sangrando"]},
+      {"id": "machadinha", "nome": "Machadinha Arremessada", "bonus": 8, "dano": "1d6+4", "tipo_dano": "corte", "alcance": 4}
+    ],
+    "pericias": {"luta": 11, "intimidacao": 8, "fortitude": 10, "percepcao": 3},
+    "condicoes": [], "caido": false
+  },
+  "goblin_arqueiro": {
+    "id": "goblin_arqueiro", "nome": "Arqueiro Goblin", "tipo": "npc", "faccao": "inimigo",
+    "cor": "#5b7c2a", "icone": "👺", "voz": "agudo", "postura": "cauteloso",
+    "personalidade": "Covarde e esperto. Prefere atirar de longe e foge se ficar ferido.",
+    "barras": {"pv": {"atual": 9, "max": 9}},
+    "defesa": 15, "deslocamento": 6, "iniciativa_bonus": 4,
+    "ataques": [
+      {"id": "arco_curto", "nome": "Arco Curto", "bonus": 5, "dano": "1d6+1", "tipo_dano": "perfuracao", "alcance": 18},
+      {"id": "adaga", "nome": "Adaga", "bonus": 3, "dano": "1d4", "tipo_dano": "perfuracao", "alcance": 1}
+    ],
+    "pericias": {"pontaria": 5, "furtividade": 7, "percepcao": 4},
+    "condicoes": [], "caido": false
+  },
+  "goblin_arqueiro_2": {
+    "id": "goblin_arqueiro_2", "nome": "Goblin Batedor", "tipo": "npc", "faccao": "inimigo",
+    "cor": "#5b7c2a", "icone": "👺", "voz": "agudo", "postura": "cauteloso",
+    "personalidade": "Segue o arqueiro. Ataca quem estiver mais ferido.",
+    "barras": {"pv": {"atual": 9, "max": 9}},
+    "defesa": 15, "deslocamento": 6, "iniciativa_bonus": 4,
+    "ataques": [
+      {"id": "arco_curto", "nome": "Arco Curto", "bonus": 5, "dano": "1d6+1", "tipo_dano": "perfuracao", "alcance": 18},
+      {"id": "adaga", "nome": "Adaga", "bonus": 3, "dano": "1d4", "tipo_dano": "perfuracao", "alcance": 1}
+    ],
+    "pericias": {"pontaria": 5, "furtividade": 7, "percepcao": 4},
+    "condicoes": [], "caido": false
+  },
+  "bram": {
+    "id": "bram", "nome": "Bram, o Taverneiro", "tipo": "npc", "faccao": "neutro",
+    "cor": "#a0522d", "icone": "🍺", "voz": "grave", "postura": "cauteloso",
+    "personalidade": "Taverneiro gordo e simpático, sabe de tudo que acontece na vila. Lia lhe deve um favor. Tem medo dos orcs de Kargath.",
+    "barras": {"pv": {"atual": 12, "max": 12}},
+    "defesa": 11, "deslocamento": 4, "iniciativa_bonus": 0,
+    "ataques": [{"id": "rolo_de_massa", "nome": "Rolo de Massa", "bonus": 1, "dano": "1d4", "tipo_dano": "impacto", "alcance": 1}],
+    "pericias": {"diplomacia": 5, "percepcao": 4, "enganacao": 3},
+    "condicoes": [], "caido": false
+  },
+  "lobo_1": {
+    "id": "lobo_1", "nome": "Lobo Cinzento", "tipo": "npc", "faccao": "inimigo",
+    "cor": "#6b7280", "icone": "🐺", "voz": "NARRADOR", "postura": "agressivo",
+    "personalidade": "Animal faminto. Ataca o mais fraco e foge se a matilha cair.",
+    "barras": {"pv": {"atual": 14, "max": 14}},
+    "defesa": 14, "deslocamento": 10, "iniciativa_bonus": 3,
+    "ataques": [{"id": "mordida", "nome": "Mordida", "bonus": 5, "dano": "1d6+2", "tipo_dano": "perfuracao", "alcance": 1, "condicoes_ao_acertar": ["caido"]}],
+    "pericias": {"luta": 5, "percepcao": 6},
+    "condicoes": [], "caido": false
+  },
+  "lobo_2": {
+    "id": "lobo_2", "nome": "Lobo Negro", "tipo": "npc", "faccao": "inimigo",
+    "cor": "#374151", "icone": "🐺", "voz": "NARRADOR", "postura": "agressivo",
+    "personalidade": "Líder da matilha. Mais ousado.",
+    "barras": {"pv": {"atual": 18, "max": 18}},
+    "defesa": 15, "deslocamento": 10, "iniciativa_bonus": 4,
+    "ataques": [{"id": "mordida", "nome": "Mordida", "bonus": 6, "dano": "1d6+3", "tipo_dano": "perfuracao", "alcance": 1, "condicoes_ao_acertar": ["caido"]}],
+    "pericias": {"luta": 6, "percepcao": 7},
+    "condicoes": [], "caido": false
+  }
+}

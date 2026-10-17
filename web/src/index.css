@@ -1,0 +1,247 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------- Design system multi-tema (§15) ---------- */
+
+:root,
+:root[data-theme="medieval"] {
+  --fundo: #0e0b09;
+  --painel-bg: #1a1612e6;
+  --painel-borda: rgba(217, 119, 6, 0.6);
+  --painel-estilo: double;
+  --texto: #efe3c8;
+  --texto-suave: #b8a98a;
+  --acento: #d9a441;
+  --acento-contraste: #1a1208;
+  --fonte-titulo: "Cinzel", serif;
+  --fonte-corpo: "Crimson Pro", Georgia, serif;
+  --status-vida: #e0574a;
+  --status-recurso: #5b9cf0;
+  --status-sanidade: #b48cf0;
+  --grid-line: #d9a44166;
+  --grid-fundo: #171310;
+  --raio: 6px;
+}
+
+:root[data-theme="cyberpunk"] {
+  --fundo: #03060c;
+  --painel-bg: #060b14e6;
+  --painel-borda: #00f0ff;
+  --painel-estilo: solid;
+  --texto: #d8f6ff;
+  --texto-suave: #7fb6c4;
+  --acento: #fcee0a;
+  --acento-contraste: #0a0a05;
+  --fonte-titulo: "Orbitron", sans-serif;
+  --fonte-corpo: "JetBrains Mono", monospace;
+  --status-vida: #ff4d7a;
+  --status-recurso: #00f0ff;
+  --status-sanidade: #c084fc;
+  --grid-line: #00f0ff55;
+  --grid-fundo: #050a12;
+  --raio: 2px;
+}
+
+:root[data-theme="terror"] {
+  --fundo: #0b0c0b;
+  --painel-bg: #141614e6;
+  --painel-borda: #4a5548;
+  --painel-estilo: solid;
+  --texto: #d9d4c4;
+  --texto-suave: #8f9284;
+  --acento: #c8b98a;
+  --acento-contraste: #15140f;
+  --fonte-titulo: "Special Elite", "Courier New", monospace;
+  --fonte-corpo: "Merriweather", Georgia, serif;
+  --status-vida: #d1655a;
+  --status-recurso: #8fb3bb;
+  --status-sanidade: #d4b36a;
+  --grid-line: #8a948866;
+  --grid-fundo: #101211;
+  --raio: 0px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--fonte-corpo);
+  overflow: hidden;
+}
+
+h1,
+h2,
+h3,
+.titulo {
+  font-family: var(--fonte-titulo);
+  letter-spacing: 0.04em;
+}
+
+/* Painéis translúcidos com moldura por tema */
+.painel {
+  background: var(--painel-bg);
+  border: 2px var(--painel-estilo) var(--painel-borda);
+  border-radius: var(--raio);
+  color: var(--texto);
+  @apply backdrop-blur-md;
+}
+:root[data-theme="medieval"] .painel {
+  border-width: 3px;
+}
+:root[data-theme="cyberpunk"] .painel {
+  border-width: 1px;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  box-shadow: inset 0 0 12px #00f0ff22;
+}
+:root[data-theme="terror"] .painel {
+  border-style: dashed;
+}
+
+.botao {
+  @apply inline-flex items-center justify-center gap-1 px-3 py-1.5 text-sm font-semibold transition-colors;
+  border: 1px solid var(--painel-borda);
+  border-radius: var(--raio);
+  background: color-mix(in srgb, var(--painel-bg) 70%, transparent);
+  color: var(--texto);
+}
+.botao:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--acento) 25%, transparent);
+}
+.botao:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.botao-primario {
+  background: var(--acento);
+  color: var(--acento-contraste);
+  border-color: var(--acento);
+}
+.botao-primario:hover:not(:disabled) {
+  filter: brightness(1.1);
+  background: var(--acento);
+}
+.botao-perigo {
+  border-color: var(--status-vida);
+  color: var(--status-vida);
+}
+
+.campo {
+  @apply w-full px-2 py-1.5 text-sm;
+  background: #00000055;
+  border: 1px solid var(--painel-borda);
+  border-radius: var(--raio);
+  color: var(--texto);
+  font-family: var(--fonte-corpo);
+}
+.campo:focus,
+.botao:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 1px;
+}
+.campo option {
+  background: #111;
+}
+
+.rotulo {
+  @apply block text-xs uppercase tracking-wide mb-1;
+  color: var(--texto-suave);
+}
+
+/* Barras de status: cor + ícone + número (nunca só cor) */
+.barra {
+  height: 8px;
+  background: #00000066;
+  border: 1px solid #ffffff22;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.barra > div {
+  height: 100%;
+  transition: width 400ms ease-out;
+}
+
+.chip {
+  @apply inline-flex items-center gap-1 px-1.5 py-0.5 text-[11px] rounded;
+  background: #00000055;
+  border: 1px solid var(--painel-borda);
+}
+
+/* Indicador de onda sonora */
+.onda {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
+}
+.onda span {
+  width: 3px;
+  background: var(--acento);
+  animation: onda 0.9s ease-in-out infinite;
+}
+.onda span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.onda span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.onda span:nth-child(4) {
+  animation-delay: 0.45s;
+}
+@keyframes onda {
+  0%,
+  100% {
+    height: 4px;
+  }
+  50% {
+    height: 16px;
+  }
+}
+
+.piscando {
+  animation: piscar 1s steps(2) infinite;
+}
+@keyframes piscar {
+  to {
+    opacity: 0.4;
+  }
+}
+
+.toast-entrada {
+  animation: subir 200ms ease-out;
+}
+@keyframes subir {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+}
+
+/* Barra de rolagem discreta */
+.rolavel {
+  scrollbar-width: thin;
+  scrollbar-color: var(--painel-borda) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .onda span {
+    height: 10px;
+  }
+}

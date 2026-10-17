@@ -1,0 +1,9 @@
+[project]
+name = "ai-vtt"
+version = "4.0.0"
+description = "AI-Driven Multiplayer Virtual Tabletop — motor determinístico, IA narradora"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

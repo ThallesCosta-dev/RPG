@@ -1,0 +1,22 @@
+# Núcleo (obrigatório)
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7
+itsdangerous>=2.2
+python-dotenv>=1.0
+httpx>=0.27
+numpy>=1.26
+soundfile>=0.12
+
+# Testes
+pytest>=8
+pytest-asyncio>=0.23
+
+# IA na nuvem (Sprint 3)
+google-genai>=1.0
+
+# Mídia local (Sprint 4) — opcionais; o servidor funciona sem eles
+# kokoro>=0.9            # TTS principal (GPU). Requer espeak-ng instalado no sistema.
+# piper-tts              # TTS de reserva (CPU)
+# sentence-transformers  # embeddings para o RAG (bge-m3); sem ele usa BM25 puro
+# sqlite-vec             # índice vetorial; sem ele o RAG usa numpy

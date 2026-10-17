@@ -1,0 +1,24 @@
+{
+  "orc_guerreiro": {
+    "nome": "Orc Guerreiro", "pv": 32, "defesa": 16, "deslocamento": 6, "iniciativa_bonus": 2,
+    "ataques": [{"id": "machado_grande", "nome": "Machado Grande", "bonus": 7, "dano": "1d12+4", "tipo_dano": "corte", "alcance": 1}],
+    "pericias": {"luta": 7, "percepcao": 3, "intimidacao": 5}, "voz": "grave"
+  },
+  "goblin_arqueiro": {
+    "nome": "Goblin Arqueiro", "pv": 9, "defesa": 15, "deslocamento": 6, "iniciativa_bonus": 4,
+    "ataques": [{"id": "arco_curto", "nome": "Arco Curto", "bonus": 5, "dano": "1d6+1", "tipo_dano": "perfuracao", "alcance": 18},
+                {"id": "adaga", "nome": "Adaga", "bonus": 3, "dano": "1d4", "tipo_dano": "perfuracao", "alcance": 1}],
+    "pericias": {"pontaria": 5, "furtividade": 7, "percepcao": 4}, "voz": "agudo"
+  },
+  "lobo": {
+    "nome": "Lobo", "pv": 14, "defesa": 14, "deslocamento": 10, "iniciativa_bonus": 3,
+    "ataques": [{"id": "mordida", "nome": "Mordida", "bonus": 5, "dano": "1d6+2", "tipo_dano": "perfuracao", "alcance": 1, "condicoes_ao_acertar": ["caido"]}],
+    "pericias": {"luta": 5, "percepcao": 6, "sobrevivencia": 5}, "voz": "NARRADOR"
+  },
+  "cultista": {
+    "nome": "Cultista", "pv": 18, "defesa": 14, "deslocamento": 6, "iniciativa_bonus": 1,
+    "ataques": [{"id": "adaga_ritual", "nome": "Adaga Ritual", "bonus": 4, "dano": "1d4+1", "tipo_dano": "corte", "alcance": 1, "condicoes_ao_acertar": ["sangrando"]},
+                {"id": "raio_sombrio", "nome": "Raio Sombrio", "bonus": 5, "dano": "2d6", "tipo_dano": "trevas", "alcance": 8}],
+    "pericias": {"misticismo": 6, "enganacao": 4, "vontade": 5}, "voz": "sussurro"
+  }
+}

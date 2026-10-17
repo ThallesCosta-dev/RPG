@@ -1,0 +1,14 @@
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+data/sessions.db*
+data/backup-*.db
+data/audio_cache/*
+data/mapas_cache/*
+!data/audio_cache/.gitkeep
+!data/mapas_cache/.gitkeep
+cartuchos/**/rag_index.db
+web/node_modules/
+web/dist/
+.venv/

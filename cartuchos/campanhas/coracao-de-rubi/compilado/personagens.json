@@ -1,0 +1,54 @@
+{
+  "player_thorin": {
+    "id": "player_thorin", "nome": "Thorin", "tipo": "jogador", "faccao": "aliado",
+    "classe": "Guerreiro anão", "cor": "#c0392b", "icone": "🪓",
+    "x": 0, "y": 0,
+    "barras": {"pv": {"atual": 45, "max": 45}, "pm": {"atual": 6, "max": 6}},
+    "defesa": 19, "deslocamento": 6, "iniciativa_bonus": 2,
+    "ataques": [
+      {"id": "machado_batalha", "nome": "Machado de Batalha", "bonus": 8, "dano": "1d8+5", "tipo_dano": "corte", "alcance": 1, "margem_critico": 20, "mult_critico": 3},
+      {"id": "machadinha_arremesso", "nome": "Machadinha (arremesso)", "bonus": 6, "dano": "1d6+3", "tipo_dano": "corte", "alcance": 4}
+    ],
+    "pericias": {"luta": 8, "atletismo": 7, "fortitude": 8, "intimidacao": 4, "percepcao": 2, "guerra": 3},
+    "condicoes": [], "caido": false, "voz": null, "postura": null
+  },
+  "player_lia": {
+    "id": "player_lia", "nome": "Lia", "tipo": "jogador", "faccao": "aliado",
+    "classe": "Caçadora elfa", "cor": "#27ae60", "icone": "🏹",
+    "x": 0, "y": 0,
+    "barras": {"pv": {"atual": 28, "max": 28}, "pm": {"atual": 10, "max": 10}},
+    "defesa": 17, "deslocamento": 9, "iniciativa_bonus": 5,
+    "ataques": [
+      {"id": "arco_longo", "nome": "Arco Longo", "bonus": 9, "dano": "1d8+3", "tipo_dano": "perfuracao", "alcance": 20, "margem_critico": 20, "mult_critico": 3},
+      {"id": "espada_curta", "nome": "Espada Curta", "bonus": 6, "dano": "1d6+2", "tipo_dano": "corte", "alcance": 1}
+    ],
+    "pericias": {"pontaria": 9, "furtividade": 8, "percepcao": 7, "sobrevivencia": 6, "acrobacia": 6, "reflexos": 7},
+    "condicoes": [], "caido": false, "voz": null, "postura": null
+  },
+  "player_maya": {
+    "id": "player_maya", "nome": "Maya", "tipo": "jogador", "faccao": "aliado",
+    "classe": "Arcanista humana", "cor": "#8e44ad", "icone": "🔮",
+    "x": 0, "y": 0,
+    "barras": {"pv": {"atual": 22, "max": 22}, "pm": {"atual": 18, "max": 18}},
+    "defesa": 14, "deslocamento": 6, "iniciativa_bonus": 3,
+    "ataques": [
+      {"id": "raio_arcano", "nome": "Raio Arcano", "bonus": 7, "dano": "2d6", "tipo_dano": "energia", "alcance": 10},
+      {"id": "cajado", "nome": "Cajado", "bonus": 3, "dano": "1d6", "tipo_dano": "impacto", "alcance": 1}
+    ],
+    "pericias": {"misticismo": 9, "conhecimento": 8, "vontade": 7, "investigacao": 6, "diplomacia": 4, "percepcao": 3},
+    "condicoes": [], "caido": false, "voz": null, "postura": null
+  },
+  "player_bruno": {
+    "id": "player_bruno", "nome": "Bruno", "tipo": "jogador", "faccao": "aliado",
+    "classe": "Clérigo humano", "cor": "#f39c12", "icone": "✨",
+    "x": 0, "y": 0,
+    "barras": {"pv": {"atual": 34, "max": 34}, "pm": {"atual": 14, "max": 14}},
+    "defesa": 18, "deslocamento": 6, "iniciativa_bonus": 1,
+    "ataques": [
+      {"id": "maca", "nome": "Maça", "bonus": 6, "dano": "1d8+3", "tipo_dano": "impacto", "alcance": 1},
+      {"id": "chama_sagrada", "nome": "Chama Sagrada", "bonus": 6, "dano": "1d8+2", "tipo_dano": "luz", "alcance": 8}
+    ],
+    "pericias": {"religiao": 8, "cura": 8, "vontade": 8, "diplomacia": 5, "intuicao": 5, "luta": 6},
+    "condicoes": [], "caido": false, "voz": null, "postura": null
+  }
+}

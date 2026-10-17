@@ -1,0 +1,11 @@
+{
+  "id": "coracao-de-rubi",
+  "nome": "O Coração de Rubi",
+  "tema": "medieval",
+  "sistema_id": "tormenta20",
+  "versao": 1,
+  "status": "revisado",
+  "fonte": "campanha_ato1.md",
+  "cena_inicial": "taverna_bram",
+  "descricao": "Um rubi roubado, um chefe orc a serviço de alguém chamado 'o Rubro' e um salão do trono profanado nas ruínas de Valkar."
+}

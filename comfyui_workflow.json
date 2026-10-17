@@ -1,0 +1,13 @@
+{
+  "_comentario": "Workflow da API do ComfyUI (formato 'prompt'). Os nomes de checkpoint/ControlNet devem bater com os arquivos da SUA instalação. Placeholders: {{PROMPT}}, {{CONTROLE}}, {{SEED}}, {{LARGURA}}, {{ALTURA}}.",
+  "1": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": "sdxl_lightning_4step.safetensors"}},
+  "2": {"class_type": "CLIPTextEncode", "inputs": {"clip": ["1", 1], "text": "{{PROMPT}}"}},
+  "3": {"class_type": "CLIPTextEncode", "inputs": {"clip": ["1", 1], "text": "text, watermark, grid lines, people, characters, blurry, low quality"}},
+  "4": {"class_type": "LoadImage", "inputs": {"image": "{{CONTROLE}}"}},
+  "5": {"class_type": "ControlNetLoader", "inputs": {"control_net_name": "controlnet-sdxl-segmentation.safetensors"}},
+  "6": {"class_type": "ControlNetApplyAdvanced", "inputs": {"positive": ["2", 0], "negative": ["3", 0], "control_net": ["5", 0], "image": ["4", 0], "strength": 0.85, "start_percent": 0.0, "end_percent": 0.9}},
+  "7": {"class_type": "EmptyLatentImage", "inputs": {"width": {{LARGURA}}, "height": {{ALTURA}}, "batch_size": 1}},
+  "8": {"class_type": "KSampler", "inputs": {"model": ["1", 0], "positive": ["6", 0], "negative": ["6", 1], "latent_image": ["7", 0], "seed": {{SEED}}, "steps": 4, "cfg": 1.5, "sampler_name": "euler", "scheduler": "sgm_uniform", "denoise": 1.0}},
+  "9": {"class_type": "VAEDecode", "inputs": {"samples": ["8", 0], "vae": ["1", 2]}},
+  "10": {"class_type": "SaveImage", "inputs": {"images": ["9", 0], "filename_prefix": "aivtt_battlemap"}}
+}

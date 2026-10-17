@@ -1,0 +1,12 @@
+{
+  "dano_ambiental_leve":  {"dano": "1d6", "tipo_dano": "impacto", "descricao": "Queda de objeto pequeno, tropeço em brasas"},
+  "dano_ambiental_medio": {"dano": "2d6", "tipo_dano": "impacto", "descricao": "Lustre caindo, barril explodindo"},
+  "dano_ambiental_forte": {"dano": "4d6", "tipo_dano": "impacto", "descricao": "Desabamento parcial, explosão grande"},
+  "condicao_curta":       {"condicoes_permitidas": ["caido", "desprevenido", "ofuscado"], "condicao": "desprevenido", "duracao_rodadas": 1, "descricao": "Distrair, cegar com areia, derrubar"},
+  "derrubar":             {"condicoes_permitidas": ["caido"], "condicao": "caido", "duracao_rodadas": 1, "descricao": "Alvo cai no chão"},
+  "empurrar_alvo":        {"quadrados_max": 2, "descricao": "Empurra o alvo para longe de quem agiu"},
+  "bonus_aliado":         {"bonus": 2, "duracao_rodadas": 1, "descricao": "Inspira ou ajuda um aliado (+2 no próximo ataque)"},
+  "cura_leve":            {"cura": "1d8", "descricao": "Primeiros socorros, poção improvisada"},
+  "revelar_informacao":   {"descricao": "O Mestre revela algo na narração; sem efeito mecânico"},
+  "nenhum":               {"descricao": "Só narrativa"}
+}

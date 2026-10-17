@@ -1,0 +1,41 @@
+{
+  "sistema_id": "tormenta20",
+  "sistema_nome": "Tormenta20",
+  "versao_compilacao": 1,
+  "grid": {
+    "tamanho_quadrado_metros": 1.5,
+    "metrica_diagonal": "1-2-1-2",
+    "terreno_dificil_multiplicador": 2
+  },
+  "atributos_principais": ["FOR", "DES", "CON", "INT", "SAB", "CAR"],
+  "campo_defesa": "defesa",
+  "bonus_cobertura": 2,
+  "barras_status": [
+    {"id": "pv", "nome": "Pontos de Vida (PV)", "cor_token": "--status-vida"},
+    {"id": "pm", "nome": "Pontos de Mana (PM)", "cor_token": "--status-recurso"}
+  ],
+  "iniciativa": {"expressao": "1d20+{iniciativa}"},
+  "ataque": {"expressao": "1d20+{bonus}", "compara_com": "defesa"},
+  "teste": {"expressao": "1d20+{bonus}"},
+  "critico": {"margem_padrao": 20, "multiplicador_padrao": 2, "modo": "multiplica_dados", "natural_20_acerta": true, "natural_1_erra": true},
+  "tabela_dificuldade": {"facil": 10, "media": 15, "dificil": 20, "muito_dificil": 25},
+  "pericias": ["acrobacia", "atletismo", "atuacao", "cavalgar", "conhecimento", "cura", "diplomacia", "enganacao",
+               "fortitude", "furtividade", "guerra", "iniciativa", "intimidacao", "intuicao", "investigacao",
+               "jogatina", "ladinagem", "luta", "misticismo", "nobreza", "oficio", "percepcao", "pilotagem",
+               "pontaria", "reflexos", "religiao", "sobrevivencia", "vontade"],
+  "condicoes": {
+    "sangrando":    {"nome": "Sangrando", "dano_por_turno": "1d6", "tipo_dano": "sangramento", "duracao_padrao": 3, "descricao": "Sofre 1d6 de dano no início do turno"},
+    "caido":        {"nome": "Caído", "mod_defesa": -2, "mod_ataque": -2, "duracao_padrao": 1},
+    "desprevenido": {"nome": "Desprevenido", "mod_defesa": -5, "duracao_padrao": 1},
+    "ofuscado":     {"nome": "Ofuscado", "mod_ataque": -2, "duracao_padrao": 1},
+    "defendendo":   {"nome": "Defendendo", "mod_defesa": 2, "duracao_padrao": 1},
+    "inspirado":    {"nome": "Inspirado", "duracao_padrao": 1},
+    "atordoado":    {"nome": "Atordoado", "duracao_padrao": 1},
+    "envenenado":   {"nome": "Envenenado", "dano_por_turno": "1d4", "tipo_dano": "veneno", "duracao_padrao": 3}
+  },
+  "slots_de_acao_por_turno": [
+    {"id": "padrao", "label": "Ação Padrão", "icone": "⚔️", "tipos_permitidos": ["ataque", "pericia", "criativa"]},
+    {"id": "movimento", "label": "Ação de Movimento", "icone": "🥾", "vinculado_ao_grid": true},
+    {"id": "livre", "label": "Ação Livre / Fala", "icone": "💬", "tipos_permitidos": ["fala"]}
+  ]
+}

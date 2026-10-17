@@ -1,0 +1,8 @@
+{
+  "NARRADOR": {"motor": "kokoro", "voz": "pm_alex",  "velocidade": 1.0,  "pitch_semitons": 0},
+  "grave":    {"motor": "kokoro", "voz": "pm_santa", "velocidade": 0.9,  "pitch_semitons": -3},
+  "agudo":    {"motor": "kokoro", "voz": "pm_alex",  "velocidade": 1.15, "pitch_semitons": 4},
+  "feminina": {"motor": "kokoro", "voz": "pf_dora",  "velocidade": 1.0,  "pitch_semitons": 0},
+  "sussurro": {"motor": "kokoro", "voz": "pm_santa", "velocidade": 0.85, "pitch_semitons": -1},
+  "_reserva": {"motor": "piper",  "voz": "pt_BR-faber-medium", "velocidade": 1.0, "pitch_semitons": 0}
+}

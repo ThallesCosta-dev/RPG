@@ -1,0 +1,78 @@
+{
+  "taverna_bram": {
+    "id": "taverna_bram",
+    "nome": "Taverna do Bram",
+    "tipo_mapa": "taverna",
+    "descricao": "Uma taverna de madeira escura na vila de Pedra Alva. Cheiro de cerveja e ensopado. Bram limpa canecas atrás do balcão, nervoso. Rumores dizem que orcs de Kargath levaram o Coração de Rubi para as ruínas de Valkar, ao norte.",
+    "entrada": [2, 11],
+    "npcs": ["bram@10,2"],
+    "transicoes": ["estrada_norte"],
+    "tilemap": [
+      "################",
+      "#..............#",
+      "#..CC.....CCC..#",
+      "#..............#",
+      "#..CC..........#",
+      "#.........CC...#",
+      "#..CC..........#",
+      "#..............#",
+      "#..CC.....CCC..#",
+      "#..............#",
+      "#..............#",
+      "#..............#",
+      "######DD########"
+    ]
+  },
+  "estrada_norte": {
+    "id": "estrada_norte",
+    "nome": "Estrada para Valkar",
+    "tipo_mapa": "floresta",
+    "descricao": "A estrada de terra serpenteia entre pinheiros escuros. Pegadas de lobos cruzam a lama. Ao longe, as torres quebradas de Valkar.",
+    "entrada": [1, 7],
+    "npcs": ["lobo_1@15,3", "lobo_2@16,11"],
+    "transicoes": ["salao_do_trono", "taverna_bram"],
+    "tilemap": [
+      "PPPP^^......^^PPPPPP",
+      "PP^^^.......^^^^PPPP",
+      "P^^^..........^^^PPP",
+      "^^^.............^^PP",
+      "^^...............^^P",
+      "^.................^^",
+      "....................",
+      "....................",
+      "....................",
+      "^.................^^",
+      "^^...............^^^",
+      "^^^.............^^PP",
+      "PP^^^..........^^PPP",
+      "PPP^^^........^^^PPP",
+      "PPPPP^^......^^PPPPP"
+    ]
+  },
+  "salao_do_trono": {
+    "id": "salao_do_trono",
+    "nome": "Salão do Trono Profanado",
+    "tipo_mapa": "masmorra",
+    "descricao": "O antigo salão real de Valkar, agora coberto de estandartes orcs rasgados. Um lustre de ferro pende de uma corrente enferrujada sobre o centro do salão. Kargath está sentado no trono quebrado, com o Coração de Rubi brilhando em seu peito.",
+    "entrada": [10, 13],
+    "npcs": ["boss_orc@6,4", "goblin_arqueiro@15,3", "goblin_arqueiro_2@3,3"],
+    "transicoes": ["estrada_norte"],
+    "tilemap": [
+      "####################",
+      "#..................#",
+      "#..P............P..#",
+      "#..................#",
+      "#..................#",
+      "#..................#",
+      "#..........CC......#",
+      "D..................#",
+      "#..................#",
+      "#...........~~.....#",
+      "#....^^^....~~.....#",
+      "#....^^^....~~.....#",
+      "#..P........~~..P..#",
+      "#...........~~.....#",
+      "#########DD#########"
+    ]
+  }
+}
