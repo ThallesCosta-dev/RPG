@@ -15,6 +15,7 @@ from pathlib import Path
 log = logging.getLogger("ai_vtt.tts")
 
 TAG = re.compile(r"\[(VOZ|EVENTO):([\w-]+)\]")
+TAG_FALA = re.compile(r"<\s*/?\s*fala_jogador\s*>", re.I)     # o LLM às vezes repete a tag; nunca vai para o TTS
 FIM_DE_FRASE = re.compile(r"[.!?…]+[\"”»')]*\s+")
 ABREVIACOES = {"sr", "sra", "srta", "dr", "dra", "prof", "etc", "ex", "cap", "gen"}
 DIR_AUDIO = Path(os.getenv("DIR_DADOS", "data")) / "audio_cache"
@@ -108,7 +109,7 @@ class PipelineNarracao:
         return voz
 
     def _submeter(self, texto: str, voz: str, eventos: list, fila: asyncio.Queue, vozes: dict):
-        texto = " ".join(texto.split())
+        texto = " ".join(TAG_FALA.sub("", texto).split())
         if not texto and not eventos:
             return
         futuro = None

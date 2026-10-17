@@ -127,7 +127,7 @@ class CadeiaProvedores:
         msg = str(exc)
         if p.nome == "gemini" and ("429" in msg or "RESOURCE_EXHAUSTED" in msg or "quota" in msg.lower()):
             self.cota.penalizar("gemini", 60)
-        elif p.nome == "local" and ("Connect" in msg or "connect" in msg or "503" in msg):
+        elif p.nome == "local":
             self.cota.penalizar("local", 120)
 
     # ---------------------------------------------------------------- interface
@@ -136,7 +136,7 @@ class CadeiaProvedores:
         for p in self._disponiveis():
             inicio = time.time()
             try:
-                plano = await asyncio.wait_for(p.planejar(ctx), timeout=25)
+                plano = await asyncio.wait_for(p.planejar(ctx), timeout=getattr(p, "timeout_planejar", 25))
                 if p.nome != "heuristico":
                     self.cota.registrar(p.nome)
                 self.ultimo_provedor = p.nome

@@ -288,10 +288,10 @@ class Motor:
         if arb.get("pericia") not in p.get("pericias", {}):
             return f"perícia '{arb.get('pericia')}' não está na ficha"
         if arb.get("dificuldade") not in FAIXAS:
-            return "faixa de dificuldade inválida"
+            arb["dificuldade"] = "media"                       # tolerante: o LLM errou a faixa, não a ação
         for k in ("efeito_sucesso", "efeito_falha"):
             if arb.get(k) not in self.catalogo:
-                return f"{k} '{arb.get(k)}' não está no catálogo"
+                arb[k] = "nenhum"                              # efeito fora do catálogo vira "só narrativa"
         for a in arb.get("alvos", []) or []:
             if a not in estado["personagens"]:
                 return f"alvo '{a}' inexistente"

@@ -9,7 +9,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 from . import auth, map_engine, tts_engine  # noqa: E402
 from .cartuchos import Biblioteca, montar_cena_inicial  # noqa: E402
