@@ -332,7 +332,7 @@ class Sala:
         prazo = time.time() + self.prazo_revisao_s
         self.enviar(host, {"type": "arbitragens", "rodada": estado["rodada"] + 1, "prazo": prazo, "arbitragens": arbitragens,
                            "catalogo": sorted(self.motor.catalogo), "faixas": ["facil", "media", "dificil", "muito_dificil"]})
-        self.broadcast({"type": "phase", "fase": Fase.RESOLVENDO, "aguardando_host": True, "prazo": prazo, "modo": estado["modo"]}
+        self.broadcast({"type": "phase", "fase": Fase.RESOLVENDO, "aguardando_host": True, "prazo": prazo, "modo": estado["modo"]})
         try:
             editadas = await asyncio.wait_for(self._revisao, timeout=self.prazo_revisao_s)
         except asyncio.TimeoutError:
