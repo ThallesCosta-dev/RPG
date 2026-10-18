@@ -48,7 +48,11 @@ class HeuristicoProvider:
         """Memória: mantém a atual. Mapa: parâmetros padrão. Extração: não sabe (None)."""
         if ctx.schema is Memoria:
             m = (ctx.dados.get("estado") or {}).get("memoria")
-            return Memoria.model_validate(m) if m else Memoria(resumo="", fatos=[], npcs_conhecidos={}, missoes_abertas=[])
+            if m:
+                npcs = m.get("npcs_conhecidos") or {}
+                return Memoria(resumo=m.get("resumo", ""), fatos=list(m.get("fatos", [])), missoes_abertas=list(m.get("missoes_abertas", [])),
+                               npcs_conhecidos=[{"id": k, "descricao": v} for k, v in (npcs.items() if isinstance(npcs, dict) else [(n["id"], n["descricao"]) for n in npcs])])
+            return Memoria(resumo="", fatos=[], npcs_conhecidos=[], missoes_abertas=[])
         if ctx.schema is LayoutMapa:
             return LayoutMapa(tipo=ctx.dados.get("tipo_mapa", "masmorra"), largura=20, altura=15,
                               descricao_visual=ctx.dados.get("descricao", ""), elementos=["pilastras", "cobertura"])

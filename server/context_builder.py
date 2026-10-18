@@ -147,8 +147,10 @@ def bloco_memoria(estado: dict) -> str:
     linhas = ["=== MEMÓRIA DA CAMPANHA ===", m.get("resumo", "")]
     if m.get("fatos"):
         linhas.append("Fatos: " + "; ".join(m["fatos"]))
-    if m.get("npcs_conhecidos"):
-        linhas.append("NPCs conhecidos: " + "; ".join(f"{k}: {v}" for k, v in m["npcs_conhecidos"].items()))
+    npcs = m.get("npcs_conhecidos")
+    if npcs:
+        pares = npcs.items() if isinstance(npcs, dict) else [(n.get("id"), n.get("descricao")) for n in npcs]
+        linhas.append("NPCs conhecidos: " + "; ".join(f"{k}: {v}" for k, v in pares))
     if m.get("missoes_abertas"):
         linhas.append("Missões abertas: " + "; ".join(m["missoes_abertas"]))
     return "\n".join(linhas)

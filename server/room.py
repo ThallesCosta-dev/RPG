@@ -374,7 +374,7 @@ class Sala:
             ctx = cb.montar_contexto_memoria(estado, ultimas, self.sistema)
             mem = await self.llm.estruturado(ctx)
             if isinstance(mem, Memoria) and (mem.resumo or mem.fatos):
-                self.store.anexar(self.sala_id, [{"tipo": "memoria", "memoria": {**mem.model_dump(), "atualizado_na_rodada": estado["rodada"]}}])
+                self.store.anexar(self.sala_id, [{"tipo": "memoria", "memoria": {**mem.como_estado(), "atualizado_na_rodada": estado["rodada"]}}])
             self.ultima_memoria_rodada = estado["rodada"]
         except Exception:
             log.exception("memória falhou")

@@ -123,9 +123,11 @@ class CadeiaProvedores:
         except Exception:
             log.exception("falha ao registrar chamada")
 
-    def _tratar_erro(self, p, exc: Exception) -> None:
+    def _tratar_erro(self, p, exc: Exception, ctx: Contexto | None = None) -> None:
         msg = str(exc)
         if p.nome == "gemini" and ("429" in msg or "RESOURCE_EXHAUSTED" in msg or "quota" in msg.lower()):
+            if ctx is not None and ctx.tipo == "narrar":
+                return                                       # a narração já caiu para o modelo lite por conta própria
             self.cota.penalizar("gemini", 60)
         elif p.nome == "local":
             self.cota.penalizar("local", 120)
@@ -146,7 +148,7 @@ class CadeiaProvedores:
             except Exception as exc:
                 log.warning("planejar falhou em %s: %s", p.nome, exc)
                 self._registrar(ctx, p, inicio, None, str(exc)[:500])
-                self._tratar_erro(p, exc)
+                self._tratar_erro(p, exc, ctx)
         raise RuntimeError("nenhum provedor respondeu")   # não ocorre: o heurístico não falha
 
     async def narrar_stream(self, ctx: Contexto) -> AsyncIterator[str]:
@@ -168,7 +170,7 @@ class CadeiaProvedores:
             except Exception as exc:
                 log.warning("narração falhou em %s: %s", p.nome, exc)
                 self._registrar(ctx, p, inicio, "".join(partes) or None, str(exc)[:500])
-                self._tratar_erro(p, exc)
+                self._tratar_erro(p, exc, ctx)
                 if falou:          # já narrou uma parte: encerra; o state_sync mantém o tabuleiro certo
                     return
 
@@ -197,5 +199,5 @@ class CadeiaProvedores:
             except Exception as exc:
                 log.warning("%s falhou em %s: %s", ctx.tipo, p.nome, exc)
                 self._registrar(ctx, p, inicio, None, str(exc)[:500])
-                self._tratar_erro(p, exc)
+                self._tratar_erro(p, exc, ctx)
         return None

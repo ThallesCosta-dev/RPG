@@ -38,11 +38,21 @@ class PlanoRodada(BaseModel):
     mudar_cena_para: str | None      # id de cenas.json ou null
 
 
+class NPCConhecido(BaseModel):
+    id: str
+    descricao: str
+
+
 class Memoria(BaseModel):
+    """Sem dict: a API gratuita do Gemini não aceita objetos de chaves livres no response_schema."""
     resumo: str
     fatos: list[str]
-    npcs_conhecidos: dict[str, str]
+    npcs_conhecidos: list[NPCConhecido]
     missoes_abertas: list[str]
+
+    def como_estado(self) -> dict:
+        return {"resumo": self.resumo, "fatos": self.fatos, "missoes_abertas": self.missoes_abertas,
+                "npcs_conhecidos": {n.id: n.descricao for n in self.npcs_conhecidos}}
 
 
 class LayoutMapa(BaseModel):
@@ -64,6 +74,11 @@ class AtaqueExtraido(BaseModel):
     condicoes_ao_acertar: list[str]
 
 
+class PericiaExtraida(BaseModel):
+    nome: str
+    bonus: int
+
+
 class MonstroExtraido(BaseModel):
     id: str
     nome: str
@@ -72,7 +87,7 @@ class MonstroExtraido(BaseModel):
     deslocamento: int
     iniciativa_bonus: int
     ataques: list[AtaqueExtraido]
-    pericias: dict[str, int]
+    pericias: list[PericiaExtraida]
     descricao: str
 
 

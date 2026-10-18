@@ -110,7 +110,8 @@ async def compilar_sistema(dir_cartucho: Path, llm, forcar: bool = False) -> dic
                 revisao.append({"secao": titulo, "item": m.model_dump(), "motivo": "PV ou ataques ausentes"})
                 continue
             monstros[mid] = {"nome": m.nome, "pv": m.pv, "defesa": m.defesa, "deslocamento": max(1, m.deslocamento), "iniciativa_bonus": m.iniciativa_bonus,
-                             "ataques": [{**a.model_dump(), "id": _slug(a.id or a.nome)} for a in m.ataques], "pericias": m.pericias,
+                             "ataques": [{**a.model_dump(), "id": _slug(a.id or a.nome)} for a in m.ataques],
+                             "pericias": {_slug(p.nome): p.bonus for p in m.pericias},
                              "descricao": m.descricao, "voz": "NARRADOR"}
         for c in res.condicoes:
             cid = _slug(c.id or c.nome)
