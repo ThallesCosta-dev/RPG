@@ -326,15 +326,15 @@ export const useSala = create<SalaStore>((set, get) => ({
         break
       case "phase": {
         const prazo = msg.prazo === undefined ? s.prazo : msg.prazo
-        const state = s.state ? { ...s.state, modo: msg.modo } : s.state
+        // `pausado`/`resolvendo` chegam sem `modo`: mantém o atual em vez de apagá-lo.
+        const comModo = (st: Estado | null): Estado | null => (st ? { ...st, modo: msg.modo ?? st.modo } : st)
         const limpeza = msg.fase === "planejamento" ? limpezaDePlanejamento : {}
         if (s.narrando && msg.fase !== "narrando" && msg.fase !== "pausado" && narracao.pendentes > 0) {
           // A narração ainda está tocando: limpa o planejamento anterior agora, mas só troca de fase no fim da fila.
-          set({ state, ...limpeza, fasePendente: { fase: msg.fase, prazo } })
+          set({ state: comModo(s.state), ...limpeza, fasePendente: { fase: msg.fase, prazo } })
         } else {
           if (s.narrando) narracao.pular() // aplica o state_sync pendente antes de trocar a fase
-          const atual = get().state
-          set({ fase: msg.fase, prazo, state: atual ? { ...atual, modo: msg.modo } : null, ...limpeza, fasePendente: null })
+          set({ fase: msg.fase, prazo, state: comModo(get().state), ...limpeza, fasePendente: null })
         }
         break
       }
