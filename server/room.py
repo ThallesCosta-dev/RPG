@@ -78,6 +78,7 @@ class Sala:
         self.revisar_arbitragens = False                 # §7.4: Host pode alterar a arbitragem antes da resolução
         self.prazo_revisao_s = float(os.getenv("TIMEOUT_REVISAO_ARBITRAGEM", "45"))
         self._revisao: asyncio.Future | None = None
+        self.ultimos_erros: list[dict] = []
         self.ultima_narracao_rodada: int | None = None
         self.ultima_memoria_rodada = 0
 
@@ -272,8 +273,8 @@ class Sala:
     async def _processar_rodada(self, acoes: dict[str, dict], rolagens: dict):
         narrando = False
         try:
-            self.broadcast({"type": "phase", "fase": Fase.RESOLVENDO})
             estado = self.store.estado_atual(self.sala_id)
+            self.broadcast({"type": "phase", "fase": Fase.RESOLVENDO, "modo": estado["modo"]})
             opcoes = self.motor.opcoes_validas(estado)
             ultimas = self.store.ultimas_rodadas(self.sala_id, 4)
 
@@ -303,9 +304,13 @@ class Sala:
             self._fundo(self._atualizar_memoria(novo))
             if any(e["tipo"] == "cena_mudou" for e in eventos):
                 self._fundo(self._gerar_mapa(novo))
-        except Exception:
+        except Exception as exc:
+            import traceback
             log.exception("rodada falhou na sala %s", self.sala_id)
-            self.broadcast({"type": "error", "code": "rodada_falhou"})
+            self.ultimos_erros.append({"quando": time.time(), "rodada": self.store.estado_atual(self.sala_id)["rodada"] + 1,
+                                       "erro": f"{type(exc).__name__}: {exc}", "traceback": traceback.format_exc()[-1500:]})
+            del self.ultimos_erros[:-10]
+            self.broadcast({"type": "error", "code": "rodada_falhou", "msg": f"{type(exc).__name__}: {exc}"[:200]})
         finally:
             if narrando:
                 self.gpu.narracao_terminada()
@@ -327,7 +332,7 @@ class Sala:
         prazo = time.time() + self.prazo_revisao_s
         self.enviar(host, {"type": "arbitragens", "rodada": estado["rodada"] + 1, "prazo": prazo, "arbitragens": arbitragens,
                            "catalogo": sorted(self.motor.catalogo), "faixas": ["facil", "media", "dificil", "muito_dificil"]})
-        self.broadcast({"type": "phase", "fase": Fase.RESOLVENDO, "aguardando_host": True, "prazo": prazo})
+        self.broadcast({"type": "phase", "fase": Fase.RESOLVENDO, "aguardando_host": True, "prazo": prazo, "modo": estado["modo"]}
         try:
             editadas = await asyncio.wait_for(self._revisao, timeout=self.prazo_revisao_s)
         except asyncio.TimeoutError:
@@ -475,7 +480,7 @@ class Sala:
         self.fase, self.prazo = Fase.PAUSADO, None
         if self._timer:
             self._timer.cancel()
-        self.broadcast({"type": "phase", "fase": self.fase})
+        self.broadcast({"type": "phase", "fase": self.fase, "modo": self.store.estado_atual(self.sala_id)["modo"]})
 
     async def comando_host(self, player_id: str, cmd: dict):
         if not self.store.eh_host(self.sala_id, player_id):
@@ -504,7 +509,7 @@ class Sala:
                 self.pausa_pendente = False
                 if self.fase_anterior is Fase.LOBBY:
                     self.fase = Fase.LOBBY
-                    self.broadcast({"type": "phase", "fase": self.fase})
+                    self.broadcast({"type": "phase", "fase": self.fase, "modo": self.store.estado_atual(self.sala_id)["modo"]})
                 else:
                     self.iniciar_planejamento()
             case "desfazer_rodada" if self.fase in (Fase.PLANEJAMENTO, Fase.PAUSADO):
@@ -609,6 +614,7 @@ class Sala:
     def debug(self) -> dict:
         return {"fase": self.fase, "prazo": self.prazo, "conectados": sorted(self.clientes), "prontos": sorted(self.acoes),
                 "ia": self.llm.status() if hasattr(self.llm, "status") else {},
+                "erros_de_rodada": self.ultimos_erros,
                 "chamadas": self.store.ultimas_chamadas(self.sala_id, 20),
                 "intencoes_rejeitadas": self.store.intencoes_rejeitadas(self.sala_id, 20)}
 

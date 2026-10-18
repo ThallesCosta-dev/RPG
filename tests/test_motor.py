@@ -192,3 +192,26 @@ def test_projecao_eventos_basicos():
     assert a["condicoes"] == [{"id": "sangrando", "rodadas_restantes": 1}]
     assert estado["obstaculos"] == []
     aplicar(estado, {"tipo": "evento_desconhecido"})   # ignorado sem erro
+
+
+def test_criativa_com_ficha_sem_pericias(motor, estado_salao):
+    """B1: ficha criada sem perícias + arbitragem com perícia inexistente não pode derrubar a rodada."""
+    store, estado = estado_salao
+    store.anexar("t", [{"tipo": "personagem_adicionado", "personagem": {
+        "id": "pc_vyn", "nome": "Vyn", "tipo": "jogador", "faccao": "aliado", "x": 3, "y": 9, "cor": "#fff", "icone": "V",
+        "barras": {"pv": {"atual": 12, "max": 12}}, "defesa": 13, "deslocamento": 6, "iniciativa_bonus": 0,
+        "ataques": [{"id": "adaga", "nome": "Adaga", "bonus": 2, "dano": "1d4", "tipo_dano": "corte", "alcance": 1}],
+        "pericias": {}, "condicoes": [], "caido": False}},
+        {"tipo": "jogador_entrou", "player_id": "u3", "nome": "Ana", "papel": "jogador", "personagem_id": "pc_vyn"}])
+    estado = store.estado_atual("t")
+    acoes = {"u3": {"slots": {"padrao": {"tipo": "criativa", "texto": "Procuro algo suspeito"}}}}
+    assert motor.validar_declaracao(estado, "u3", acoes["u3"]) == []
+    # sem arbitragem (nível 4) e com arbitragem de perícia inexistente
+    for plano in ({"intencoes_npcs": [], "arbitragens": [], "iniciar_combate": False, "mudar_cena_para": None},
+                  {"intencoes_npcs": [], "arbitragens": [{"personagem_id": "pc_vyn", "pericia": "investigacao", "dificuldade": "media",
+                                                          "motivo": "x", "efeito_sucesso": "revelar_informacao", "efeito_falha": "nenhum", "alvos": []}],
+                   "iniciar_combate": False, "mudar_cena_para": None}):
+        eventos, log = motor.resolver_rodada(estado, acoes, plano)
+        teste = next(e for e in eventos if e["tipo"] == "teste")
+        assert teste["personagem"] == "pc_vyn" and teste["pericia"] == "improviso" and teste["cd"] == 15
+        assert not [e for e in eventos if e["tipo"] == "intencao_rejeitada"]

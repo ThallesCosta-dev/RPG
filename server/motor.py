@@ -288,8 +288,8 @@ class Motor:
         p = estado["personagens"].get(arb.get("personagem_id") or "")
         if p is None:
             return "personagem inexistente"
-        if arb.get("pericia") not in p.get("pericias", {}):
-            return f"perícia '{arb.get('pericia')}' não está na ficha"
+        if arb.get("pericia") not in (p.get("pericias") or {}):
+            arb["pericia"] = self._melhor_pericia(p)           # o LLM escolheu uma perícia que a ficha não tem: usa a melhor
         if arb.get("dificuldade") not in FAIXAS:
             arb["dificuldade"] = "media"                       # tolerante: o LLM errou a faixa, não a ação
         for k in ("efeito_sucesso", "efeito_falha"):
@@ -299,6 +299,11 @@ class Motor:
             if a not in estado["personagens"]:
                 return f"alvo '{a}' inexistente"
         return None
+
+    @staticmethod
+    def _melhor_pericia(p: dict) -> str:
+        pericias = p.get("pericias") or {}
+        return max(pericias, key=lambda k: pericias[k]) if pericias else "improviso"   # improviso = bônus 0
 
     # ================================================================== resolução da rodada
     def resolver_rodada(self, estado: dict, acoes: dict[str, dict], plano: dict | None,
@@ -461,7 +466,7 @@ class Motor:
         estado = ctx.estado
         texto = texto[:MAX_TEXTO]
         if arb is None:   # sem Planejador (nível 4): teste com a melhor perícia, CD média, sem efeito mecânico
-            pericia = max(p.get("pericias", {"improviso": 0}), key=lambda k: p.get("pericias", {}).get(k, 0))
+            pericia = self._melhor_pericia(p)
             arb = {"pericia": pericia, "dificuldade": "media", "efeito_sucesso": "nenhum", "efeito_falha": "nenhum",
                    "alvos": [], "motivo": texto}
         cd = re_.cd_por_faixa(arb["dificuldade"], self.cfg)

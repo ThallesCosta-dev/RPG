@@ -85,7 +85,8 @@ type Slot =
 | type | campos | quando |
 |---|---|---|
 | `room_state` | `state, fase, prazo, config, eu, nivel_ia` | ao conectar/reconectar |
-| `phase` | `fase, prazo?, modo` | troca de fase |
+| `phase` | `fase, modo, prazo?, aguardando_host?` | troca de fase |
+| `players` | `jogadores: Record<player_id, Jogador>` | alguém conectou, desconectou, entrou ou escolheu personagem |
 | `alcance` | `personagem_id, celulas: [x, y, custo][]` | início do planejamento (só para o dono) |
 | `player_preview` | `player_id, personagem_id, caminho: [x,y][], custo` | preview de outro jogador |
 | `dice_result` | `player_id, slot_id, rolagem: {expressao, total, termos}` | alguém rolou |
