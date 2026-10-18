@@ -77,7 +77,7 @@ async def main(url: str):
             await w1.send(json.dumps({"type": "confirm_turn", "acao": {"movimento": {"destino": destino}, "slots": {"livre": {"tipo": "fala", "texto": "Bram, onde está o rubi?"}}}}))
             await w2.send(json.dumps({"type": "confirm_turn", "acao": {"slots": {"padrao": {"tipo": "criativa", "texto": "Observo a taverna procurando alguém suspeito"}}}}))
             # espera a rodada 1 terminar
-            for _ in range(200):
+            for _ in range(900):
                 await asyncio.sleep(0.1)
                 if any(m["type"] == "narration_end" for m in c2):
                     break
@@ -87,7 +87,7 @@ async def main(url: str):
             print("rodada:", est["rodada"], "crônica:", [l["texto"] for l in est["cronica"]])
             # rodada 2: host força
             await w1.send(json.dumps({"type": "host_command", "comando": "resolver_agora"}))
-            for _ in range(200):
+            for _ in range(900):
                 await asyncio.sleep(0.1)
                 if sum(m["type"] == "narration_end" for m in c2) >= 2:
                     break
