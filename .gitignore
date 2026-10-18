@@ -12,3 +12,4 @@ cartuchos/**/rag_index.db
 web/node_modules/
 web/dist/
 .venv/
+data/fichas/

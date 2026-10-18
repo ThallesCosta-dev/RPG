@@ -227,6 +227,45 @@ textarea:focus-visible {
   }
 }
 
+/* Abas (Crônica / Chat) */
+.aba {
+  @apply relative inline-flex items-center gap-1 px-3 py-1 text-xs uppercase tracking-wider;
+  color: var(--texto-suave);
+  border-bottom: 2px solid transparent;
+  font-family: var(--fonte-titulo);
+}
+.aba:hover {
+  color: var(--texto);
+}
+.aba-ativa {
+  color: var(--texto);
+  border-bottom-color: var(--acento);
+}
+.badge {
+  @apply inline-flex min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-[18px] normal-case tracking-normal;
+  background: var(--acento);
+  color: var(--acento-contraste);
+  font-family: var(--fonte-corpo);
+}
+
+/* Mensagem de NPC no chat */
+.msg-npc {
+  background: color-mix(in srgb, var(--acento) 12%, transparent);
+  border-left: 3px solid var(--acento);
+}
+
+/* Modal em portal */
+.modal-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.55);
+}
+
 /* Barra de rolagem discreta */
 .rolavel {
   scrollbar-width: thin;

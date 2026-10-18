@@ -77,6 +77,10 @@ export interface Personagem {
   postura: string | null
   cor: string
   icone: string
+  // Campos extras das fichas criadas pelos jogadores (§7); ausentes nos NPCs e nos modelos da campanha.
+  classe?: string
+  atributos?: Record<string, number>
+  historia?: string
 }
 
 export interface LinhaCronica {
@@ -104,6 +108,24 @@ export interface Estado {
   jogadores: Record<string, Jogador>
   memoria: Memoria | null
   cronica: LinhaCronica[]
+  chat: ChatMessage[] // últimas 60 mensagens (§6); sem `audio_url`
+}
+
+// ---------- Chat (§6) ----------
+
+export interface ChatMessage {
+  id: string
+  de: string // player_id ou npc_id
+  nome: string
+  personagem_id: string | null
+  texto: string
+  para: string | null // null = mesa; npc_id quando dirigida a um NPC (ou personagem_id do jogador na resposta do NPC)
+  npc: boolean
+  ts: number // epoch em segundos
+  audio_url?: string | null
+  voz?: string | null
+  por_host?: boolean
+  rodada?: number
 }
 
 // ---------- system_config.json (§5.2) ----------
@@ -316,6 +338,15 @@ export interface MsgPong {
   type: "pong"
   t?: number
 }
+export interface MsgChatMessage extends ChatMessage {
+  type: "chat_message"
+}
+export interface MsgChatTyping {
+  type: "chat_typing"
+  personagem_id: string
+  nome: string
+  fim?: boolean
+}
 
 export type MsgServidor =
   | MsgRoomState
@@ -332,6 +363,8 @@ export type MsgServidor =
   | MsgNivelIa
   | MsgError
   | MsgPong
+  | MsgChatMessage
+  | MsgChatTyping
 
 // ---------- WebSocket: cliente → servidor ----------
 
@@ -359,8 +392,16 @@ export type ComandoHost =
     }
   | { comando: "mudar_nivel_ia"; nivel: NivelIa }
   | { comando: "nova_narracao" }
+  | { comando: "falar_como_npc"; personagem_id: string; texto: string }
+
+export interface MsgChat {
+  type: "chat"
+  texto: string // ≤ 500
+  para: string | null // null = mesa; npc_id exige ter personagem
+}
 
 export type MsgCliente =
+  | MsgChat
   | { type: "preview_move"; destino: Coord }
   | { type: "roll"; slot_id: string; expressao: string }
   | { type: "confirm_turn"; acao: AcaoDeclarada }
@@ -382,9 +423,15 @@ export interface RespostaCriarSala {
   convite: string
 }
 
+export type OrigemPersonagem = "campanha" | "sala" | "salva"
+
 export interface PersonagemDisponivel {
   id: string
   nome: string
+  origem?: OrigemPersonagem
+  classe?: string
+  icone?: string
+  cor?: string
   [extra: string]: unknown
 }
 
@@ -392,11 +439,86 @@ export interface RespostaLobby {
   sala_id: string
   campanha: string
   tema: string
+  /** Interpretação: o servidor devolve o `sistema_id` da sala neste campo (não consta do contrato). */
+  sistema?: string
   personagens_disponiveis: PersonagemDisponivel[]
-  jogadores: Jogador[] | Record<string, Jogador>
+  jogadores: Jogador[] | Partial<Jogador>[] | Record<string, Jogador>
 }
 
 export interface RespostaEntrar {
   token: string
   player_id: string
+}
+
+// ---------- Fichas (§7) ----------
+
+export type Intervalo = [number, number]
+
+export interface LimitesFicha {
+  atributo: Intervalo
+  pv: Intervalo
+  barra: Intervalo
+  defesa: Intervalo
+  deslocamento: Intervalo
+  iniciativa_bonus: Intervalo
+  pericia: Intervalo
+  bonus_ataque: Intervalo
+  alcance: Intervalo
+  max_ataques: number
+  max_pericias: number
+  nome: number
+  classe: number
+  icone: number
+  historia: number
+}
+
+export interface ModeloFicha {
+  sistema_id: string
+  sistema_nome: string
+  atributos: string[]
+  pericias: string[]
+  barras: { id: string; nome: string }[]
+  campo_defesa: string
+  tipos_dano: string[]
+  icones: string[]
+  limites: LimitesFicha
+  expressao_ataque: string
+  exemplo_dano: string
+  monstros_modelo?: { id: string; nome: string }[]
+}
+
+export interface AtaqueEnvio {
+  nome: string
+  bonus: number
+  dano: string // ex.: "1d8+3"
+  tipo_dano: string
+  alcance: number
+}
+
+export interface FichaEnvio {
+  nome: string
+  classe?: string
+  icone?: string
+  cor?: string // #rrggbb
+  historia?: string
+  atributos: Record<string, number>
+  barras: Record<string, number> // id da barra → máximo
+  defesa: number
+  deslocamento: number
+  iniciativa_bonus: number
+  pericias: Record<string, number> // só perícias do modelo
+  ataques: AtaqueEnvio[]
+}
+
+export interface RespostaCriarFicha {
+  personagem_id: string
+  ficha: Personagem
+}
+
+export interface FichaSalva {
+  id: string
+  nome: string
+  classe: string
+  icone: string
+  cor: string
 }

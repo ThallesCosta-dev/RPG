@@ -28,10 +28,20 @@ export default function HostDrawer({ salaId, token, aoFechar }: Props) {
   const [condicoes, setCondicoes] = useState("")
   const [convite, setConvite] = useState(storage.convite(salaId))
   const [debug, setDebug] = useState<string | null>(null)
+  const [npcFala, setNpcFala] = useState("")
+  const [textoNpc, setTextoNpc] = useState("")
 
   const comando = (c: ComandoHost) => enviar({ type: "host_command", ...c })
 
   const personagem = personagemId ? state?.personagens[personagemId] : undefined
+  const npcs = Object.values(state?.personagens ?? {}).filter((p) => p.tipo === "npc")
+
+  const falarComoNpc = () => {
+    const texto = textoNpc.trim()
+    if (!npcFala || !texto) return
+    comando({ comando: "falar_como_npc", personagem_id: npcFala, texto })
+    setTextoNpc("")
+  }
   const linkConvite = convite ? `${window.location.origin}/sala/${encodeURIComponent(salaId)}?convite=${encodeURIComponent(convite)}` : null
 
   const editar = () => {
@@ -149,6 +159,39 @@ export default function HostDrawer({ salaId, token, aoFechar }: Props) {
               </div>
             </div>
           )}
+        </section>
+
+        <section className="space-y-1">
+          <h3 className="rotulo">Falar como NPC</h3>
+          <select className="campo" value={npcFala} onChange={(e) => setNpcFala(e.target.value)} aria-label="NPC que vai falar">
+            <option value="">— NPC —</option>
+            {npcs.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.icone} {p.nome}
+                {p.caido ? " (caído)" : ""}
+              </option>
+            ))}
+          </select>
+          <textarea
+            className="campo h-16 resize-none"
+            placeholder="O que o NPC diz no chat? (≤ 500)"
+            value={textoNpc}
+            maxLength={500}
+            aria-label="Fala do NPC"
+            onChange={(e) => setTextoNpc(e.target.value.slice(0, 500))}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault()
+                falarComoNpc()
+              }
+            }}
+          />
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-suave">Aparece no chat como fala do NPC (marcada "Host").</span>
+            <button className="botao" onClick={falarComoNpc} disabled={!npcFala || !textoNpc.trim()}>
+              💬 Falar
+            </button>
+          </div>
         </section>
 
         <section className="space-y-1">

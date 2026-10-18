@@ -59,15 +59,17 @@ export default function Header({ salaId, ehHost, aoAbrirHost }: Props) {
       {fase === "planejamento" && <Temporizador prazo={prazo} className="text-base" />}
 
       <span className="chip" title="Narração" aria-live="polite">
-        {narrando ? (
+        {narrando || vozAtual ? (
           <>
             <span className="onda" aria-hidden>
               <span /><span /><span /><span />
             </span>
             <span>{nomeVoz ?? "Narrador"}</span>
-            <button className="ml-1 underline" onClick={pular} title="Pular narração">
-              pular
-            </button>
+            {narrando && (
+              <button className="ml-1 underline" onClick={pular} title="Pular narração">
+                pular
+              </button>
+            )}
           </>
         ) : (
           <span className="text-suave">🔇 silêncio</span>

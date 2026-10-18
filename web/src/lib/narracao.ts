@@ -1,6 +1,12 @@
 import type { MsgNarrationSegment } from "../types"
 
-export type Segmento = Omit<MsgNarrationSegment, "type">
+/**
+ * Segmento da fila. `chat` marca falas de NPC vindas do chat (§6): tocam na mesma fila, com a voz do NPC,
+ * sempre depois dos segmentos de narração pendentes, sem aplicar eventos nem entrar na Crônica.
+ */
+export type Segmento = Omit<MsgNarrationSegment, "type"> & { chat?: { mensagem_id: string } }
+
+const ordem = (a: Segmento, b: Segmento) => Number(!!a.chat) - Number(!!b.chat) || a.seq - b.seq
 
 export interface CallbacksNarracao {
   /** Chamado quando o segmento começa a tocar (ou é pulado, com `instantaneo = true`). */
@@ -17,6 +23,7 @@ export class FilaNarracao {
   private audio: HTMLAudioElement | null = null
   private timer: ReturnType<typeof setTimeout> | null = null
   private encerrada = false
+  private chatSeq = 0
   volume = 0.8
   mudo = false
 
@@ -37,8 +44,14 @@ export class FilaNarracao {
 
   enfileirar(seg: Segmento): void {
     this.fila.push(seg)
-    this.fila.sort((a, b) => a.seq - b.seq)
+    this.fila.sort(ordem)
     if (!this.atual) this.proximo()
+  }
+
+  /** Fala de NPC do chat: entra no fim da fila (depois da narração que estiver tocando) e toca com a voz dele. */
+  enfileirarChat(mensagem_id: string, voz: string, texto: string, audio_url: string): void {
+    this.chatSeq += 1
+    this.enfileirar({ seq: this.chatSeq, voz, texto, eventos: [], audio_url, chat: { mensagem_id } })
   }
 
   /** `narration_end` chegou: quando a fila esvaziar, avisa. */

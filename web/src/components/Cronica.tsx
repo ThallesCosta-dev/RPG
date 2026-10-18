@@ -27,7 +27,7 @@ function Dados({ r }: { r: Rolagem }) {
   )
 }
 
-export default function Cronica() {
+export default function Cronica({ semCabecalho = false }: { semCabecalho?: boolean }) {
   const state = useSala((s) => s.state)
   const itens = useSala((s) => s.itensCronica)
   const narrando = useSala((s) => s.narrando)
@@ -102,14 +102,16 @@ export default function Cronica() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex items-center justify-between border-b px-3 py-2" style={{ borderColor: "var(--painel-borda)" }}>
-        <h2 className="text-sm uppercase tracking-wider text-suave">Crônica</h2>
-        {narrando && (
-          <button className="botao px-2 py-0.5 text-xs" onClick={pular} title="Esvazia a fila e aplica as animações pendentes">
-            ⏭ Pular narração{pendentes > 0 ? ` (${pendentes})` : ""}
-          </button>
-        )}
-      </div>
+      {!semCabecalho && (
+        <div className="flex items-center justify-between border-b px-3 py-2" style={{ borderColor: "var(--painel-borda)" }}>
+          <h2 className="text-sm uppercase tracking-wider text-suave">Crônica</h2>
+          {narrando && (
+            <button className="botao px-2 py-0.5 text-xs" onClick={pular} title="Esvazia a fila e aplica as animações pendentes">
+              ⏭ Pular narração{pendentes > 0 ? ` (${pendentes})` : ""}
+            </button>
+          )}
+        </div>
+      )}
       <div className="rolavel flex-1 space-y-3 overflow-y-auto px-3 py-2 text-[14px]">
         {state?.cena.descricao && itens.length === 0 && historico.length === 0 && (
           <p className="italic text-suave">{state.cena.descricao}</p>

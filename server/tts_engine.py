@@ -7,6 +7,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import pathlib
 import re
 import uuid
 from collections.abc import AsyncIterator, Callable
@@ -152,7 +153,24 @@ def _pitch_shift(audio, taxa: int, semitons: float):
     return np.interp(idx, np.arange(len(audio)), audio).astype("float32")
 
 
+def _preparar_espeak() -> None:
+    """Sem eSpeak NG instalado no sistema, usa a biblioteca empacotada em `espeakng-loader` (pip)."""
+    try:
+        import espeakng_loader  # type: ignore
+    except Exception:
+        return
+    try:
+        if hasattr(espeakng_loader, "make_library_available"):
+            espeakng_loader.make_library_available()
+        os.environ.setdefault("PHONEMIZER_ESPEAK_LIBRARY", str(espeakng_loader.get_library_path()))
+        os.environ.setdefault("PHONEMIZER_ESPEAK_PATH", str(pathlib.Path(espeakng_loader.get_library_path()).parent))
+        os.environ.setdefault("ESPEAK_DATA_PATH", str(espeakng_loader.get_data_path()))
+    except Exception as exc:
+        log.warning("espeakng-loader indisponível: %s", exc)
+
+
 def criar_handler_kokoro() -> Callable | None:
+    _preparar_espeak()
     try:
         from kokoro import KPipeline  # type: ignore
         import numpy as np
@@ -204,9 +222,13 @@ def escolher_handler_tts() -> Callable | None:
     if modo in ("auto", "kokoro"):
         h = criar_handler_kokoro()
         if h or modo == "kokoro":
+            os.environ["TTS_MOTOR_ATIVO"] = "kokoro"
             return h
     if modo in ("auto", "piper"):
-        return criar_handler_piper()
+        h = criar_handler_piper()
+        if h:
+            os.environ["TTS_MOTOR_ATIVO"] = "piper"
+        return h
     return None
 
 

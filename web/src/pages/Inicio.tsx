@@ -17,6 +17,9 @@ export default function Inicio() {
   const [link, setLink] = useState("")
   const [salaManual, setSalaManual] = useState("")
   const [tema, setTema] = useState<Tema>(temaEfetivo(null))
+  // Personagem do Host: "depois" (escolhe ou cria a ficha dentro da mesa) ou o id de um personagem da campanha.
+  const [modoPersonagem, setModoPersonagem] = useState<"depois" | "id">("depois")
+  const [personagemHost, setPersonagemHost] = useState("")
 
   useEffect(() => {
     aplicarTema(temaEfetivo(null))
@@ -43,7 +46,8 @@ export default function Inicio() {
     setOcupado(true)
     try {
       storage.setNomeJogador(nomeHost.trim())
-      const r = await api.criarSala({ nome_host: nomeHost.trim(), sistema_id: sistemaId, campanha_id: campanhaId })
+      const pid = modoPersonagem === "id" ? personagemHost.trim() : ""
+      const r = await api.criarSala({ nome_host: nomeHost.trim(), sistema_id: sistemaId, campanha_id: campanhaId, ...(pid ? { personagem_id: pid } : {}) })
       storage.setToken(r.sala_id, r.token)
       storage.setConvite(r.sala_id, r.convite)
       const camp = cartuchos?.campanhas.find((c) => c.id === campanhaId)
@@ -130,6 +134,24 @@ export default function Inicio() {
               ))}
             </select>
             {cartuchos && campanhas.length === 0 && <p className="mt-1 text-xs text-suave">Nenhuma campanha compilada para este sistema.</p>}
+          </div>
+          <div>
+            <label className="rotulo" htmlFor="personagem-host">Seu personagem (Host)</label>
+            <select id="personagem-host" className="campo" value={modoPersonagem} onChange={(e) => setModoPersonagem(e.target.value as "depois" | "id")}>
+              <option value="depois">Escolher depois, dentro da mesa</option>
+              <option value="id">Informar o id de um personagem da campanha</option>
+            </select>
+            {modoPersonagem === "id" ? (
+              <input
+                className="campo mt-1"
+                value={personagemHost}
+                onChange={(e) => setPersonagemHost(e.target.value)}
+                placeholder="ex.: player_thorin"
+                aria-label="Id do personagem da campanha"
+              />
+            ) : (
+              <p className="mt-1 text-xs text-suave">Na mesa, um card deixa você escolher um personagem da campanha ou criar a sua ficha.</p>
+            )}
           </div>
           <button className="botao botao-primario w-full" disabled={ocupado || !cartuchos || !campanhaId}>
             {ocupado ? "Criando…" : "Criar mesa"}

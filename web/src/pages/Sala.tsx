@@ -7,9 +7,10 @@ import { useSala } from "../store/useSala"
 import Lobby from "../components/Lobby"
 import Header from "../components/Header"
 import PartyHUD from "../components/PartyHUD"
-import Cronica from "../components/Cronica"
+import PainelDireito from "../components/PainelDireito"
 import ConsoleTurno from "../components/ConsoleTurno"
 import HostDrawer from "../components/HostDrawer"
+import SemPersonagem from "../components/SemPersonagem"
 import GridCanvas from "../components/grid/GridCanvas"
 
 export default function Sala() {
@@ -18,8 +19,8 @@ export default function Sala() {
   const [params] = useSearchParams()
   const convite = params.get("convite")
   const navegar = useNavigate()
-  // Em modo mock, a sala abre direto como Host (sem passar pelo convite).
-  const [token, setToken] = useState<string | null>(() => storage.token(salaId) ?? (MOCK ? "mock-token-host" : null))
+  // Em modo mock, a sala abre direto como Host (sem passar pelo convite); com `?convite=` o lobby é mostrado.
+  const [token, setToken] = useState<string | null>(() => storage.token(salaId) ?? (MOCK && !convite ? "mock-token-host" : null))
 
   const conexao = useSala((s) => s.conexao)
   const motivoConexao = useSala((s) => s.motivoConexao)
@@ -101,6 +102,8 @@ export default function Sala() {
 
   const ehHost = eu.papel === "host"
   const espectador = eu.papel === "espectador" || !eu.personagem_id
+  // Jogador (ou Host) sem personagem: pode escolher um da lista do lobby ou criar a ficha (§7).
+  const semPersonagem = !eu.personagem_id && eu.papel !== "espectador"
 
   return (
     <div className="flex h-full flex-col">
@@ -118,6 +121,11 @@ export default function Sala() {
               </div>
             </div>
           )}
+          {semPersonagem && (
+            <div className={`pointer-events-none absolute inset-x-0 flex justify-center ${fase === "lobby" || fase === "pausado" ? "top-16" : "top-3"}`}>
+              <SemPersonagem salaId={salaId} token={token} />
+            </div>
+          )}
           {fase === "pausado" && (
             <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center">
               <div className="painel px-4 py-2 text-sm">⏸ Sessão pausada pelo Host.</div>
@@ -133,7 +141,7 @@ export default function Sala() {
         </main>
         <aside className="m-2 ml-0 flex w-[22rem] shrink-0 flex-col gap-2">
           <section className="painel flex min-h-0 flex-1 flex-col overflow-hidden">
-            <Cronica />
+            <PainelDireito />
           </section>
           {!espectador && (
             <section className="painel flex max-h-[55%] shrink-0 flex-col overflow-hidden">

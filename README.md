@@ -38,16 +38,29 @@ O Host pode forçar o nível no painel (`mudar_nivel_ia`).
 ### Voz (opcional)
 
 ```bash
-pip install kokoro soundfile        # + espeak-ng instalado no sistema
+pip install torch --index-url https://download.pytorch.org/whl/cu128   # GPU (RTX 50xx precisa de cu128+); sem isso roda em CPU
+pip install kokoro soundfile
+python scripts/testar_voz.py        # sintetiza uma frase por ator de voices.json
 # ou: pip install piper-tts e modelos em modelos/piper/pt_BR-faber-medium.onnx
 ```
 `TTS_MOTOR=auto|kokoro|piper|nenhum`. Sem motor, os segmentos chegam só com legenda (o jogo não para).
+Se o Kokoro reclamar de espeak, instale o eSpeak NG (MSI em https://github.com/espeak-ng/espeak-ng/releases).
 
 ### Battlemaps (opcional)
 
 `COMFYUI_URL=http://localhost:8188` + `comfyui_workflow.json` ajustado aos checkpoints da sua instalação
 (SDXL-Lightning + ControlNet de segmentação). O tilemap lógico vem primeiro; a imagem é gerada a partir dele
 na faixa pesada do GPU Scheduler, nunca durante a narração. Sem ComfyUI, o cliente desenha o tilemap estilizado.
+
+### Fichas, chat e revisão de arbitragens
+
+- **Fichas**: no lobby de convite (ou dentro da mesa, se ainda não tiver personagem) o jogador cria a ficha num formulário
+  gerado pelo `system_config` do sistema (atributos, barras, perícias, ataques com expressão de dano). O servidor valida
+  limites e expressões; fichas ficam salvas em `data/fichas/<sistema>/` e podem ser reaproveitadas em outras mesas.
+- **Chat**: painel de chat da mesa; escolhendo um NPC em "Para:", a IA responde em personagem (personalidade do `npcs.json`,
+  memória da campanha, conversas recentes) com voz do NPC quando o TTS está ativo. O Host também pode falar como qualquer NPC.
+- **Revisão de arbitragens** (§7.4): ligando no painel do Host, as arbitragens do Planejador aparecem para ele antes da
+  resolução, com prazo de 45 s para editar perícia, dificuldade ou efeito.
 
 ## Fluxo de uma sessão
 

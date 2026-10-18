@@ -1,6 +1,9 @@
+import { useState } from "react"
 import { useSala } from "../store/useSala"
 import type { BarraStatus, Personagem } from "../types"
 import TokenAvatar from "./TokenAvatar"
+import Modal from "./Modal"
+import FichaPanel from "./FichaPanel"
 
 const ICONE_BARRA: Record<string, string> = {
   "--status-vida": "♥",
@@ -44,7 +47,9 @@ export default function PartyHUD() {
   const eu = useSala((s) => s.eu)
   const selecionado = useSala((s) => s.selecionado)
   const selecionar = useSala((s) => s.selecionarToken)
+  const [fichaAberta, setFichaAberta] = useState(false)
   if (!state || !config) return null
+  const meuPersonagem = eu?.personagem_id ? state.personagens[eu.personagem_id] : undefined
 
   const jogadores = Object.values(state.jogadores).filter((j) => j.papel !== "espectador")
   const espectadores = Object.values(state.jogadores).filter((j) => j.papel === "espectador")
@@ -53,7 +58,19 @@ export default function PartyHUD() {
 
   return (
     <div className="rolavel flex-1 overflow-y-auto p-3">
-      <h2 className="mb-2 text-sm uppercase tracking-wider text-suave">Grupo</h2>
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="text-sm uppercase tracking-wider text-suave">Grupo</h2>
+        {meuPersonagem && (
+          <button className="botao px-2 py-0.5 text-xs" onClick={() => setFichaAberta(true)} title="Ver a ficha completa do meu personagem">
+            📜 Minha ficha
+          </button>
+        )}
+      </div>
+      {fichaAberta && meuPersonagem && (
+        <Modal titulo={`Minha ficha — ${meuPersonagem.nome}`} aoFechar={() => setFichaAberta(false)} largura="max-w-2xl">
+          <FichaPanel p={meuPersonagem} config={config} />
+        </Modal>
+      )}
       <ul className="space-y-2">
         {jogadores.map((j) => {
           const p = j.personagem_id ? state.personagens[j.personagem_id] : null

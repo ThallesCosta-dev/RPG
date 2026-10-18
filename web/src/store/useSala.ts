@@ -2,6 +2,7 @@ import { create } from "zustand"
 import type {
   AcaoDeclarada,
   CelulaAlcance,
+  ChatMessage,
   Coord,
   Estado,
   Eu,
@@ -82,6 +83,13 @@ export interface SalaStore {
   volume: number
   mudo: boolean
 
+  // chat (§6)
+  chat: ChatMessage[]
+  /** NPC que está respondendo (após `chat_typing`, até a `chat_message` dele ou `fim: true`). */
+  digitando: { personagem_id: string; nome: string } | null
+  chatNaoLidas: number
+  chatVisivel: boolean
+
   // ações
   iniciarSala(salaId: string): void
   setConexao(status: StatusConexao, motivo?: string): void
@@ -98,6 +106,16 @@ export interface SalaStore {
   setVolume(v: number): void
   setMudo(m: boolean): void
   setTemaOverride(t: Tema | null): void
+  enviarChat(texto: string, para: string | null): boolean
+  setChatVisivel(v: boolean): void
+}
+
+const CHAT_MAX_LOCAL = 200
+const MENSAGEM_ERRO: Record<string, string> = {
+  npc_ocupado: "O NPC está ocupado: espere a resposta ou o fim da rodada.",
+  npc_invalido: "Esse NPC não está na cena.",
+  sem_personagem: "Só quem tem personagem pode falar com NPCs.",
+  mensagem_invalida: "Mensagem vazia.",
 }
 
 let conexaoAtual: Conexao | null = null
@@ -106,6 +124,11 @@ let chaveRolagem = 1
 const narracao = new FilaNarracao({
   aoIniciar(seg: Segmento, instantaneo: boolean) {
     const s = useSala.getState()
+    if (seg.chat) {
+      // Fala de NPC do chat: só a voz (a mensagem já está no painel de chat); nada de eventos nem Crônica.
+      if (!instantaneo) useSala.setState({ vozAtual: seg.voz, segmentosPendentes: narracao.pendentes })
+      return
+    }
     const rodada = s.roundLog?.rodada ?? s.state?.rodada ?? 0
     let state = s.state
     const animadas = new Set(acoesAnimadas)
@@ -127,10 +150,17 @@ const narracao = new FilaNarracao({
     })
   },
   aoTerminarSegmento() {
-    useSala.setState({ segmentosPendentes: narracao.pendentes })
+    const s = useSala.getState()
+    // Fora da narração (fala de NPC do chat), a voz some ao fim do áudio; o próximo segmento a redefine.
+    useSala.setState({ segmentosPendentes: narracao.pendentes, vozAtual: s.narrando ? s.vozAtual : null })
   },
   aoFimDaFila() {
     const s = useSala.getState()
+    if (!s.narrando) {
+      // Só falas de chat tocaram: não há rodada para fechar (nem round_log para reaplicar).
+      useSala.setState({ vozAtual: null, segmentosPendentes: 0 })
+      return
+    }
     // Ações do round_log que nenhum segmento referenciou: anima de uma vez.
     let state = s.state
     for (const acao of s.roundLog?.acoes ?? []) {
@@ -196,6 +226,11 @@ export const useSala = create<SalaStore>((set, get) => ({
   volume: storage.volume(),
   mudo: storage.mudo(),
 
+  chat: [],
+  digitando: null,
+  chatNaoLidas: 0,
+  chatVisivel: false,
+
   iniciarSala(salaId) {
     narracao.limpar()
     narracao.ajustarVolume(get().volume, get().mudo)
@@ -219,6 +254,9 @@ export const useSala = create<SalaStore>((set, get) => ({
       selecionado: null,
       slotAtivo: null,
       tema,
+      chat: [],
+      digitando: null,
+      chatNaoLidas: 0,
       ...limpezaDePlanejamento,
     })
   },
@@ -259,11 +297,33 @@ export const useSala = create<SalaStore>((set, get) => ({
           vozAtual: null,
           segmentosPendentes: 0,
           roundLog: null,
+          chat: msg.state.chat ?? [],
+          digitando: null,
+          chatNaoLidas: 0,
           ...limpezaDePlanejamento,
           totalProntos: 0,
         })
         break
       }
+      case "chat_message": {
+        const { type: _t, ...m } = msg
+        void _t
+        if (s.chat.some((c) => c.id === m.id)) break
+        const chat = [...s.chat, m].slice(-CHAT_MAX_LOCAL)
+        const terminouDeResponder = m.npc && s.digitando?.personagem_id === m.personagem_id
+        const minha = !m.npc && m.de === s.eu?.player_id
+        set({
+          chat,
+          digitando: terminouDeResponder ? null : s.digitando,
+          chatNaoLidas: s.chatVisivel || minha ? s.chatNaoLidas : s.chatNaoLidas + 1,
+        })
+        // Voz do NPC entra na mesma fila da narração (depois do que estiver tocando), sem bloquear o chat.
+        if (m.npc && m.audio_url && m.personagem_id) narracao.enfileirarChat(m.id, m.personagem_id, m.texto, m.audio_url)
+        break
+      }
+      case "chat_typing":
+        set({ digitando: msg.fim ? null : { personagem_id: msg.personagem_id, nome: msg.nome } })
+        break
       case "phase": {
         const prazo = msg.prazo === undefined ? s.prazo : msg.prazo
         const state = s.state ? { ...s.state, modo: msg.modo } : s.state
@@ -366,9 +426,12 @@ export const useSala = create<SalaStore>((set, get) => ({
       case "nivel_ia":
         set({ nivelIa: msg.nivel, provedorIa: msg.provedor })
         break
-      case "error":
-        useToast.getState().mostrar(msg.msg ? `${msg.code}: ${msg.msg}` : `Erro: ${msg.code}`, "erro")
+      case "error": {
+        const amigavel = MENSAGEM_ERRO[msg.code]
+        useToast.getState().mostrar(amigavel ?? (msg.msg ? `${msg.code}: ${msg.msg}` : `Erro: ${msg.code}`), "erro")
+        if (msg.code === "npc_ocupado" || msg.code === "npc_invalido" || msg.code === "sem_personagem") set({ digitando: null })
         break
+      }
       case "pong":
         break
       default:
@@ -426,6 +489,22 @@ export const useSala = create<SalaStore>((set, get) => ({
     const tema = temaEfetivo(get().state?.cena.tema)
     aplicarTema(tema)
     set({ tema })
+  },
+
+  enviarChat(texto, para) {
+    const t = texto.replace(/\s+/g, " ").trim().slice(0, 500)
+    if (!t) return false
+    const s = get()
+    if (para && !s.eu?.personagem_id) {
+      useToast.getState().mostrar(MENSAGEM_ERRO.sem_personagem, "erro")
+      return false
+    }
+    s.enviar({ type: "chat", texto: t, para })
+    return true
+  },
+
+  setChatVisivel(v) {
+    set({ chatVisivel: v, chatNaoLidas: v ? 0 : get().chatNaoLidas })
   },
 }))
 
