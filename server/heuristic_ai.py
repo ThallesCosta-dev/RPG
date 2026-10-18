@@ -20,7 +20,9 @@ def planejar_npc(npc_id: str, estado: dict, opcoes: dict, metrica: str, preferen
                 if vivo(p) and p["faccao"] != npc["faccao"] and p["id"] != npc_id]
     base = {"npc_id": npc_id, "alvo_id": None, "ataque_ou_habilidade_id": None,
             "destino_x": None, "destino_y": None, "se_alvo_invalido": preferencia,
-            "postura": npc.get("postura") or "agressivo"}
+            "postura": npc.get("postura") or "agressivo", "fala": None}
+    if not inimigos or npc.get("faccao") == "neutro":
+        return {**base, "acao": "esperar"}
 
     pv = npc["barras"].get("pv", {"atual": 1, "max": 1})
     ferido = pv["max"] and pv["atual"] / pv["max"] < 0.25

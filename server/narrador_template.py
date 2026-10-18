@@ -13,7 +13,8 @@ def narrar_rodada(acoes: list[dict], falas: list[dict] | None = None) -> str:
     for a in acoes:
         partes.append(f"[VOZ:NARRADOR] [EVENTO:{a['id']}] {a['texto']}.")
     for f in falas or []:
-        partes.append(f"[VOZ:{f['voz']}] \"{f['texto']}\"")
+        marcador = f"[EVENTO:{f['id']}] " if f.get("id") else ""
+        partes.append(f"[VOZ:{f['voz']}] {marcador}\"{f['texto']}\"")
     if not partes:
         partes.append("[VOZ:NARRADOR] A rodada passa sem incidentes.")
     partes.append("[VOZ:NARRADOR] O que vocês fazem?")

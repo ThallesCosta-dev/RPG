@@ -97,6 +97,7 @@ def estado_inicial(sala_id: str, sistema_id: str, campanha_id: str) -> dict:
         "memoria": None,
         "cronica": [],
         "chat": [],
+        "narracoes": [],
     }
 
 
@@ -240,6 +241,9 @@ def aplicar(estado: dict, ev: dict) -> dict:
             estado["cena"]["imagem_url"] = ev["imagem_url"]
     elif t == "memoria":
         estado["memoria"] = copy.deepcopy(ev["memoria"])
+    elif t == "narracao":
+        estado.setdefault("narracoes", []).append({"rodada": ev.get("rodada", estado["rodada"]), "texto": ev["texto"][:3000]})
+        del estado["narracoes"][:-4]
     elif t == "log_rodada":
         estado["cronica"].extend({"rodada": ev["rodada"], "id": a["id"], "texto": a["texto"]} for a in ev["acoes"])
         corte = ev["rodada"] - CRONICA_MAX_RODADAS

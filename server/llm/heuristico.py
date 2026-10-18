@@ -35,13 +35,15 @@ class HeuristicoProvider:
         acoes = ctx.dados.get("acoes_log", [])
         estado = ctx.dados.get("estado", {})
         falas = []
+        acoes_narraveis = []
         for a in acoes:
-            for e in a.get("eventos", []):
-                if e["tipo"] == "fala":
-                    p = estado.get("personagens", {}).get(e["personagem"], {})
-                    if p.get("tipo") == "npc" and p.get("voz"):
-                        falas.append({"voz": e["personagem"], "texto": e["texto"]})
-        async for pedaco in stream_de_texto(narrar_rodada(acoes, falas)):
+            ev = next((e for e in a.get("eventos", []) if e["tipo"] == "fala"), None)
+            p = estado.get("personagens", {}).get(ev["personagem"], {}) if ev else {}
+            if ev and p.get("tipo") == "npc":
+                falas.append({"voz": e_id if (e_id := ev["personagem"]) else "NARRADOR", "texto": ev["texto"], "id": a["id"]})
+            else:
+                acoes_narraveis.append(a)
+        async for pedaco in stream_de_texto(narrar_rodada(acoes_narraveis, falas)):
             yield pedaco
 
     async def estruturado(self, ctx: Contexto):

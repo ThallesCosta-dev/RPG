@@ -16,7 +16,8 @@ from .events import aplicar
 from .rules_engine import evento
 
 FAIXAS = ("facil", "media", "dificil", "muito_dificil")
-ACOES_NPC = ("atacar", "mover", "habilidade", "defender", "fugir", "render_se")
+ACOES_NPC = ("atacar", "mover", "habilidade", "defender", "fugir", "render_se", "falar", "esperar")
+MAX_FALA_NPC = 400
 MAX_TEXTO = 500
 
 
@@ -266,6 +267,8 @@ class Motor:
                 return f"destino {dest} fora do alcance de movimento"
         if acao in ("mover", "fugir") and dest is None:
             return "mover/fugir exige destino"
+        if acao == "falar" and not (isinstance(it.get("fala"), str) and it["fala"].strip()):
+            return "falar exige o texto da fala"
         if acao in ("atacar", "habilidade"):
             aid = it.get("ataque_ou_habilidade_id")
             atq = re_.ataque_de(npc, aid or "")
@@ -414,7 +417,7 @@ class Motor:
             elif tipo == "defender":
                 self._defender(ctx, p)
             elif tipo == "esperar":
-                ctx.emitir([evento("esperar", personagem=p["id"])], texto=f"{p['nome']} espera, atento", ator=p["id"])
+                ctx.emitir([evento("esperar", personagem=p["id"])])          # silencioso: não vira linha de narração
 
     def _ataque_jogador(self, ctx: "_Rodada", p: dict, s: dict, rolagem: dict | None) -> None:
         estado = ctx.estado
@@ -539,6 +542,11 @@ class Motor:
         return True
 
     # ---------------------------------------------------------------- NPC
+    def _falar_npc(self, ctx: "_Rodada", npc: dict, fala: str) -> None:
+        fala = " ".join(str(fala).split())[:MAX_FALA_NPC]
+        if fala:
+            ctx.emitir([evento("fala", personagem=npc["id"], texto=fala)], texto=f"{npc['nome']} diz: \"{fala}\"", ator=npc["id"], fala=True)
+
     def _executar_npc(self, ctx: "_Rodada", npc: dict, it: dict) -> None:
         estado = ctx.estado
         acao = it.get("acao")
@@ -548,10 +556,20 @@ class Motor:
         dest = None
         if it.get("destino_x") is not None and it.get("destino_y") is not None:
             dest = (int(it["destino_x"]), int(it["destino_y"]))
+        fala = it.get("fala") if isinstance(it.get("fala"), str) else None
+        if acao == "falar":
+            self._falar_npc(ctx, npc, fala or "")
+            return
+        if acao == "esperar":
+            return
+        if fala and acao in ("atacar", "habilidade", "mover", "fugir", "defender", "render_se"):
+            self._falar_npc(ctx, npc, fala)                        # fala antes de agir (provocação, ordem, súplica)
         if acao == "render_se":
             ctx.emitir([evento("postura", personagem=npc["id"], postura="rendido")], texto=f"{npc['nome']} se rende", ator=npc["id"])
             return
         if acao == "defender":
+            if not self.inimigos_de(estado, npc) or estado["modo"] != "combate":
+                return                                             # sem ameaça, "defender" é só esperar: nada a narrar
             self._defender(ctx, npc)
             return
         if acao in ("mover", "fugir") and dest:

@@ -12,13 +12,14 @@ from pydantic import BaseModel
 
 class IntencaoNPC(BaseModel):
     npc_id: str
-    acao: Literal["atacar", "mover", "habilidade", "defender", "fugir", "render_se"]
+    acao: Literal["atacar", "mover", "habilidade", "defender", "fugir", "render_se", "falar", "esperar"]
     alvo_id: str | None              # obrigatório em atacar/habilidade
     ataque_ou_habilidade_id: str | None
     destino_x: int | None            # obrigatório em mover/fugir
     destino_y: int | None
     se_alvo_invalido: Literal["mais_proximo", "mais_ferido", "defender"]
-    postura: Literal["agressivo", "cauteloso", "fugindo", "rendido"]
+    postura: Literal["agressivo", "cauteloso", "fugindo", "rendido", "neutro"]
+    fala: str | None                 # o que o NPC diz nesta rodada (obrigatório em "falar"; opcional nas outras)
 
 
 class Arbitragem(BaseModel):

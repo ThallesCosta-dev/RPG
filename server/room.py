@@ -356,8 +356,16 @@ class Sala:
     async def _narrar(self, estado: dict, log_acoes: list[dict], ultimas: list[dict]):
         ctx = cb.montar_contexto_narracao(estado, log_acoes, self.sistema, self.campanha, ultimas, rag=self.rag)
         vozes = resolver_vozes(self.voices, estado)
+        partes: list[str] = []
         async for segmento in self.narracao.narrar(self.llm.narrar_stream(ctx), vozes):
             self.broadcast({"type": "narration_segment", **segmento})
+            if segmento.get("texto"):
+                partes.append((f"[VOZ:{segmento['voz']}] " if segmento.get("voz") != "NARRADOR" else "") + segmento["texto"])
+        if partes:
+            try:
+                self.store.anexar(self.sala_id, [{"tipo": "narracao", "rodada": estado["rodada"], "texto": " ".join(partes)}], snapshot=False)
+            except Exception:
+                log.exception("não gravou a narração")
         self.ultima_narracao_rodada = estado["rodada"]
         self.broadcast({"type": "narration_end", "rodada": estado["rodada"]})
 
