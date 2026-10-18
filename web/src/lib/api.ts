@@ -9,7 +9,7 @@ import type {
   RespostaLobby,
 } from "../types"
 
-export const MOCK = import.meta.env.VITE_MOCK === "1"
+export const MOCK = import.meta.env.DEV && import.meta.env.VITE_MOCK === "1"
 
 export class ErroApi extends Error {
   constructor(public status: number, mensagem: string, public detalhes?: unknown) {

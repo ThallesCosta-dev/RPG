@@ -108,6 +108,6 @@ export const conectarWs: FabricaConexao = (salaId, token, handlers) => {
 
 /** Escolhe a fábrica real ou o mock (`VITE_MOCK=1`), sem levar o mock para o bundle de produção. */
 export async function obterFabricaConexao(): Promise<FabricaConexao> {
-  if (import.meta.env.VITE_MOCK === "1") return (await import("../dev/mock")).conectarMock
+  if (import.meta.env.DEV && import.meta.env.VITE_MOCK === "1") return (await import("../dev/mock")).conectarMock
   return conectarWs
 }
