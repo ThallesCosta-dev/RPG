@@ -47,13 +47,15 @@ class App:
     # ---------------------------------------------------------------- ciclo de vida
     async def iniciar(self):
         handlers = {}
-        tts = tts_engine.escolher_handler_tts()
+        tts = tts_engine.escolher_handler_tts(self.voices)
         if tts:
             handlers["tts"] = tts
         else:
             log.info("TTS: nenhum motor disponível; narração só com legenda")
         if os.getenv("COMFYUI_URL"):
             handlers["mapa"] = map_engine.gerar_imagem_comfyui
+        if tts:
+            handlers["amostra"] = lambda voz_id: tts_engine.amostra_de_voz(tts, self.voices, voz_id)
         self.gpu.handlers.update(handlers)
         self.gpu.iniciar()
         tts_engine.limpar_audio_antigo(float(os.getenv("AUDIO_MAX_IDADE_H", "48")))
@@ -156,7 +158,7 @@ class App:
         if player_id is None and not (convite and self.store.convite_valido(sala_id, convite)):
             raise PermissionError("convite inválido")
         sistema = self.biblioteca.sistema(info["sistema_id"])
-        ficha, erros = validar_ficha(dados, sistema)
+        ficha, erros = validar_ficha(dados, sistema, self.voices)
         if erros:
             raise ValueError("; ".join(erros))
         estado = self.store.estado_atual(sala_id)
@@ -242,7 +244,9 @@ class App:
         return Motor(sistema.config, sistema.efeitos, campanha.cenas, sistema.plugin)
 
     def modelo_ficha(self, sistema_id: str) -> dict:
-        return modelo_ficha(self.biblioteca.sistema(sistema_id))
+        m = modelo_ficha(self.biblioteca.sistema(sistema_id))
+        m["vozes"] = self.vozes()
+        return m
 
     def obter_sala(self, sala_id: str) -> Sala:
         if sala_id in self.salas:
@@ -260,3 +264,11 @@ class App:
 
     def caminho_audio(self, audio_id: str):
         return tts_engine.caminho_audio(audio_id)
+
+    def vozes(self) -> list[dict]:
+        return tts_engine.vozes_escolhiveis(self.voices)
+
+    async def amostra_de_voz(self, voz_id: str) -> str | None:
+        if not self.gpu.tem_handler("tts") or voz_id not in self.voices or voz_id.startswith("_"):
+            return None
+        return await self.gpu.submeter(0, ("amostra", voz_id))

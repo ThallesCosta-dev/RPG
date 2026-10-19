@@ -220,7 +220,8 @@ class Motor:
             if not partes:
                 partes.append("nenhum alvo alcançável; pode mover ou defender")
             nome = npc.get("postura") or "neutra"
-            linhas.append(f"- {nid} (deslocamento {op['deslocamento']}, postura {nome}): " + "; ".join(partes))
+            fala = "" if npc.get("voz") and npc.get("voz") != "NARRADOR" else ", NÃO FALA (animal/criatura)"
+            linhas.append(f"- {nid} (deslocamento {op['deslocamento']}, postura {nome}{fala}): " + "; ".join(partes))
         return "\n".join(linhas)
 
     # ================================================================== validação do plano da IA
@@ -562,6 +563,10 @@ class Motor:
         if it.get("destino_x") is not None and it.get("destino_y") is not None:
             dest = (int(it["destino_x"]), int(it["destino_y"]))
         fala = it.get("fala") if isinstance(it.get("fala"), str) else None
+        if not npc.get("voz") or npc.get("voz") == "NARRADOR":          # animais e criaturas sem voz própria não falam
+            fala = None
+            if acao == "falar":
+                acao = "esperar"
         if acao == "falar":
             self._falar_npc(ctx, npc, fala or "")
             return

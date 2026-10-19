@@ -65,15 +65,17 @@ class PipelineNarracao:
 
         async def produtor():
             seg, voz = Segmentador(), "NARRADOR"
+            ctx = {"pendente": None, "fila": fila, "vozes": vozes}       # por narração: o pipeline é compartilhado entre salas
             try:
                 async for pedaco in stream:
                     for frase in seg.alimentar(pedaco):
-                        voz = self._enfileirar(frase, voz, fila, vozes)
+                        voz = self._enfileirar(frase, voz, ctx)
                 for frase in seg.finalizar():
-                    voz = self._enfileirar(frase, voz, fila, vozes)
+                    voz = self._enfileirar(frase, voz, ctx)
             except Exception:
                 log.exception("stream de narração interrompido")
             finally:
+                self._despachar_pendente(ctx)
                 fila.put_nowait(None)
 
         tarefa = asyncio.create_task(produtor())
@@ -92,7 +94,7 @@ class PipelineNarracao:
         finally:
             tarefa.cancel()
 
-    def _enfileirar(self, frase: str, voz: str, fila: asyncio.Queue, vozes: dict) -> str:
+    def _enfileirar(self, frase: str, voz: str, ctx: dict) -> str:
         """[VOZ:x] fecha o trecho atual e troca a voz; [EVENTO:id] marca o trecho
         para disparar animações quando ele começar a tocar. Tags nunca vão para o TTS."""
         partes = TAG.split(frase)        # [texto, tipo, valor, texto, tipo, valor, texto, ...]
@@ -103,20 +105,35 @@ class PipelineNarracao:
                 eventos.append(valor)
                 texto += seguinte
             else:
-                self._submeter(texto, voz, eventos, fila, vozes)
+                self._submeter(texto, voz, eventos, ctx)
                 texto, eventos = seguinte, []
-                voz = valor if valor in vozes else "NARRADOR"
-        self._submeter(texto, voz, eventos, fila, vozes)
+                voz = valor if valor in ctx["vozes"] else "NARRADOR"
+        self._submeter(texto, voz, eventos, ctx)
         return voz
 
-    def _submeter(self, texto: str, voz: str, eventos: list, fila: asyncio.Queue, vozes: dict):
+    MAX_SEGMENTO = 260          # caracteres: frases curtas consecutivas da mesma voz viram um segmento só
+
+    def _submeter(self, texto: str, voz: str, eventos: list, ctx: dict):
         texto = " ".join(TAG_FALA.sub("", texto).split())
         if not texto and not eventos:
             return
+        pend = ctx["pendente"]
+        if pend and pend["voz"] == voz and not eventos and len(pend["texto"]) + len(texto) + 1 <= self.MAX_SEGMENTO:
+            pend["texto"] = (pend["texto"] + " " + texto).strip()        # mesma voz, sem novo marcador: junta
+            return
+        self._despachar_pendente(ctx)
+        ctx["pendente"] = {"texto": texto, "voz": voz, "eventos": eventos}
+
+    def _despachar_pendente(self, ctx: dict):
+        pend = ctx["pendente"]
+        if not pend:
+            return
+        ctx["pendente"] = None
+        texto, voz, vozes = pend["texto"], pend["voz"], ctx["vozes"]
         futuro = None
         if texto and self.gpu is not None and self.gpu.tem_handler("tts"):
             futuro = self.gpu.submeter(0, ("tts", texto, vozes.get(voz) or vozes.get("NARRADOR") or {}))
-        fila.put_nowait((texto, voz, eventos, futuro))
+        ctx["fila"].put_nowait((texto, voz, pend["eventos"], futuro))
 
 
 # ====================================================================== motores
@@ -124,9 +141,15 @@ def resolver_vozes(voices: dict, estado: dict) -> dict:
     """Mapa {tag → config do ator}: NARRADOR + cada NPC vivo da cena pelo seu id."""
     out = {"NARRADOR": voices.get("NARRADOR", {})}
     for pid, p in estado.get("personagens", {}).items():
-        if p.get("tipo") == "npc" and p.get("voz") in voices:
+        if p.get("voz") in voices and p.get("voz") != "NARRADOR":
             out[p.get("id", pid)] = voices[p["voz"]]
     return out
+
+
+def vozes_escolhiveis(voices: dict) -> list[dict]:
+    """Atores que um jogador pode escolher para o personagem (sem os de reserva/internos)."""
+    return [{"id": k, "descricao": v.get("descricao", k), "motor": v.get("motor", "kokoro")}
+            for k, v in voices.items() if not k.startswith("_") and k != "NARRADOR"]
 
 
 def _gravar(audio, taxa: int) -> str:
@@ -215,29 +238,110 @@ def criar_handler_piper() -> Callable | None:
     return sintetizar
 
 
-def escolher_handler_tts() -> Callable | None:
+def criar_handler_edge() -> Callable | None:
+    """Edge-TTS (vozes neurais da Microsoft, online, não oficial). Mais expressivo; pode parar sem aviso → reserva por ator."""
+    try:
+        import edge_tts  # type: ignore
+    except Exception:
+        return None
+
+    def sintetizar(texto: str, cfg: dict) -> str:
+        import asyncio as _aio
+        vel = float(cfg.get("velocidade", 1.0))
+        rate = f"{'+' if vel >= 1 else ''}{round((vel - 1) * 100)}%"
+        semitons = float(cfg.get("pitch_semitons", 0))
+        pitch = f"{'+' if semitons >= 0 else ''}{round(semitons * 6)}Hz"          # ~6 Hz por semitom numa voz média
+
+        async def gerar() -> bytes:
+            com = edge_tts.Communicate(texto, cfg.get("voz", "pt-BR-AntonioNeural"), rate=rate, pitch=pitch)
+            dados = bytearray()
+            async for ch in com.stream():
+                if ch["type"] == "audio":
+                    dados += ch["data"]
+            if not dados:
+                raise RuntimeError("edge-tts não devolveu áudio")
+            return bytes(dados)
+        dados = _aio.run(_aio.wait_for(gerar(), timeout=float(os.getenv("EDGE_TTS_TIMEOUT", "20"))))
+        DIR_AUDIO.mkdir(parents=True, exist_ok=True)
+        audio_id = uuid.uuid4().hex
+        (DIR_AUDIO / f"{audio_id}.mp3").write_bytes(dados)
+        return audio_id
+    log.info("TTS: Edge-TTS disponível")
+    return sintetizar
+
+
+def escolher_handler_tts(voices: dict | None = None) -> Callable | None:
+    """Um handler que despacha pelo `motor` do ator (edge / kokoro / piper) e cai para a reserva do ator ou o 1º motor que houver."""
     modo = os.getenv("TTS_MOTOR", "auto").lower()
     if modo == "nenhum":
         return None
-    if modo in ("auto", "kokoro"):
+    motores: dict[str, Callable] = {}
+    if modo in ("auto", "edge"):
+        h = criar_handler_edge()
+        if h:
+            motores["edge"] = h
+    if modo in ("auto", "kokoro", "edge"):
         h = criar_handler_kokoro()
-        if h or modo == "kokoro":
-            os.environ["TTS_MOTOR_ATIVO"] = "kokoro"
-            return h
-    if modo in ("auto", "piper"):
+        if h:
+            motores["kokoro"] = h
+    if modo in ("auto", "piper") or not motores:
         h = criar_handler_piper()
         if h:
-            os.environ["TTS_MOTOR_ATIVO"] = "piper"
-        return h
-    return None
+            motores["piper"] = h
+    if not motores:
+        return None
+    os.environ["TTS_MOTOR_ATIVO"] = ",".join(motores)
+    voices = voices or {}
+    padrao = next(iter(motores))
+
+    def sintetizar(texto: str, cfg: dict) -> str:
+        cfg = cfg or {}
+        motor = cfg.get("motor") or padrao
+        if motor in motores:
+            try:
+                return motores[motor](texto, cfg)
+            except Exception as exc:
+                log.warning("TTS %s falhou (%s); usando reserva", motor, str(exc)[:120])
+        reserva = voices.get(cfg.get("reserva") or "")
+        if reserva and reserva.get("motor") in motores and reserva is not cfg:
+            return motores[reserva["motor"]](texto, reserva)
+        for nome, fn in motores.items():                      # último recurso: qualquer motor, com a voz padrão dele
+            if nome != motor:
+                return fn(texto, {"velocidade": cfg.get("velocidade", 1.0), "pitch_semitons": cfg.get("pitch_semitons", 0)})
+        raise RuntimeError("nenhum motor de TTS conseguiu sintetizar")
+    log.info("TTS: motores ativos %s (padrão %s)", list(motores), padrao)
+    return sintetizar
 
 
 def caminho_audio(audio_id: str) -> Path | None:
-    """Só aceita 32 hexadecimais: impede acessar outros arquivos do disco."""
-    if not re.fullmatch(r"[0-9a-f]{32}", audio_id or ""):
+    """Só aceita 32 hexadecimais (ou amostra_<ator>): impede acessar outros arquivos do disco."""
+    if not re.fullmatch(r"[0-9a-f]{32}|amostra_[A-Za-z0-9_]{1,40}", audio_id or ""):
         return None
-    p = DIR_AUDIO / f"{audio_id}.ogg"
-    return p if p.exists() else None
+    for ext in (".ogg", ".mp3"):
+        p = DIR_AUDIO / f"{audio_id}{ext}"
+        if p.exists():
+            return p
+    return None
+
+
+FRASE_AMOSTRA = "Que os deuses guiem a sua lâmina, viajante. A estrada para Valkar é longa e cheia de sombras."
+
+
+def amostra_de_voz(handler: Callable, voices: dict, voz_id: str) -> str | None:
+    """Sintetiza (uma vez) a frase de amostra do ator e devolve o id `amostra_<ator>`."""
+    cfg = voices.get(voz_id)
+    if cfg is None or voz_id.startswith("_") or handler is None:
+        return None
+    audio_id = f"amostra_{voz_id}"
+    if caminho_audio(audio_id):
+        return audio_id
+    novo = handler(FRASE_AMOSTRA, cfg)
+    origem = caminho_audio(novo)
+    if origem is None:
+        return None
+    destino = origem.with_name(audio_id + origem.suffix)
+    origem.replace(destino)
+    return audio_id
 
 
 def limpar_audio_antigo(max_idade_h: float = 24) -> int:
@@ -245,7 +349,9 @@ def limpar_audio_antigo(max_idade_h: float = 24) -> int:
     limite = time.time() - max_idade_h * 3600
     n = 0
     if DIR_AUDIO.exists():
-        for f in DIR_AUDIO.glob("*.ogg"):
+        for f in list(DIR_AUDIO.glob("*.ogg")) + list(DIR_AUDIO.glob("*.mp3")):
+            if f.name.startswith("amostra_"):
+                continue
             if f.stat().st_mtime < limite:
                 f.unlink(missing_ok=True)
                 n += 1

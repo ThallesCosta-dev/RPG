@@ -60,7 +60,7 @@ async def test_pipeline_com_tts_falhando_segue_com_legenda():
     gpu.iniciar()
     try:
         pipe = PipelineNarracao(gpu)
-        segs = [s async for s in pipe.narrar(_stream(["Primeira frase. Esta falha. Terceira frase."]), {"NARRADOR": {}})]
+        segs = [s async for s in pipe.narrar(_stream(["[EVENTO:e1] Primeira frase. [EVENTO:e2] Esta falha. [EVENTO:e3] Terceira frase."]), {"NARRADOR": {}})]
         assert segs[0]["audio_url"] == "/audio/" + "a" * 32
         assert segs[1]["audio_url"] is None
         assert segs[2]["audio_url"].startswith("/audio/")
@@ -96,3 +96,13 @@ def test_resolver_vozes():
     voices = {"NARRADOR": {"voz": "n"}, "grave": {"voz": "g"}}
     estado = {"personagens": {"orc": {"tipo": "npc", "voz": "grave"}, "x": {"tipo": "npc", "voz": "inexistente"}, "p": {"tipo": "jogador"}}}
     assert resolver_vozes(voices, estado) == {"NARRADOR": {"voz": "n"}, "orc": {"voz": "g"}}
+
+
+@pytest.mark.asyncio
+async def test_pipeline_junta_frases_curtas_da_mesma_voz():
+    pipe = PipelineNarracao(GPUScheduler({}))
+    vozes = {"NARRADOR": {}, "bram": {}}
+    texto = "[VOZ:NARRADOR] [EVENTO:e1] Thorin pergunta. [VOZ:bram] \"Saudações, Thorin. As coisas andam tensas. Meu sobrinho sumiu.\" [VOZ:NARRADOR] Bram aperta a caneca. O vento uiva."
+    segs = [s async for s in pipe.narrar(_stream([texto]), vozes)]
+    assert [s["voz"] for s in segs] == ["NARRADOR", "bram", "NARRADOR"]          # 3 segmentos, não 6
+    assert segs[1]["texto"].count(".") == 3 and segs[2]["texto"] == "Bram aperta a caneca. O vento uiva."

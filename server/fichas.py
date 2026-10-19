@@ -13,8 +13,8 @@ from pathlib import Path
 
 from .rules_engine import expressao_valida
 
-LIMITES = {"atributo": (-5, 15), "pv": (1, 999), "barra": (0, 999), "defesa": (1, 60), "deslocamento": (1, 30),
-           "iniciativa_bonus": (-5, 30), "pericia": (-5, 40), "bonus_ataque": (-5, 40), "alcance": (1, 40),
+LIMITES = {"atributo": (-5, 12), "pv": (1, 400), "barra": (0, 400), "defesa": (5, 35), "deslocamento": (1, 20),
+           "iniciativa_bonus": (-5, 20), "pericia": (-5, 25), "bonus_ataque": (-5, 25), "alcance": (1, 30),
            "max_ataques": 6, "max_pericias": 30, "nome": 40, "classe": 60, "icone": 4, "historia": 1500}
 TIPOS_DANO = ["corte", "perfuracao", "impacto", "fogo", "frio", "eletricidade", "acido", "energia", "luz", "trevas", "veneno", "psiquico"]
 ICONES = ["⚔️", "🛡️", "🏹", "🔮", "✨", "🗡️", "🪓", "🔥", "🌿", "🎭", "📖", "🐾", "💀", "🎵", "🧪", "🪄"]
@@ -55,7 +55,7 @@ def _int(v, nome: str, lim: tuple[int, int], erros: list[str], padrao: int = 0) 
     return n
 
 
-def validar_ficha(dados: dict, sistema) -> tuple[dict, list[str]]:
+def validar_ficha(dados: dict, sistema, voices: dict | None = None) -> tuple[dict, list[str]]:
     """Normaliza e valida. Devolve (ficha no formato do estado, lista de erros)."""
     erros: list[str] = []
     cfg = sistema.config
@@ -72,6 +72,12 @@ def validar_ficha(dados: dict, sistema) -> tuple[dict, list[str]]:
         erros.append("cor deve ser #rrggbb")
         cor = "#2563eb"
     historia = str(dados.get("historia") or "")[:LIMITES["historia"]]
+    voz = dados.get("voz") or None
+    if voz is not None:
+        validas_voz = {k for k in (voices or {}) if not k.startswith("_") and k != "NARRADOR"}
+        if voices is not None and voz not in validas_voz:
+            erros.append("voz desconhecida")
+            voz = None
 
     atributos = {}
     for a in cfg.get("atributos_principais", []):
@@ -129,7 +135,7 @@ def validar_ficha(dados: dict, sistema) -> tuple[dict, list[str]]:
     ficha = {"id": pid, "nome": nome, "tipo": "jogador", "faccao": "aliado", "classe": classe, "cor": cor, "icone": icone,
              "x": 0, "y": 0, "barras": barras, "defesa": defesa, "deslocamento": deslocamento, "iniciativa_bonus": iniciativa,
              "atributos": atributos, "ataques": ataques, "pericias": pericias, "condicoes": [], "caido": False,
-             "voz": None, "postura": None, "historia": historia, "sistema_id": sistema.id, "personalizada": True}
+             "voz": voz, "postura": None, "historia": historia, "sistema_id": sistema.id, "personalizada": True}
     return ficha, erros
 
 

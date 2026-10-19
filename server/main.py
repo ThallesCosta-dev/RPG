@@ -178,10 +178,28 @@ async def cenas(sala_id: str, ident=Depends(_ident_http)):
 
 @app.get("/audio/{audio_id}")
 async def audio(audio_id: str):
-    caminho = appctx.caminho_audio(audio_id)        # só aceita 32 hexadecimais
+    caminho = appctx.caminho_audio(audio_id)        # só aceita 32 hexadecimais ou amostra_<ator>
     if caminho is None:
         raise HTTPException(404)
-    return FileResponse(caminho, media_type="audio/ogg", headers={"Cache-Control": "public, max-age=86400"})
+    tipo = "audio/mpeg" if caminho.suffix == ".mp3" else "audio/ogg"
+    return FileResponse(caminho, media_type=tipo, headers={"Cache-Control": "public, max-age=86400"})
+
+
+@app.get("/api/vozes")
+async def vozes():
+    return appctx.vozes()
+
+
+@app.get("/api/vozes/{voz_id}/amostra")
+async def amostra_de_voz(voz_id: str):
+    """Gera (uma vez) e devolve a URL do áudio de amostra do ator, para o jogador ouvir ao escolher a voz."""
+    try:
+        audio_id = await appctx.amostra_de_voz(voz_id)
+    except Exception as exc:
+        raise HTTPException(503, f"TTS indisponível: {str(exc)[:120]}")
+    if not audio_id:
+        raise HTTPException(404, "voz desconhecida ou TTS desligado")
+    return {"voz": voz_id, "audio_url": f"/audio/{audio_id}"}
 
 
 @app.get("/mapas/{arquivo}")

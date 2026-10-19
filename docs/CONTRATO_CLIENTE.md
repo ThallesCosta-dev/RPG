@@ -186,3 +186,14 @@ Comando do Host: `falar_como_npc {personagem_id, texto}` → `chat_message` com 
 Com **token** (jogador já na sala sem personagem, ou o Host): a ficha é criada e vinculada na hora; o servidor manda um novo `room_state`. Com **convite** (antes de entrar): a ficha aparece em `personagens_disponiveis` com `origem: "sala"` e o jogador entra com `/entrar {personagem_id}`.
 
 `GET /lobby` agora devolve `origem: "campanha" | "sala" | "salva"` em cada personagem disponível. O Host pode criar a mesa sem `personagem_id` e escolher ou criar a ficha depois pelo painel.
+
+## 8. Vozes
+
+| método | rota | resposta |
+|---|---|---|
+| GET | `/api/vozes` | `[{id, descricao, motor}]` — atores que um jogador pode escolher (`modelo-ficha` também traz `vozes`) |
+| GET | `/api/vozes/{id}/amostra` | `{voz, audio_url}` — frase de amostra sintetizada (cache); 404 se TTS desligado |
+
+A ficha aceita `voz: <id>` (opcional). Personagens de jogador com voz falam na narração com a própria tag `[VOZ:<personagem_id>]`,
+e o `narration_segment.voz` traz esse id: o cliente deve mostrar o **nome** do personagem (NPC ou jogador) na legenda, nunca o id.
+Áudio pode vir como `.ogg` (Kokoro) ou `.mp3` (Edge-TTS); o `audio_url` já aponta para o arquivo certo.

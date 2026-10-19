@@ -1,8 +1,15 @@
 {
-  "NARRADOR": {"motor": "kokoro", "voz": "pm_alex",  "velocidade": 1.0,  "pitch_semitons": 0},
-  "grave":    {"motor": "kokoro", "voz": "pm_santa", "velocidade": 0.9,  "pitch_semitons": -3},
-  "agudo":    {"motor": "kokoro", "voz": "pm_alex",  "velocidade": 1.15, "pitch_semitons": 4},
-  "feminina": {"motor": "kokoro", "voz": "pf_dora",  "velocidade": 1.0,  "pitch_semitons": 0},
-  "sussurro": {"motor": "kokoro", "voz": "pm_santa", "velocidade": 0.85, "pitch_semitons": -1},
-  "_reserva": {"motor": "piper",  "voz": "pt_BR-faber-medium", "velocidade": 1.0, "pitch_semitons": 0}
+  "NARRADOR":   {"motor": "edge",   "voz": "pt-BR-AntonioNeural",   "velocidade": 1.05, "pitch_semitons": 0,  "reserva": "narrador_kokoro", "descricao": "Narrador (Antonio, neural)"},
+  "narrador_kokoro": {"motor": "kokoro", "voz": "pm_alex", "velocidade": 1.0, "pitch_semitons": 0, "descricao": "Narrador alternativo (Kokoro, offline)"},
+  "grave":      {"motor": "edge",   "voz": "pt-BR-AntonioNeural",   "velocidade": 0.92, "pitch_semitons": -4, "reserva": "grave_kokoro", "descricao": "Masculina grave (chefes, guerreiros)"},
+  "grave_kokoro": {"motor": "kokoro", "voz": "pm_santa", "velocidade": 0.9, "pitch_semitons": -3, "descricao": "Masculina grave (Kokoro, offline)"},
+  "masculina":  {"motor": "edge",   "voz": "pt-BR-AntonioNeural",   "velocidade": 1.0,  "pitch_semitons": 0,  "reserva": "narrador_kokoro", "descricao": "Masculina neutra"},
+  "agudo":      {"motor": "edge",   "voz": "pt-BR-AntonioNeural",   "velocidade": 1.15, "pitch_semitons": 5,  "reserva": "agudo_kokoro", "descricao": "Masculina aguda e rápida (goblins, trapaceiros)"},
+  "agudo_kokoro": {"motor": "kokoro", "voz": "pm_alex", "velocidade": 1.15, "pitch_semitons": 4, "descricao": "Aguda (Kokoro, offline)"},
+  "feminina":   {"motor": "edge",   "voz": "pt-BR-FranciscaNeural", "velocidade": 1.0,  "pitch_semitons": 0,  "reserva": "feminina_kokoro", "descricao": "Feminina (Francisca, neural)"},
+  "feminina_kokoro": {"motor": "kokoro", "voz": "pf_dora", "velocidade": 1.0, "pitch_semitons": 0, "descricao": "Feminina (Kokoro, offline)"},
+  "jovem":      {"motor": "edge",   "voz": "pt-BR-ThalitaMultilingualNeural", "velocidade": 1.05, "pitch_semitons": 0, "reserva": "feminina_kokoro", "descricao": "Feminina jovem (Thalita, neural)"},
+  "anciao":     {"motor": "edge",   "voz": "pt-BR-AntonioNeural",   "velocidade": 0.85, "pitch_semitons": -2, "reserva": "grave_kokoro", "descricao": "Masculina lenta e cansada (anciãos, eruditos)"},
+  "sussurro":   {"motor": "edge",   "voz": "pt-BR-FranciscaNeural", "velocidade": 0.9,  "pitch_semitons": -3, "reserva": "grave_kokoro", "descricao": "Sussurrada e grave (cultistas, espíritos)"},
+  "_reserva":   {"motor": "piper",  "voz": "pt_BR-faber-medium", "velocidade": 1.0, "pitch_semitons": 0}
 }
