@@ -1,0 +1,11 @@
+{
+  "id": "dnd5e",
+  "nome": "Dungeons & Dragons 5ª Edição",
+  "versao": 1,
+  "licenca": "uso privado — livros próprios do grupo (Livro do Jogador e Guia do Mestre em português); bestiário básico do SRD 5.1 (CC-BY-4.0)",
+  "fonte": "sistema.md",
+  "fontes": ["sistema.md", "guia_do_mestre.md"],
+  "status": "revisado",
+  "hash_fonte": null,
+  "notas": "system_config, condições e bestiário escritos à mão a partir das regras do núcleo; o RAG cobre os dois livros inteiros (~630k tokens)."
+}

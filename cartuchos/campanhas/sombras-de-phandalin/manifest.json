@@ -1,0 +1,11 @@
+{
+  "id": "sombras-de-phandalin",
+  "nome": "Sombras de Phandalin",
+  "tema": "medieval",
+  "sistema_id": "dnd5e",
+  "versao": 1,
+  "status": "revisado",
+  "fonte": "campanha.md",
+  "cena_inicial": "taverna_pedra_colina",
+  "descricao": "Uma vila mineira na fronteira, um anão desaparecido e um bando de goblins que anda ousado demais. Aventura introdutória para D&D 5e, níveis 1–3."
+}

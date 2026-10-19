@@ -80,9 +80,11 @@ class App:
                 if len(sub):
                     indice.indexar(s.id, [{"caminho": d["caminho"], "texto": d["texto"]} for d in sub._docs])
                     continue
-            fonte = (s.caminho / s.manifest.get("fonte", "")) if s.caminho and s.manifest.get("fonte") else None
-            if fonte and fonte.exists():
-                indexar_markdown(indice, s.id, fonte.read_text(encoding="utf-8"))
+            fontes = list(s.manifest.get("fontes") or []) or ([s.manifest["fonte"]] if s.manifest.get("fonte") else [])
+            for f in fontes:
+                caminho = (s.caminho / f) if s.caminho else None
+                if caminho and caminho.exists():
+                    indexar_markdown(indice, f"{s.id}:{f}", caminho.read_text(encoding="utf-8"))
         self._rags[chave] = indice
         return indice
 

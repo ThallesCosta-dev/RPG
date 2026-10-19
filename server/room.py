@@ -79,6 +79,7 @@ class Sala:
         self.prazo_revisao_s = float(os.getenv("TIMEOUT_REVISAO_ARBITRAGEM", "45"))
         self._revisao: asyncio.Future | None = None
         self.ultimos_erros: list[dict] = []
+        self.narracao_curta = os.getenv("NARRACAO_CURTA", "0") == "1"
         self.ultima_narracao_rodada: int | None = None
         self.ultima_memoria_rodada = 0
 
@@ -98,6 +99,9 @@ class Sala:
         j = estado["jogadores"].get(player_id, {})
         return {"type": "room_state", "fase": self.fase, "prazo": self.prazo, "state": estado, "config": self.sistema.config,
                 "revisar_arbitragens": self.revisar_arbitragens,
+                "narracao_curta": self.narracao_curta,
+                "tts_preferido": os.environ.get("TTS_PREFERIDO") or None,
+                "tts_motores": [m for m in (os.environ.get("TTS_MOTOR_ATIVO") or "").split(",") if m],
                 "campanha": {"id": self.campanha.id, "nome": self.campanha.nome, "tema": self.campanha.tema},
                 "eu": {"player_id": player_id, "papel": j.get("papel", "espectador"), "personagem_id": j.get("personagem_id")},
                 "nivel_ia": self.llm.nivel() if hasattr(self.llm, "nivel") else 4, "prontos": sorted(self.acoes)}
@@ -359,7 +363,7 @@ class Sala:
         return out
 
     async def _narrar(self, estado: dict, log_acoes: list[dict], ultimas: list[dict]):
-        ctx = cb.montar_contexto_narracao(estado, log_acoes, self.sistema, self.campanha, ultimas, rag=self.rag)
+        ctx = cb.montar_contexto_narracao(estado, log_acoes, self.sistema, self.campanha, ultimas, economico=self.narracao_curta, rag=self.rag)
         vozes = resolver_vozes(self.voices, estado)
         partes: list[str] = []
         async for segmento in self.narracao.narrar(self.llm.narrar_stream(ctx), vozes):
@@ -565,6 +569,16 @@ class Sala:
                 self.broadcast({"type": "nivel_ia", "nivel": self.llm.nivel(), "provedor": getattr(self.llm, "ultimo_provedor", "-")})
             case "nova_narracao" if self.fase in (Fase.PLANEJAMENTO, Fase.PAUSADO) and self.ultimo_log:
                 self._fundo(self._renarrar())
+            case "mudar_narracao":
+                self.narracao_curta = str(cmd.get("tamanho") or "normal") == "curta"
+                self.broadcast({"type": "config_sala", "narracao_curta": self.narracao_curta})
+            case "mudar_tts":
+                motor = str(cmd.get("motor") or "")
+                ativos = (os.environ.get("TTS_MOTOR_ATIVO") or "").split(",")
+                if motor and motor not in ativos:
+                    raise ValueError(f"motor de voz indisponível: {motor}")
+                os.environ["TTS_PREFERIDO"] = motor               # vazio = cada ator usa o próprio motor
+                self.broadcast({"type": "config_sala", "tts_preferido": motor or None, "tts_motores": [m for m in ativos if m]})
             case "revisar_arbitragens":
                 self.revisar_arbitragens = bool(cmd.get("ativo"))
                 self.enviar(player_id, {"type": "config_sala", "revisar_arbitragens": self.revisar_arbitragens})

@@ -24,7 +24,7 @@ Você NÃO rola dados, NÃO calcula dano e NÃO valida movimento: o servidor faz
 7. "iniciar_combate" = true só quando hostilidades começam de fato nesta rodada.
 8. Quem está marcado como "NÃO FALA" nunca recebe "falar" nem "fala" (rosnados e gestos são narrados, não ditos).
 9. DIÁLOGO: fora de combate, NPCs conversam. Se um jogador falou com um NPC (ou com o grupo perto dele), esse NPC responde
-   com acao "falar" e o texto em "fala" (1 a 3 frases, em primeira pessoa, fiel à personalidade e ao que ele sabe; pode mentir,
+   com acao "falar" e o texto em "fala" (1 a 2 frases curtas, em primeira pessoa, fiel à personalidade e ao que ele sabe; pode mentir,
    hesitar, pedir algo em troca, revelar pistas aos poucos). Use "esperar" para quem não faz nada relevante. NPCs neutros só
    "defendem" se ameaçados. Em combate, "fala" pode acompanhar outra ação (provocação, grito de guerra, súplica)."""
 
@@ -266,7 +266,7 @@ def montar_contexto_narracao(estado: dict, acoes_log: list[dict], sistema, campa
                   not any(e["tipo"] in ("ataque", "dano", "teste", "fala", "caiu", "combate_iniciado", "cena_mudou") for e in a["eventos"])
                   for a in acoes_log) if acoes_log else True
     combate = estado["modo"] == "combate"
-    max_palavras = 60 if trivial else (110 if economico else (130 if combate else 170))
+    max_palavras = 50 if trivial else (90 if economico else (110 if combate else 130))
     linhas = [f"RODADA {estado['rodada']} — {estado['modo'].upper()}" + (" — ordem: " + ", ".join(estado["personagens"][i]["nome"] for i in estado["iniciativa"] if i in estado["personagens"]) if estado["iniciativa"] else "")]
     falas = []
     for a in acoes_log:

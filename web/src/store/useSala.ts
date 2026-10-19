@@ -13,8 +13,7 @@ import type {
   Rolagem,
   Slot,
   SystemConfig,
-  Tema,
-} from "../types"
+  Tema,, MsgArbitragens } from "../types"
 import { FilaNarracao, type Segmento } from "../lib/narracao"
 import { aplicarEvento } from "../lib/eventos"
 import { barramento } from "../lib/animacoes"
@@ -60,6 +59,12 @@ export interface SalaStore {
   nivelIa: number
   provedorIa: string | null
   tema: Tema
+  /** Configurações da sala controladas pelo Host (voz, narração, revisão de arbitragens). */
+  ttsPreferido: string | null
+  ttsMotores: string[]
+  narracaoCurta: boolean
+  revisarArbitragens: boolean
+  arbitragensPendentes: MsgArbitragens | null
 
   alcance: CelulaAlcance[]
   previews: Record<string, Preview>
@@ -210,6 +215,11 @@ export const useSala = create<SalaStore>((set, get) => ({
   nivelIa: 0,
   provedorIa: null,
   tema: temaEfetivo(null),
+  ttsPreferido: null,
+  ttsMotores: [],
+  narracaoCurta: false,
+  revisarArbitragens: false,
+  arbitragensPendentes: null,
 
   ...limpezaDePlanejamento,
   totalProntos: 0,
@@ -292,6 +302,11 @@ export const useSala = create<SalaStore>((set, get) => ({
           config: msg.config,
           eu: msg.eu,
           nivelIa: msg.nivel_ia,
+          ttsPreferido: msg.tts_preferido ?? null,
+          ttsMotores: msg.tts_motores ?? [],
+          narracaoCurta: msg.narracao_curta ?? false,
+          revisarArbitragens: msg.revisar_arbitragens ?? false,
+          arbitragensPendentes: null,
           tema,
           narrando: false,
           vozAtual: null,
@@ -385,6 +400,7 @@ export const useSala = create<SalaStore>((set, get) => ({
         })
         break
       case "round_log": {
+        set({ arbitragensPendentes: null })
         narracao.iniciarRodada()
         acoesAnimadas = new Set()
         const itens: ItemCronica[] = msg.acoes.map((a) => ({
@@ -425,6 +441,18 @@ export const useSala = create<SalaStore>((set, get) => ({
         break
       case "nivel_ia":
         set({ nivelIa: msg.nivel, provedorIa: msg.provedor })
+        break
+      case "config_sala":
+        set({
+          ...(msg.tts_preferido !== undefined ? { ttsPreferido: msg.tts_preferido } : {}),
+          ...(msg.tts_motores ? { ttsMotores: msg.tts_motores } : {}),
+          ...(msg.narracao_curta !== undefined ? { narracaoCurta: msg.narracao_curta } : {}),
+          ...(msg.revisar_arbitragens !== undefined ? { revisarArbitragens: msg.revisar_arbitragens } : {}),
+        })
+        break
+      case "arbitragens":
+        set({ arbitragensPendentes: msg })
+        useToast.getState().mostrar("Arbitragens aguardando sua revisão (painel do Host)", "info")
         break
       case "error": {
         const amigavel = MENSAGEM_ERRO[msg.code]

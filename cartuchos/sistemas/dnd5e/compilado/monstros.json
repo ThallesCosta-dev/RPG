@@ -1,0 +1,76 @@
+{
+  "goblin": {
+    "nome": "Goblin", "pv": 7, "defesa": 15, "deslocamento": 6, "iniciativa_bonus": 2,
+    "ataques": [{"id": "cimitarra", "nome": "Cimitarra", "bonus": 4, "dano": "1d6+2", "tipo_dano": "corte", "alcance": 1},
+                {"id": "arco_curto", "nome": "Arco Curto", "bonus": 4, "dano": "1d6+2", "tipo_dano": "perfuracao", "alcance": 16}],
+    "pericias": {"furtividade": 6, "percepcao": 0}, "voz": "agudo", "descricao": "Pequeno humanoide covarde; luta em bando e foge quando ferido"
+  },
+  "chefe_goblin": {
+    "nome": "Chefe Goblin", "pv": 21, "defesa": 17, "deslocamento": 6, "iniciativa_bonus": 2,
+    "ataques": [{"id": "cimitarra", "nome": "Cimitarra", "bonus": 4, "dano": "1d6+2", "tipo_dano": "corte", "alcance": 1},
+                {"id": "azagaia", "nome": "Azagaia", "bonus": 4, "dano": "1d6+2", "tipo_dano": "perfuracao", "alcance": 6}],
+    "pericias": {"furtividade": 6, "intimidacao": 2}, "voz": "agudo", "descricao": "Manda nos outros goblins; usa um deles como escudo"
+  },
+  "orc": {
+    "nome": "Orc", "pv": 15, "defesa": 13, "deslocamento": 6, "iniciativa_bonus": 1,
+    "ataques": [{"id": "machado_grande", "nome": "Machado Grande", "bonus": 5, "dano": "1d12+3", "tipo_dano": "corte", "alcance": 1},
+                {"id": "azagaia", "nome": "Azagaia", "bonus": 5, "dano": "1d6+3", "tipo_dano": "perfuracao", "alcance": 6}],
+    "pericias": {"intimidacao": 2, "atletismo": 5}, "voz": "grave", "descricao": "Agressivo; avança direto para o corpo a corpo"
+  },
+  "lobo": {
+    "nome": "Lobo", "pv": 11, "defesa": 13, "deslocamento": 8, "iniciativa_bonus": 2,
+    "ataques": [{"id": "mordida", "nome": "Mordida", "bonus": 4, "dano": "2d4+2", "tipo_dano": "perfuracao", "alcance": 1, "condicoes_ao_acertar": ["caido"]}],
+    "pericias": {"percepcao": 3, "furtividade": 4}, "voz": "NARRADOR", "descricao": "Caça em matilha; derruba a presa"
+  },
+  "esqueleto": {
+    "nome": "Esqueleto", "pv": 13, "defesa": 13, "deslocamento": 6, "iniciativa_bonus": 2,
+    "ataques": [{"id": "espada_curta", "nome": "Espada Curta", "bonus": 4, "dano": "1d6+2", "tipo_dano": "perfuracao", "alcance": 1},
+                {"id": "arco_curto", "nome": "Arco Curto", "bonus": 4, "dano": "1d6+2", "tipo_dano": "perfuracao", "alcance": 16}],
+    "pericias": {}, "voz": "NARRADOR", "descricao": "Morto-vivo sem mente; obedece ordens simples"
+  },
+  "zumbi": {
+    "nome": "Zumbi", "pv": 22, "defesa": 8, "deslocamento": 4, "iniciativa_bonus": -2,
+    "ataques": [{"id": "pancada", "nome": "Pancada", "bonus": 3, "dano": "1d6+1", "tipo_dano": "impacto", "alcance": 1}],
+    "pericias": {}, "voz": "NARRADOR", "descricao": "Lento e resistente"
+  },
+  "bandido": {
+    "nome": "Bandido", "pv": 11, "defesa": 12, "deslocamento": 6, "iniciativa_bonus": 1,
+    "ataques": [{"id": "cimitarra", "nome": "Cimitarra", "bonus": 3, "dano": "1d6+1", "tipo_dano": "corte", "alcance": 1},
+                {"id": "besta_leve", "nome": "Besta Leve", "bonus": 3, "dano": "1d8+1", "tipo_dano": "perfuracao", "alcance": 16}],
+    "pericias": {"enganacao": 2, "intimidacao": 2}, "voz": "masculina", "descricao": "Humano mercenário; rende-se se a luta ficar feia"
+  },
+  "capitao_bandido": {
+    "nome": "Capitão Bandido", "pv": 65, "defesa": 15, "deslocamento": 6, "iniciativa_bonus": 3,
+    "ataques": [{"id": "cimitarra", "nome": "Cimitarra", "bonus": 5, "dano": "1d6+3", "tipo_dano": "corte", "alcance": 1},
+                {"id": "adaga_arremesso", "nome": "Adaga (arremesso)", "bonus": 5, "dano": "1d4+3", "tipo_dano": "perfuracao", "alcance": 4}],
+    "pericias": {"atletismo": 4, "enganacao": 4, "intimidacao": 4}, "voz": "grave", "descricao": "Líder arrogante e esperto"
+  },
+  "kobold": {
+    "nome": "Kobold", "pv": 5, "defesa": 12, "deslocamento": 6, "iniciativa_bonus": 2,
+    "ataques": [{"id": "adaga", "nome": "Adaga", "bonus": 4, "dano": "1d4+2", "tipo_dano": "perfuracao", "alcance": 1},
+                {"id": "funda", "nome": "Funda", "bonus": 4, "dano": "1d4+2", "tipo_dano": "impacto", "alcance": 6}],
+    "pericias": {"furtividade": 4}, "voz": "agudo", "descricao": "Covarde; forte em grupo, foge sozinho"
+  },
+  "ogro": {
+    "nome": "Ogro", "pv": 59, "defesa": 11, "deslocamento": 8, "iniciativa_bonus": -1,
+    "ataques": [{"id": "clava_grande", "nome": "Clava Grande", "bonus": 6, "dano": "2d8+4", "tipo_dano": "impacto", "alcance": 1},
+                {"id": "azagaia", "nome": "Azagaia", "bonus": 6, "dano": "2d6+4", "tipo_dano": "perfuracao", "alcance": 6}],
+    "pericias": {"atletismo": 6}, "voz": "grave", "descricao": "Grande, burro e faminto"
+  },
+  "cultista": {
+    "nome": "Cultista", "pv": 9, "defesa": 12, "deslocamento": 6, "iniciativa_bonus": 1,
+    "ataques": [{"id": "cimitarra", "nome": "Cimitarra", "bonus": 3, "dano": "1d6+1", "tipo_dano": "corte", "alcance": 1}],
+    "pericias": {"enganacao": 2, "religiao": 2}, "voz": "sussurro", "descricao": "Fanático; prefere morrer a trair o culto"
+  },
+  "aranha_gigante": {
+    "nome": "Aranha Gigante", "pv": 26, "defesa": 14, "deslocamento": 6, "iniciativa_bonus": 3,
+    "ataques": [{"id": "mordida", "nome": "Mordida", "bonus": 5, "dano": "1d8+3", "tipo_dano": "perfuracao", "alcance": 1, "condicoes_ao_acertar": ["envenenado"]}],
+    "pericias": {"furtividade": 7}, "voz": "NARRADOR", "descricao": "Emboscada em teias; veneno"
+  },
+  "mago_aprendiz": {
+    "nome": "Mago Aprendiz", "pv": 9, "defesa": 10, "deslocamento": 6, "iniciativa_bonus": 1,
+    "ataques": [{"id": "raio_de_fogo", "nome": "Raio de Fogo", "bonus": 4, "dano": "1d10", "tipo_dano": "fogo", "alcance": 24},
+                {"id": "adaga", "nome": "Adaga", "bonus": 2, "dano": "1d4", "tipo_dano": "perfuracao", "alcance": 1}],
+    "pericias": {"arcanismo": 4, "historia": 4}, "voz": "jovem", "descricao": "Nervoso; recorre a truques de longe"
+  }
+}

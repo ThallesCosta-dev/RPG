@@ -1,0 +1,45 @@
+{
+  "sistema_id": "dnd5e",
+  "sistema_nome": "D&D 5ª Edição",
+  "versao_compilacao": 1,
+  "grid": {
+    "tamanho_quadrado_metros": 1.5,
+    "metrica_diagonal": "1-1-1",
+    "terreno_dificil_multiplicador": 2
+  },
+  "atributos_principais": ["FOR", "DES", "CON", "INT", "SAB", "CAR"],
+  "campo_defesa": "defesa",
+  "nome_defesa": "CA",
+  "bonus_cobertura": 2,
+  "barras_status": [
+    {"id": "pv", "nome": "Pontos de Vida (PV)", "cor_token": "--status-vida"},
+    {"id": "espacos", "nome": "Espaços de Magia", "cor_token": "--status-recurso"}
+  ],
+  "iniciativa": {"expressao": "1d20+{iniciativa}"},
+  "ataque": {"expressao": "1d20+{bonus}", "compara_com": "defesa"},
+  "teste": {"expressao": "1d20+{bonus}"},
+  "critico": {"margem_padrao": 20, "multiplicador_padrao": 2, "modo": "multiplica_dados", "natural_20_acerta": true, "natural_1_erra": true},
+  "tabela_dificuldade": {"facil": 10, "media": 15, "dificil": 20, "muito_dificil": 25},
+  "pericias": ["acrobacia", "adestrar_animais", "arcanismo", "atletismo", "atuacao", "enganacao", "furtividade", "historia",
+               "intimidacao", "intuicao", "investigacao", "medicina", "natureza", "percepcao", "persuasao", "prestidigitacao",
+               "religiao", "sobrevivencia", "forca", "destreza", "constituicao", "inteligencia", "sabedoria", "carisma"],
+  "condicoes": {
+    "caido":        {"nome": "Caído", "mod_defesa": -2, "mod_ataque": -2, "duracao_padrao": 1, "descricao": "Ataques corpo a corpo contra você têm vantagem; os seus têm desvantagem (aproximado como -2/+2)"},
+    "desprevenido": {"nome": "Surpreso", "mod_defesa": -5, "duracao_padrao": 1, "descricao": "Não reage; ataques contra você têm vantagem (aprox. -5 na CA)"},
+    "ofuscado":     {"nome": "Cego", "mod_ataque": -5, "mod_defesa": -5, "duracao_padrao": 1, "descricao": "Falha em testes de visão; ataca com desvantagem e é atacado com vantagem"},
+    "defendendo":   {"nome": "Esquivar", "mod_defesa": 2, "duracao_padrao": 1, "descricao": "Ação Esquivar: ataques contra você têm desvantagem (aprox. +2 na CA)"},
+    "agarrado":     {"nome": "Agarrado", "duracao_padrao": 2, "descricao": "Deslocamento 0 até escapar"},
+    "envenenado":   {"nome": "Envenenado", "mod_ataque": -3, "dano_por_turno": "1d4", "tipo_dano": "veneno", "duracao_padrao": 3, "descricao": "Desvantagem em ataques e testes (aprox. -3)"},
+    "sangrando":    {"nome": "Sangrando", "dano_por_turno": "1d4", "tipo_dano": "sangramento", "duracao_padrao": 2, "descricao": "Ferimento aberto"},
+    "amedrontado":  {"nome": "Amedrontado", "mod_ataque": -3, "duracao_padrao": 2, "descricao": "Desvantagem enquanto vê a fonte do medo; não pode se aproximar dela"},
+    "atordoado":    {"nome": "Atordoado", "mod_defesa": -5, "duracao_padrao": 1, "descricao": "Incapacitado; ataques contra você têm vantagem"},
+    "inspirado":    {"nome": "Inspiração Bárdica / Ajuda", "duracao_padrao": 1, "descricao": "Bônus no próximo ataque"},
+    "abencoado":    {"nome": "Abençoado", "mod_ataque": 2, "duracao_padrao": 3, "descricao": "Bless: +1d4 (aprox. +2) em ataques e salvaguardas"}
+  },
+  "slots_de_acao_por_turno": [
+    {"id": "padrao", "label": "Ação", "icone": "⚔️", "tipos_permitidos": ["ataque", "pericia", "criativa"]},
+    {"id": "movimento", "label": "Movimento", "icone": "🥾", "vinculado_ao_grid": true},
+    {"id": "bonus", "label": "Ação Bônus", "icone": "⚡", "tipos_permitidos": ["pericia", "criativa"]},
+    {"id": "livre", "label": "Fala / Interação", "icone": "💬", "tipos_permitidos": ["fala"]}
+  ]
+}

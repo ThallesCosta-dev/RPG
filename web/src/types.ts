@@ -263,6 +263,35 @@ export interface MsgRoomState {
   config: SystemConfig
   eu: Eu
   nivel_ia: number
+  revisar_arbitragens?: boolean
+  narracao_curta?: boolean
+  tts_preferido?: string | null
+  tts_motores?: string[]
+}
+export interface MsgConfigSala {
+  type: "config_sala"
+  revisar_arbitragens?: boolean
+  narracao_curta?: boolean
+  tts_preferido?: string | null
+  tts_motores?: string[]
+}
+export interface Arbitragem {
+  personagem_id: string
+  pericia: string
+  dificuldade: string
+  motivo: string
+  efeito_sucesso: string
+  efeito_falha: string
+  alvos: string[]
+  remover?: boolean
+}
+export interface MsgArbitragens {
+  type: "arbitragens"
+  rodada: number
+  prazo: number
+  arbitragens: Arbitragem[]
+  catalogo: string[]
+  faixas: string[]
 }
 export interface MsgPhase {
   type: "phase"
@@ -365,6 +394,8 @@ export type MsgServidor =
   | MsgPong
   | MsgChatMessage
   | MsgChatTyping
+  | MsgConfigSala
+  | MsgArbitragens
 
 // ---------- WebSocket: cliente → servidor ----------
 
@@ -393,6 +424,11 @@ export type ComandoHost =
   | { comando: "mudar_nivel_ia"; nivel: NivelIa }
   | { comando: "nova_narracao" }
   | { comando: "falar_como_npc"; personagem_id: string; texto: string }
+  | { comando: "mudar_tts"; motor: string }
+  | { comando: "mudar_narracao"; tamanho: "curta" | "normal" }
+  | { comando: "revisar_arbitragens"; ativo: boolean }
+  | { comando: "editar_arbitragem"; arbitragens: Arbitragem[] }
+  | { comando: "aprovar_arbitragens" }
 
 export interface MsgChat {
   type: "chat"

@@ -1,0 +1,78 @@
+{
+  "taverna_pedra_colina": {
+    "id": "taverna_pedra_colina",
+    "nome": "Taverna Pedra da Colina",
+    "tipo_mapa": "taverna",
+    "descricao": "Salão de madeira clara e lareira acesa na vila de Phandalin. Mineiros cansados bebem em silêncio; atrás do balcão, Toblen Pedracolina seca canecas e observa os recém-chegados com curiosidade. Rumores: goblins na trilha Triboar, o anão Gundren desaparecido e os Capas Vermelhas cobrando 'proteção'.",
+    "entrada": [2, 11],
+    "npcs": ["toblen@11,2"],
+    "transicoes": ["trilha_triboar"],
+    "tilemap": [
+      "################",
+      "#..............#",
+      "#..CC.....CCC..#",
+      "#..............#",
+      "#..CC..........#",
+      "#.........CC...#",
+      "#..CC..........#",
+      "#..............#",
+      "#..CC.....CCC..#",
+      "#..............#",
+      "#..............#",
+      "#..............#",
+      "######DD########"
+    ]
+  },
+  "trilha_triboar": {
+    "id": "trilha_triboar",
+    "nome": "Trilha Triboar — emboscada",
+    "tipo_mapa": "floresta",
+    "descricao": "Estrada de terra entre arbustos densos e árvores velhas. Dois cavalos mortos, cravejados de flechas negras, bloqueiam o caminho. Alforjes revirados. Silêncio demais: os goblins da Marca de Cragmaw estão escondidos na vegetação.",
+    "entrada": [1, 7],
+    "npcs": ["goblin_1@13,2", "goblin_2@11,8", "goblin_3@14,12"],
+    "transicoes": ["esconderijo_cragmaw", "taverna_pedra_colina"],
+    "tilemap": [
+      "PPP^^^.......^^^PPPP",
+      "PP^^.........^^PPPPP",
+      "P^^...........^^PPPP",
+      "^^.....PP......^^PPP",
+      "^.......P.......^^PP",
+      "........P........^^P",
+      "....................",
+      "....................",
+      "........C...........",
+      "........CC..........",
+      "^..............^^^^^",
+      "^^.......P....^^PPPP",
+      "PP^^.....PP..^^PPPPP",
+      "PPP^^^......^^^PPPPP",
+      "PPPPP^^^..^^^PPPPPPP"
+    ]
+  },
+  "esconderijo_cragmaw": {
+    "id": "esconderijo_cragmaw",
+    "nome": "Esconderijo de Cragmaw",
+    "tipo_mapa": "caverna",
+    "descricao": "Caverna úmida cortada por um riacho frio. Cheiro de lobo e fumaça. Na câmara dos fundos, sobre pilhas de suprimentos roubados da Companhia do Leão, o bugbear Klarg afia a clava. Yeemik observa dos recantos; Sildar Hallwinter está amarrado e ferido perto do riacho.",
+    "entrada": [10, 13],
+    "npcs": ["lobo_1@3,10", "yeemik@15,3", "klarg@9,2", "sildar@16,9"],
+    "transicoes": ["trilha_triboar"],
+    "tilemap": [
+      "####################",
+      "######......########",
+      "####..........######",
+      "###............#####",
+      "###..P......P...####",
+      "####.............###",
+      "#####....~~.......##",
+      "###......~~........#",
+      "##.......~~........#",
+      "##..P....~~....C...#",
+      "##.......~~........#",
+      "###......~~.......##",
+      "####.....~~......###",
+      "######...~~...######",
+      "#########..#########"
+    ]
+  }
+}

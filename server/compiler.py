@@ -191,6 +191,25 @@ async def compilar_campanha(dir_cartucho: Path, llm, monstros: dict | None = Non
     return {"status": "pendente_revisao", "trechos": n, "revisao": len(revisao)}
 
 
+def indexar_rag(dir_cartucho: Path) -> dict:
+    """Só o índice de busca (sem LLM): todas as fontes do manifest (`fonte` e `fontes`) → compilado/rag_index.db."""
+    manifest = json.loads((dir_cartucho / "manifest.json").read_text(encoding="utf-8"))
+    fontes = list(manifest.get("fontes") or []) or [manifest.get("fonte", "sistema.md")]
+    comp = dir_cartucho / "compilado"
+    comp.mkdir(exist_ok=True)
+    indice = IndiceRAG(comp / "rag_index.db")
+    indice.limpar()
+    total = 0
+    for f in fontes:
+        caminho = dir_cartucho / f
+        if not caminho.exists():
+            log.warning("fonte não encontrada: %s", caminho)
+            continue
+        total += indice.indexar(f"{manifest['id']}:{f}", fatiar_markdown(caminho.read_text(encoding="utf-8")))
+    indice.meta("hash_fonte", _hash("|".join(_hash((dir_cartucho / f).read_text(encoding="utf-8")) for f in fontes if (dir_cartucho / f).exists())))
+    return {"trechos": total, "fontes": fontes}
+
+
 def aprovar_cartucho(dir_cartucho: Path) -> None:
     manifest = json.loads((dir_cartucho / "manifest.json").read_text(encoding="utf-8"))
     manifest["status"] = "revisado"
@@ -223,7 +242,7 @@ def _efeitos_padrao() -> dict:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("tipo", choices=["sistema", "campanha", "aprovar"])
+    ap.add_argument("tipo", choices=["sistema", "campanha", "aprovar", "rag"])
     ap.add_argument("alvo", nargs="+")
     ap.add_argument("--forcar", action="store_true")
     args = ap.parse_args()
@@ -231,6 +250,10 @@ def main() -> int:
     from .bootstrap import App
     app = App(em_memoria=True)
     raiz = app.biblioteca.raiz
+    if args.tipo == "rag":
+        tipo, cid = args.alvo[0], args.alvo[1]
+        print(indexar_rag(raiz / ("sistemas" if tipo == "sistema" else "campanhas") / cid))
+        return 0
     if args.tipo == "aprovar":
         tipo, cid = args.alvo[0], args.alvo[1]
         aprovar_cartucho(raiz / ("sistemas" if tipo == "sistema" else "campanhas") / cid)

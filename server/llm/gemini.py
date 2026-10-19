@@ -104,7 +104,7 @@ class GeminiProvider:
                     modelos.insert(i + 1, modelo)
                     continue
                 if self._cota(exc):
-                    self.penalizar_modelo(modelo, 120)                       # cota deste modelo; o lite continua valendo
+                    self.penalizar_modelo(modelo, 3600 if "quota" in str(exc).lower() else 120)   # cota diária não volta em minutos
                 if i == len(modelos) - 1 or not (self._transitorio(exc) or self._cota(exc)):
                     raise
                 await asyncio.sleep(1)                                       # principal indisponível: cai para o lite

@@ -1,0 +1,59 @@
+{
+  "pc_bruenor": {
+    "id": "pc_bruenor", "nome": "Bruenor", "tipo": "jogador", "faccao": "aliado",
+    "classe": "Guerreiro anão (nível 2)", "cor": "#b91c1c", "icone": "🛡️", "voz": "grave",
+    "x": 0, "y": 0,
+    "barras": {"pv": {"atual": 22, "max": 22}, "espacos": {"atual": 0, "max": 0}},
+    "defesa": 17, "deslocamento": 5, "iniciativa_bonus": 1,
+    "atributos": {"FOR": 3, "DES": 1, "CON": 3, "INT": 0, "SAB": 1, "CAR": -1},
+    "ataques": [
+      {"id": "machado_de_batalha", "nome": "Machado de Batalha", "bonus": 5, "dano": "1d8+3", "tipo_dano": "corte", "alcance": 1},
+      {"id": "machadinha_arremesso", "nome": "Machadinha (arremesso)", "bonus": 5, "dano": "1d6+3", "tipo_dano": "corte", "alcance": 4}
+    ],
+    "pericias": {"atletismo": 5, "intimidacao": 1, "percepcao": 3, "sobrevivencia": 3, "forca": 5, "constituicao": 5},
+    "condicoes": [], "caido": false, "postura": null
+  },
+  "pc_lyra": {
+    "id": "pc_lyra", "nome": "Lyra", "tipo": "jogador", "faccao": "aliado",
+    "classe": "Ladina meio-elfa (nível 2)", "cor": "#15803d", "icone": "🗡️", "voz": "jovem",
+    "x": 0, "y": 0,
+    "barras": {"pv": {"atual": 15, "max": 15}, "espacos": {"atual": 0, "max": 0}},
+    "defesa": 15, "deslocamento": 6, "iniciativa_bonus": 4,
+    "atributos": {"FOR": 0, "DES": 4, "CON": 1, "INT": 1, "SAB": 0, "CAR": 2},
+    "ataques": [
+      {"id": "rapieira", "nome": "Rapieira", "bonus": 6, "dano": "1d8+4", "tipo_dano": "perfuracao", "alcance": 1},
+      {"id": "arco_curto", "nome": "Arco Curto", "bonus": 6, "dano": "1d6+4", "tipo_dano": "perfuracao", "alcance": 16}
+    ],
+    "pericias": {"furtividade": 8, "acrobacia": 6, "prestidigitacao": 6, "percepcao": 4, "enganacao": 4, "investigacao": 3, "destreza": 6},
+    "condicoes": [], "caido": false, "postura": null
+  },
+  "pc_elian": {
+    "id": "pc_elian", "nome": "Elian", "tipo": "jogador", "faccao": "aliado",
+    "classe": "Mago humano (nível 2)", "cor": "#6d28d9", "icone": "🔮", "voz": "masculina",
+    "x": 0, "y": 0,
+    "barras": {"pv": {"atual": 12, "max": 12}, "espacos": {"atual": 3, "max": 3}},
+    "defesa": 12, "deslocamento": 6, "iniciativa_bonus": 2,
+    "atributos": {"FOR": -1, "DES": 2, "CON": 1, "INT": 4, "SAB": 1, "CAR": 0},
+    "ataques": [
+      {"id": "raio_de_fogo", "nome": "Raio de Fogo", "bonus": 6, "dano": "1d10", "tipo_dano": "fogo", "alcance": 24},
+      {"id": "misseis_magicos", "nome": "Mísseis Mágicos (gasta espaço)", "bonus": 20, "dano": "3d4+3", "tipo_dano": "energia", "alcance": 24},
+      {"id": "bordao", "nome": "Bordão", "bonus": 1, "dano": "1d6-1", "tipo_dano": "impacto", "alcance": 1}
+    ],
+    "pericias": {"arcanismo": 6, "historia": 6, "investigacao": 6, "percepcao": 1, "inteligencia": 6},
+    "condicoes": [], "caido": false, "postura": null
+  },
+  "pc_mirela": {
+    "id": "pc_mirela", "nome": "Mirela", "tipo": "jogador", "faccao": "aliado",
+    "classe": "Clériga humana da Vida (nível 2)", "cor": "#ca8a04", "icone": "✨", "voz": "feminina",
+    "x": 0, "y": 0,
+    "barras": {"pv": {"atual": 19, "max": 19}, "espacos": {"atual": 3, "max": 3}},
+    "defesa": 18, "deslocamento": 5, "iniciativa_bonus": 0,
+    "atributos": {"FOR": 2, "DES": 0, "CON": 2, "INT": 0, "SAB": 3, "CAR": 1},
+    "ataques": [
+      {"id": "maca", "nome": "Maça", "bonus": 4, "dano": "1d6+2", "tipo_dano": "impacto", "alcance": 1},
+      {"id": "chama_sagrada", "nome": "Chama Sagrada", "bonus": 5, "dano": "1d8", "tipo_dano": "luz", "alcance": 12}
+    ],
+    "pericias": {"medicina": 5, "religiao": 2, "intuicao": 5, "persuasao": 3, "sabedoria": 5},
+    "condicoes": [], "caido": false, "postura": null
+  }
+}

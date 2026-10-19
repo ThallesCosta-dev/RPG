@@ -1,0 +1,13 @@
+{
+  "dano_ambiental_leve":  {"dano": "1d6", "tipo_dano": "impacto", "descricao": "Queda de objeto pequeno, tropeço em brasas"},
+  "dano_ambiental_medio": {"dano": "2d6", "tipo_dano": "impacto", "descricao": "Lustre caindo, barril explodindo, queda de 3 m"},
+  "dano_ambiental_forte": {"dano": "4d6", "tipo_dano": "impacto", "descricao": "Desabamento parcial, queda de 6 m, explosão grande"},
+  "condicao_curta":       {"condicoes_permitidas": ["caido", "desprevenido", "ofuscado", "amedrontado"], "condicao": "desprevenido", "duracao_rodadas": 1, "descricao": "Distrair, cegar com areia, assustar"},
+  "derrubar":             {"condicoes_permitidas": ["caido"], "condicao": "caido", "duracao_rodadas": 1, "descricao": "Alvo cai no chão (Derrubar / rasteira)"},
+  "agarrar":              {"condicoes_permitidas": ["agarrado"], "condicao": "agarrado", "duracao_rodadas": 2, "descricao": "Agarrar o alvo"},
+  "empurrar_alvo":        {"quadrados_max": 1, "descricao": "Empurrar 1,5 m (ação Empurrar)"},
+  "bonus_aliado":         {"bonus": 2, "duracao_rodadas": 1, "descricao": "Ajudar: vantagem (aprox. +2) no próximo ataque do aliado"},
+  "cura_leve":            {"cura": "1d8", "descricao": "Primeiros socorros, poção de cura improvisada"},
+  "revelar_informacao":   {"descricao": "O Mestre revela algo na narração; sem efeito mecânico"},
+  "nenhum":               {"descricao": "Só narrativa"}
+}

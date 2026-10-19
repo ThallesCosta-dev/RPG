@@ -13,3 +13,7 @@ web/node_modules/
 web/dist/
 .venv/
 data/fichas/
+
+# Texto extraído de livros comerciais: fica só na sua máquina
+cartuchos/sistemas/dnd5e/*.md
+cartuchos/sistemas/*/guia_do_mestre.md

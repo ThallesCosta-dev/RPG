@@ -85,9 +85,9 @@ def main() -> int:
         personagens[pid] = ficha
         jogadores[f"u_{pid}"] = {"player_id": f"u_{pid}", "nome": ficha["nome"], "papel": "jogador",
                                  "personagem_id": pid, "conectado": True}
-    jogadores["u_player_thorin"]["papel"] = "host"
+    next(iter(jogadores.values()))["papel"] = "host"
     cena = montar_cena_inicial(camp, args.cena)
-    store.criar_sala("sim", sis.id, camp.id, "u_player_thorin", cena, personagens, jogadores)
+    store.criar_sala("sim", sis.id, camp.id, next(iter(jogadores)), cena, personagens, jogadores)
     # posiciona o grupo na entrada e instancia os NPCs da cena
     estado = store.estado_atual("sim")
     store.anexar("sim", [motor.evento_mudar_cena(estado, args.cena)])

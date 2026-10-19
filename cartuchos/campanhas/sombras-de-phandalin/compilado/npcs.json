@@ -1,0 +1,70 @@
+{
+  "toblen": {
+    "id": "toblen", "nome": "Toblen Pedracolina", "tipo": "npc", "faccao": "neutro",
+    "cor": "#a16207", "icone": "🍺", "voz": "masculina", "postura": "cauteloso",
+    "personalidade": "Taverneiro simpático e falante, conhece todo mundo da vila. Tem medo dos Capas Vermelhas e fala deles baixinho. Oferece 10 peças de ouro por notícias de Gundren Pedrapique, que sumiu na trilha Triboar.",
+    "barras": {"pv": {"atual": 9, "max": 9}}, "defesa": 10, "deslocamento": 6, "iniciativa_bonus": 0,
+    "ataques": [{"id": "rolo_de_massa", "nome": "Rolo de Massa", "bonus": 1, "dano": "1d4", "tipo_dano": "impacto", "alcance": 1}],
+    "pericias": {"persuasao": 3, "intuicao": 2}, "condicoes": [], "caido": false
+  },
+  "goblin_1": {
+    "id": "goblin_1", "nome": "Goblin Arqueiro", "tipo": "npc", "faccao": "inimigo",
+    "cor": "#4d7c0f", "icone": "👺", "voz": "agudo", "postura": "cauteloso",
+    "personalidade": "Covarde; atira dos arbustos e foge quando ferido.",
+    "barras": {"pv": {"atual": 7, "max": 7}}, "defesa": 15, "deslocamento": 6, "iniciativa_bonus": 2,
+    "ataques": [{"id": "arco_curto", "nome": "Arco Curto", "bonus": 4, "dano": "1d6+2", "tipo_dano": "perfuracao", "alcance": 16},
+                {"id": "cimitarra", "nome": "Cimitarra", "bonus": 4, "dano": "1d6+2", "tipo_dano": "corte", "alcance": 1}],
+    "pericias": {"furtividade": 6}, "condicoes": [], "caido": false
+  },
+  "goblin_2": {
+    "id": "goblin_2", "nome": "Goblin Lanceiro", "tipo": "npc", "faccao": "inimigo",
+    "cor": "#4d7c0f", "icone": "👺", "voz": "agudo", "postura": "agressivo",
+    "personalidade": "O mais valente do bando; avança gritando.",
+    "barras": {"pv": {"atual": 7, "max": 7}}, "defesa": 15, "deslocamento": 6, "iniciativa_bonus": 2,
+    "ataques": [{"id": "cimitarra", "nome": "Cimitarra", "bonus": 4, "dano": "1d6+2", "tipo_dano": "corte", "alcance": 1}],
+    "pericias": {"furtividade": 6}, "condicoes": [], "caido": false
+  },
+  "goblin_3": {
+    "id": "goblin_3", "nome": "Goblin Batedor", "tipo": "npc", "faccao": "inimigo",
+    "cor": "#4d7c0f", "icone": "👺", "voz": "agudo", "postura": "cauteloso",
+    "personalidade": "Se capturado, entrega o esconderijo de Cragmaw em troca da vida.",
+    "barras": {"pv": {"atual": 7, "max": 7}}, "defesa": 15, "deslocamento": 6, "iniciativa_bonus": 2,
+    "ataques": [{"id": "arco_curto", "nome": "Arco Curto", "bonus": 4, "dano": "1d6+2", "tipo_dano": "perfuracao", "alcance": 16},
+                {"id": "cimitarra", "nome": "Cimitarra", "bonus": 4, "dano": "1d6+2", "tipo_dano": "corte", "alcance": 1}],
+    "pericias": {"furtividade": 6}, "condicoes": [], "caido": false
+  },
+  "yeemik": {
+    "id": "yeemik", "nome": "Yeemik", "tipo": "npc", "faccao": "inimigo",
+    "cor": "#3f6212", "icone": "👺", "voz": "agudo", "postura": "cauteloso",
+    "personalidade": "Goblin ardiloso que quer o lugar de Klarg. Negocia: troca o prisioneiro Sildar pela cabeça do chefe. Mente se for conveniente.",
+    "barras": {"pv": {"atual": 12, "max": 12}}, "defesa": 15, "deslocamento": 6, "iniciativa_bonus": 2,
+    "ataques": [{"id": "cimitarra", "nome": "Cimitarra", "bonus": 4, "dano": "1d6+2", "tipo_dano": "corte", "alcance": 1},
+                {"id": "arco_curto", "nome": "Arco Curto", "bonus": 4, "dano": "1d6+2", "tipo_dano": "perfuracao", "alcance": 16}],
+    "pericias": {"furtividade": 6, "enganacao": 3}, "condicoes": [], "caido": false
+  },
+  "klarg": {
+    "id": "klarg", "nome": "Klarg", "tipo": "npc", "faccao": "inimigo",
+    "cor": "#7f1d1d", "icone": "👹", "voz": "grave", "postura": "agressivo",
+    "personalidade": "Bugbear chefe do esconderijo. Vaidoso e brutal, fala de si em terceira pessoa ('Klarg vai esmagar!'). Não recua enquanto tiver mais da metade dos PV.",
+    "barras": {"pv": {"atual": 27, "max": 27}}, "defesa": 16, "deslocamento": 6, "iniciativa_bonus": 2,
+    "ataques": [{"id": "clava_grande", "nome": "Clava Grande", "bonus": 4, "dano": "2d8+2", "tipo_dano": "impacto", "alcance": 1},
+                {"id": "azagaia", "nome": "Azagaia", "bonus": 4, "dano": "2d6+2", "tipo_dano": "perfuracao", "alcance": 6}],
+    "pericias": {"furtividade": 6, "intimidacao": 3, "sobrevivencia": 2}, "condicoes": [], "caido": false
+  },
+  "lobo_1": {
+    "id": "lobo_1", "nome": "Lobo Acorrentado", "tipo": "npc", "faccao": "inimigo",
+    "cor": "#6b7280", "icone": "🐺", "voz": "NARRADOR", "postura": "agressivo",
+    "personalidade": "Faminto e maltratado; pode ser acalmado com comida (Adestrar Animais).",
+    "barras": {"pv": {"atual": 11, "max": 11}}, "defesa": 13, "deslocamento": 8, "iniciativa_bonus": 2,
+    "ataques": [{"id": "mordida", "nome": "Mordida", "bonus": 4, "dano": "2d4+2", "tipo_dano": "perfuracao", "alcance": 1, "condicoes_ao_acertar": ["caido"]}],
+    "pericias": {"percepcao": 3}, "condicoes": [], "caido": false
+  },
+  "sildar": {
+    "id": "sildar", "nome": "Sildar Hallwinter", "tipo": "npc", "faccao": "aliado",
+    "cor": "#1d4ed8", "icone": "⚔️", "voz": "anciao", "postura": "cauteloso",
+    "personalidade": "Guerreiro veterano, prisioneiro dos goblins; ferido e desarmado, mas honrado. Quer salvar Gundren, levado para o Castelo Cragmaw. Oferece 50 po para escoltá-lo até Phandalin.",
+    "barras": {"pv": {"atual": 4, "max": 27}}, "defesa": 11, "deslocamento": 6, "iniciativa_bonus": 1,
+    "ataques": [{"id": "soco", "nome": "Soco", "bonus": 4, "dano": "1d4+2", "tipo_dano": "impacto", "alcance": 1}],
+    "pericias": {"atletismo": 4, "historia": 2, "persuasao": 3}, "condicoes": [], "caido": false
+  }
+}

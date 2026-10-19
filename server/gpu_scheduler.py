@@ -73,9 +73,12 @@ class GPUScheduler:
                 if not futuro.done():
                     futuro.set_result(resultado)
 
-    def iniciar(self) -> None:
+    def iniciar(self, workers_tempo_real: int | None = None) -> None:
         if not self._tarefas:
-            self._tarefas = [asyncio.create_task(self._worker("tempo_real")), asyncio.create_task(self._worker("pesada"))]
+            import os
+            n = workers_tempo_real or int(os.getenv("TTS_PARALELO", "3"))
+            self._tarefas = [asyncio.create_task(self._worker("tempo_real")) for _ in range(max(1, n))]
+            self._tarefas.append(asyncio.create_task(self._worker("pesada")))
 
     async def rodar(self) -> None:
         await asyncio.gather(self._worker("tempo_real"), self._worker("pesada"))

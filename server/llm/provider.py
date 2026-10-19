@@ -134,7 +134,7 @@ class CadeiaProvedores:
 
     # ---------------------------------------------------------------- interface
     async def planejar(self, ctx: Contexto):
-        ctx.economico = self.nivel() == 2
+        ctx.economico = ctx.economico or self.nivel() == 2
         for p in self._disponiveis():
             inicio = time.time()
             try:
@@ -152,7 +152,7 @@ class CadeiaProvedores:
         raise RuntimeError("nenhum provedor respondeu")   # não ocorre: o heurístico não falha
 
     async def narrar_stream(self, ctx: Contexto) -> AsyncIterator[str]:
-        ctx.economico = self.nivel() == 2
+        ctx.economico = ctx.economico or self.nivel() == 2
         for p in self._disponiveis():
             falou = False
             inicio = time.time()

@@ -3,7 +3,7 @@ import { useSala } from "../store/useSala"
 import { api } from "../lib/api"
 import { storage } from "../lib/storage"
 import { useToast } from "../store/useToast"
-import type { ComandoHost, NivelIa } from "../types"
+import type { Arbitragem, ComandoHost, NivelIa } from "../types"
 
 interface Props {
   salaId: string
@@ -16,6 +16,12 @@ export default function HostDrawer({ salaId, token, aoFechar }: Props) {
   const state = useSala((s) => s.state)
   const fase = useSala((s) => s.fase)
   const nivelIa = useSala((s) => s.nivelIa)
+  const ttsPreferido = useSala((s) => s.ttsPreferido)
+  const ttsMotores = useSala((s) => s.ttsMotores)
+  const narracaoCurta = useSala((s) => s.narracaoCurta)
+  const revisarArbitragens = useSala((s) => s.revisarArbitragens)
+  const arbitragens = useSala((s) => s.arbitragensPendentes)
+  const [edicao, setEdicao] = useState<Arbitragem[] | null>(null)
   const enviar = useSala((s) => s.enviar)
   const mostrar = useToast((s) => s.mostrar)
 
@@ -113,6 +119,54 @@ export default function HostDrawer({ salaId, token, aoFechar }: Props) {
               </button>
             ))}
           </div>
+        </section>
+
+        <section className="space-y-1">
+          <h3 className="rotulo">Voz e narração</h3>
+          <div className="flex flex-wrap gap-1">
+            <button className={`botao ${!ttsPreferido ? "botao-primario" : ""}`} onClick={() => comando({ comando: "mudar_tts", motor: "" })} title="Cada ator usa o motor definido em voices.json">
+              auto
+            </button>
+            {ttsMotores.map((m) => (
+              <button key={m} className={`botao ${ttsPreferido === m ? "botao-primario" : ""}`} onClick={() => comando({ comando: "mudar_tts", motor: m })}
+                title={m === "kokoro" ? "Offline, rápido, pouca entonação" : m === "edge" ? "Online, expressivo, ~1,5 s por frase" : m}>
+                {m === "kokoro" ? "⚡ rápida (Kokoro)" : m === "edge" ? "🎭 expressiva (Edge)" : m}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-1">
+            <button className={`botao ${!narracaoCurta ? "botao-primario" : ""}`} onClick={() => comando({ comando: "mudar_narracao", tamanho: "normal" })}>narração normal</button>
+            <button className={`botao ${narracaoCurta ? "botao-primario" : ""}`} onClick={() => comando({ comando: "mudar_narracao", tamanho: "curta" })} title="~50–90 palavras por rodada">narração curta</button>
+          </div>
+          <label className="flex items-center gap-2 text-[12px]">
+            <input type="checkbox" checked={revisarArbitragens} onChange={(e) => comando({ comando: "revisar_arbitragens", ativo: e.target.checked })} />
+            Revisar arbitragens de ações criativas antes da resolução (45 s)
+          </label>
+          {arbitragens && (
+            <div className="space-y-2 rounded border p-2" style={{ borderColor: "var(--acento)" }} role="region" aria-label="Arbitragens pendentes">
+              <p className="text-[12px]">Rodada {arbitragens.rodada}: o Planejador propôs estas arbitragens. Edite e envie, ou aprove.</p>
+              {(edicao ?? arbitragens.arbitragens).map((a, i) => (
+                <div key={`${a.personagem_id}-${i}`} className="space-y-1 text-[12px]">
+                  <div><strong>{state?.personagens[a.personagem_id]?.nome ?? a.personagem_id}</strong> · {a.pericia} · <em>{a.motivo}</em></div>
+                  <div className="flex flex-wrap gap-1">
+                    <select className="campo" value={a.dificuldade} aria-label="Dificuldade" onChange={(e) => setEdicao((prev) => (prev ?? arbitragens.arbitragens).map((x, j) => (j === i ? { ...x, dificuldade: e.target.value } : x)))}>
+                      {arbitragens.faixas.map((f) => <option key={f} value={f}>{f}</option>)}
+                    </select>
+                    <select className="campo" value={a.efeito_sucesso} aria-label="Efeito no sucesso" onChange={(e) => setEdicao((prev) => (prev ?? arbitragens.arbitragens).map((x, j) => (j === i ? { ...x, efeito_sucesso: e.target.value } : x)))}>
+                      {arbitragens.catalogo.map((c) => <option key={c} value={c}>✓ {c}</option>)}
+                    </select>
+                    <select className="campo" value={a.efeito_falha} aria-label="Efeito na falha" onChange={(e) => setEdicao((prev) => (prev ?? arbitragens.arbitragens).map((x, j) => (j === i ? { ...x, efeito_falha: e.target.value } : x)))}>
+                      {arbitragens.catalogo.map((c) => <option key={c} value={c}>✗ {c}</option>)}
+                    </select>
+                  </div>
+                </div>
+              ))}
+              <div className="flex gap-1">
+                <button className="botao botao-primario" onClick={() => { comando({ comando: "editar_arbitragem", arbitragens: edicao ?? arbitragens.arbitragens }); setEdicao(null) }}>Enviar edição</button>
+                <button className="botao" onClick={() => { comando({ comando: "aprovar_arbitragens" }); setEdicao(null) }}>Aprovar como está</button>
+              </div>
+            </div>
+          )}
         </section>
 
         <section className="space-y-1">

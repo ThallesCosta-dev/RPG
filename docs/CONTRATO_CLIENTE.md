@@ -197,3 +197,11 @@ Com **token** (jogador já na sala sem personagem, ou o Host): a ficha é criada
 A ficha aceita `voz: <id>` (opcional). Personagens de jogador com voz falam na narração com a própria tag `[VOZ:<personagem_id>]`,
 e o `narration_segment.voz` traz esse id: o cliente deve mostrar o **nome** do personagem (NPC ou jogador) na legenda, nunca o id.
 Áudio pode vir como `.ogg` (Kokoro) ou `.mp3` (Edge-TTS); o `audio_url` já aponta para o arquivo certo.
+
+### Motor de voz em jogo
+`room_state` traz `tts_motores: string[]` (ex.: `["edge","kokoro"]`) e `tts_preferido: string|null`. O Host envia
+`host_command {comando:"mudar_tts", motor:"kokoro"|"edge"|""}` (vazio = cada ator usa o próprio motor) e todos recebem
+`config_sala {tts_preferido, tts_motores}`. Kokoro = offline, rápido, pouca entonação; Edge = online, expressivo, ~1,5 s por frase.
+
+### Tamanho da narração
+`host_command {comando:"mudar_narracao", tamanho:"curta"|"normal"}` → `config_sala {narracao_curta: bool}`; `room_state.narracao_curta` traz o estado. "Curta" limita o narrador a ~50–90 palavras.

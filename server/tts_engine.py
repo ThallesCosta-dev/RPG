@@ -114,7 +114,7 @@ class PipelineNarracao:
         self._submeter(texto, voz, eventos, ctx)
         return voz
 
-    MAX_SEGMENTO = 260          # caracteres: frases curtas consecutivas da mesma voz viram um segmento só
+    MAX_SEGMENTO = 200          # caracteres: frases curtas consecutivas da mesma voz viram um segmento só
 
     def _submeter(self, texto: str, voz: str, eventos: list, ctx: dict):
         texto = " ".join(TAG_FALA.sub("", texto).split())
@@ -126,6 +126,12 @@ class PipelineNarracao:
         if ctx.get("eventos_pendentes"):
             eventos = ctx.pop("eventos_pendentes") + list(eventos)
         pend = ctx["pendente"]
+        if ctx.get("primeiro", True):                     # a 1ª frase vai direto para o TTS: o jogador ouve algo cedo
+            ctx["primeiro"] = False
+            self._despachar_pendente(ctx)
+            ctx["pendente"] = {"texto": texto, "voz": voz, "eventos": eventos}
+            self._despachar_pendente(ctx)
+            return
         if pend and pend["voz"] == voz and not eventos and len(pend["texto"]) + len(texto) + 1 <= self.MAX_SEGMENTO:
             pend["texto"] = (pend["texto"] + " " + texto).strip()        # mesma voz, sem novo marcador: junta
             return
@@ -305,6 +311,13 @@ def escolher_handler_tts(voices: dict | None = None) -> Callable | None:
     def sintetizar(texto: str, cfg: dict) -> str:
         cfg = cfg or {}
         motor = cfg.get("motor") or padrao
+        preferido = os.getenv("TTS_PREFERIDO", "").strip()           # o Host pode trocar em jogo (mudar_tts)
+        if preferido in motores and preferido != motor:
+            reserva = voices.get(cfg.get("reserva") or "")
+            if reserva and reserva.get("motor") == preferido:
+                cfg, motor = reserva, preferido
+            else:
+                cfg, motor = {"velocidade": cfg.get("velocidade", 1.0), "pitch_semitons": cfg.get("pitch_semitons", 0)}, preferido
         if motor in motores:
             try:
                 return motores[motor](texto, cfg)
