@@ -166,6 +166,34 @@ def aplicar(estado: dict, ev: dict) -> dict:
         p = _p(estado, ev["alvo"])
         if p:
             _ajustar_barra(p, ev.get("barra", "pv"), -int(ev["valor"]))
+    elif t == "recurso":
+        p = _p(estado, ev["personagem"])
+        if p:
+            _ajustar_barra(p, ev.get("barra", "pm"), -int(ev["valor"]))
+    elif t == "uso_gasto":
+        p = _p(estado, ev["personagem"])
+        if p:
+            usos = p.setdefault("usos", {})
+            usos[ev["habilidade"]] = max(0, int(usos.get(ev["habilidade"], 0)) - 1)
+    elif t == "descanso":
+        for p in pers.values():
+            if p.get("tipo") != "jogador" and not ev.get("npcs"):
+                continue
+            if ev.get("tipo_descanso") == "longo":
+                for b in p["barras"].values():
+                    b["atual"] = b["max"]
+                p["condicoes"] = []
+                p["caido"] = False
+                for h in p.get("habilidades", []):
+                    if h.get("usos"):
+                        p.setdefault("usos", {})[h["id"]] = int(h["usos"].get("max", 1))
+            else:
+                pv = p["barras"].get("pv")
+                if pv and pv["atual"] > 0:
+                    pv["atual"] = min(pv["max"], pv["atual"] + max(1, pv["max"] // 2))
+                for h in p.get("habilidades", []):
+                    if h.get("usos") and h["usos"].get("recupera") == "curto":
+                        p.setdefault("usos", {})[h["id"]] = int(h["usos"].get("max", 1))
     elif t == "cura":
         p = _p(estado, ev["alvo"])
         if p:

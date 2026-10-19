@@ -45,8 +45,8 @@ def main(nome: str = "salao_rodada1") -> None:
     estado = store.estado_atual("g")
     rules_engine.usar_semente(2026)
     rolagens = {}
-    r = motor.rolar_para_slot(rolagens, "u1", "padrao", "1d20+8")
-    acoes = {"u1": {"slots": {"padrao": {"tipo": "ataque", "ataque_id": "machado_batalha", "alvo_id": "boss_orc", "rolagem_id": r["id"]},
+    r = motor.rolar_para_slot(rolagens, "u1", "padrao", "1d20+5")
+    acoes = {"u1": {"slots": {"padrao": {"tipo": "ataque", "ataque_id": "machado_de_batalha", "alvo_id": "boss_orc", "rolagem_id": r["id"]},
                               "livre": {"tipo": "fala", "texto": "Pela honra do meu clã!"}}},
              "u2": {"slots": {"padrao": {"tipo": "criativa", "texto": "Atiro na corrente do lustre para ele cair em cima do orc!"}}}}
     caso = {"sistema_id": sis.id, "campanha_id": camp.id, "seed": 2026, "estado": estado, "acoes": acoes, "plano": copy.deepcopy(PLANO),

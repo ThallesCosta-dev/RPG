@@ -1,54 +1,734 @@
 {
   "player_thorin": {
-    "id": "player_thorin", "nome": "Thorin", "tipo": "jogador", "faccao": "aliado",
-    "classe": "Guerreiro anão", "cor": "#c0392b", "icone": "🪓",
-    "x": 0, "y": 0,
-    "barras": {"pv": {"atual": 45, "max": 45}, "pm": {"atual": 6, "max": 6}},
-    "defesa": 19, "deslocamento": 6, "iniciativa_bonus": 2,
+    "id": "player_thorin",
+    "nome": "Thorin",
+    "tipo": "jogador",
+    "faccao": "aliado",
+    "classe": "Guerreiro (nível 3)",
+    "classe_id": "guerreiro",
+    "nivel": 3,
+    "cor": "#c0392b",
+    "icone": "🪓",
+    "x": 0,
+    "y": 0,
+    "barras": {
+      "pv": {
+        "atual": 39,
+        "max": 39
+      },
+      "pm": {
+        "atual": 9,
+        "max": 9
+      }
+    },
+    "defesa": 18,
+    "deslocamento": 6,
+    "iniciativa_bonus": 1,
+    "atributos": {
+      "FOR": 4,
+      "DES": 1,
+      "CON": 3,
+      "INT": 0,
+      "SAB": 1,
+      "CAR": -1
+    },
     "ataques": [
-      {"id": "machado_batalha", "nome": "Machado de Batalha", "bonus": 8, "dano": "1d8+5", "tipo_dano": "corte", "alcance": 1, "margem_critico": 20, "mult_critico": 3},
-      {"id": "machadinha_arremesso", "nome": "Machadinha (arremesso)", "bonus": 6, "dano": "1d6+3", "tipo_dano": "corte", "alcance": 4}
+      {
+        "id": "machado_de_batalha",
+        "nome": "Machado de Batalha",
+        "bonus": 5,
+        "dano": "1d8+4",
+        "tipo_dano": "corte",
+        "alcance": 1,
+        "atributo": "FOR"
+      },
+      {
+        "id": "machadinha",
+        "nome": "Machadinha",
+        "bonus": 5,
+        "dano": "1d6+4",
+        "tipo_dano": "corte",
+        "alcance": 1,
+        "atributo": "FOR"
+      },
+      {
+        "id": "machadinha_arremesso",
+        "nome": "Machadinha (arremesso)",
+        "bonus": 5,
+        "dano": "1d6+4",
+        "tipo_dano": "corte",
+        "alcance": 4,
+        "atributo": "FOR"
+      }
     ],
-    "pericias": {"luta": 8, "atletismo": 7, "fortitude": 8, "intimidacao": 4, "percepcao": 2, "guerra": 3},
-    "condicoes": [], "caido": false, "voz": null, "postura": null
+    "pericias": {
+      "acrobacia": 2,
+      "adestramento": 0,
+      "atletismo": 7,
+      "atuacao": 0,
+      "cavalgar": 2,
+      "conhecimento": 1,
+      "cura": 2,
+      "diplomacia": 2,
+      "enganacao": 0,
+      "fortitude": 6,
+      "furtividade": 2,
+      "guerra": 1,
+      "iniciativa": 2,
+      "intimidacao": 0,
+      "intuicao": 2,
+      "investigacao": 1,
+      "jogatina": 0,
+      "ladinagem": 2,
+      "luta": 7,
+      "misticismo": 1,
+      "nobreza": 1,
+      "oficio": 1,
+      "percepcao": 4,
+      "pilotagem": 2,
+      "pontaria": 2,
+      "reflexos": 2,
+      "religiao": 2,
+      "sobrevivencia": 2,
+      "vontade": 2
+    },
+    "pericias_treinadas": [
+      "atletismo",
+      "diplomacia",
+      "fortitude",
+      "luta",
+      "percepcao"
+    ],
+    "armadura": "cota_de_malha",
+    "escudo": true,
+    "habilidades": [
+      {
+        "id": "ataque_especial",
+        "nome": "Ataque Especial",
+        "nivel": 1,
+        "tipo": "ativa",
+        "slot": "padrao",
+        "alvo": "inimigo",
+        "alcance": 1,
+        "descricao": "Ataque com +4 no acerto e +4 no dano (custo 1 PM).",
+        "efeito": {
+          "ataque": {
+            "bonus": 4,
+            "dano_extra": "4"
+          }
+        },
+        "custo": {
+          "barra": "pm",
+          "valor": 1
+        }
+      },
+      {
+        "id": "durao",
+        "nome": "Durão",
+        "nivel": 2,
+        "tipo": "passiva",
+        "descricao": "Reduz em 1 o dano recebido.",
+        "efeito": {
+          "passiva": {
+            "reducao_dano": 1
+          }
+        }
+      },
+      {
+        "id": "golpe_poderoso",
+        "nome": "Golpe Poderoso",
+        "nivel": 3,
+        "tipo": "passiva",
+        "descricao": "+2 de dano corpo a corpo.",
+        "efeito": {
+          "passiva": {
+            "mod_dano": 2
+          }
+        }
+      }
+    ],
+    "usos": {},
+    "magia": {
+      "bonus": 5,
+      "cd": 15,
+      "atributo": "FOR"
+    },
+    "proficiencia": 2,
+    "condicoes": [],
+    "caido": false,
+    "voz": "grave",
+    "postura": null,
+    "historia": "",
+    "sistema_id": "tormenta20",
+    "personalizada": false
   },
   "player_lia": {
-    "id": "player_lia", "nome": "Lia", "tipo": "jogador", "faccao": "aliado",
-    "classe": "Caçadora elfa", "cor": "#27ae60", "icone": "🏹",
-    "x": 0, "y": 0,
-    "barras": {"pv": {"atual": 28, "max": 28}, "pm": {"atual": 10, "max": 10}},
-    "defesa": 17, "deslocamento": 9, "iniciativa_bonus": 5,
+    "id": "player_lia",
+    "nome": "Lia",
+    "tipo": "jogador",
+    "faccao": "aliado",
+    "classe": "Caçador (nível 3)",
+    "classe_id": "cacador",
+    "nivel": 3,
+    "cor": "#27ae60",
+    "icone": "🏹",
+    "x": 0,
+    "y": 0,
+    "barras": {
+      "pv": {
+        "atual": 27,
+        "max": 27
+      },
+      "pm": {
+        "atual": 12,
+        "max": 12
+      }
+    },
+    "defesa": 17,
+    "deslocamento": 6,
+    "iniciativa_bonus": 4,
+    "atributos": {
+      "FOR": 1,
+      "DES": 4,
+      "CON": 1,
+      "INT": 0,
+      "SAB": 2,
+      "CAR": 0
+    },
     "ataques": [
-      {"id": "arco_longo", "nome": "Arco Longo", "bonus": 9, "dano": "1d8+3", "tipo_dano": "perfuracao", "alcance": 20, "margem_critico": 20, "mult_critico": 3},
-      {"id": "espada_curta", "nome": "Espada Curta", "bonus": 6, "dano": "1d6+2", "tipo_dano": "corte", "alcance": 1}
+      {
+        "id": "arco_longo",
+        "nome": "Arco Longo",
+        "bonus": 5,
+        "dano": "1d8+4",
+        "tipo_dano": "perfuracao",
+        "alcance": 20,
+        "atributo": "DES"
+      },
+      {
+        "id": "espada_curta",
+        "nome": "Espada Curta",
+        "bonus": 5,
+        "dano": "1d6+4",
+        "tipo_dano": "perfuracao",
+        "alcance": 1,
+        "atributo": "melhor"
+      }
     ],
-    "pericias": {"pontaria": 9, "furtividade": 8, "percepcao": 7, "sobrevivencia": 6, "acrobacia": 6, "reflexos": 7},
-    "condicoes": [], "caido": false, "voz": null, "postura": null
+    "pericias": {
+      "acrobacia": 7,
+      "adestramento": 1,
+      "atletismo": 2,
+      "atuacao": 1,
+      "cavalgar": 5,
+      "conhecimento": 1,
+      "cura": 3,
+      "diplomacia": 1,
+      "enganacao": 1,
+      "fortitude": 2,
+      "furtividade": 7,
+      "guerra": 1,
+      "iniciativa": 7,
+      "intimidacao": 1,
+      "intuicao": 3,
+      "investigacao": 1,
+      "jogatina": 1,
+      "ladinagem": 5,
+      "luta": 2,
+      "misticismo": 1,
+      "nobreza": 1,
+      "oficio": 1,
+      "percepcao": 5,
+      "pilotagem": 5,
+      "pontaria": 7,
+      "reflexos": 7,
+      "religiao": 3,
+      "sobrevivencia": 5,
+      "vontade": 3
+    },
+    "pericias_treinadas": [
+      "acrobacia",
+      "furtividade",
+      "iniciativa",
+      "percepcao",
+      "pontaria",
+      "reflexos",
+      "sobrevivencia"
+    ],
+    "armadura": "couro_batido",
+    "escudo": false,
+    "habilidades": [
+      {
+        "id": "marca_da_presa",
+        "nome": "Marca da Presa",
+        "nivel": 1,
+        "tipo": "ativa",
+        "slot": "bonus",
+        "alvo": "inimigo",
+        "alcance": 10,
+        "descricao": "+1d6 de dano em cada ataque contra o alvo por 3 rodadas.",
+        "efeito": {
+          "condicao": {
+            "id": "marcado",
+            "rodadas": 3,
+            "em": "alvo"
+          }
+        },
+        "custo": {
+          "barra": "pm",
+          "valor": 1
+        }
+      },
+      {
+        "id": "mira_precisa",
+        "nome": "Mira Precisa",
+        "nivel": 1,
+        "tipo": "passiva",
+        "descricao": "+2 nos ataques à distância.",
+        "efeito": {
+          "passiva": {
+            "mod_ataque_distancia": 2
+          }
+        }
+      },
+      {
+        "id": "tiro_duplo",
+        "nome": "Rajada de Flechas",
+        "nivel": 3,
+        "tipo": "ativa",
+        "slot": "padrao",
+        "alvo": "inimigo",
+        "alcance": 20,
+        "descricao": "Dois disparos: ataque com +1d8 de dano (custo 1 PM).",
+        "efeito": {
+          "ataque": {
+            "bonus": 0,
+            "dano_extra": "1d8"
+          }
+        },
+        "custo": {
+          "barra": "pm",
+          "valor": 1
+        }
+      },
+      {
+        "id": "armadilha_de_urso",
+        "nome": "Armadilha",
+        "nivel": 2,
+        "tipo": "ativa",
+        "slot": "padrao",
+        "alvo": "inimigo",
+        "alcance": 2,
+        "descricao": "Prende o alvo (Reflexos anula): agarrado por 2 rodadas.",
+        "efeito": {
+          "condicao": {
+            "id": "agarrado",
+            "rodadas": 2,
+            "em": "alvo",
+            "salvaguarda": "reflexos"
+          }
+        },
+        "custo": {
+          "barra": "pm",
+          "valor": 1
+        }
+      }
+    ],
+    "usos": {},
+    "magia": {
+      "bonus": 5,
+      "cd": 15,
+      "atributo": "DES"
+    },
+    "proficiencia": 2,
+    "condicoes": [],
+    "caido": false,
+    "voz": "jovem",
+    "postura": null,
+    "historia": "",
+    "sistema_id": "tormenta20",
+    "personalizada": false
   },
   "player_maya": {
-    "id": "player_maya", "nome": "Maya", "tipo": "jogador", "faccao": "aliado",
-    "classe": "Arcanista humana", "cor": "#8e44ad", "icone": "🔮",
-    "x": 0, "y": 0,
-    "barras": {"pv": {"atual": 22, "max": 22}, "pm": {"atual": 18, "max": 18}},
-    "defesa": 14, "deslocamento": 6, "iniciativa_bonus": 3,
+    "id": "player_maya",
+    "nome": "Maya",
+    "tipo": "jogador",
+    "faccao": "aliado",
+    "classe": "Arcanista (nível 3)",
+    "classe_id": "arcanista",
+    "nivel": 3,
+    "cor": "#8e44ad",
+    "icone": "🔮",
+    "x": 0,
+    "y": 0,
+    "barras": {
+      "pv": {
+        "atual": 15,
+        "max": 15
+      },
+      "pm": {
+        "atual": 18,
+        "max": 18
+      }
+    },
+    "defesa": 12,
+    "deslocamento": 6,
+    "iniciativa_bonus": 2,
+    "atributos": {
+      "FOR": -1,
+      "DES": 2,
+      "CON": 1,
+      "INT": 4,
+      "SAB": 1,
+      "CAR": 1
+    },
     "ataques": [
-      {"id": "raio_arcano", "nome": "Raio Arcano", "bonus": 7, "dano": "2d6", "tipo_dano": "energia", "alcance": 10},
-      {"id": "cajado", "nome": "Cajado", "bonus": 3, "dano": "1d6", "tipo_dano": "impacto", "alcance": 1}
+      {
+        "id": "bordao",
+        "nome": "Bordão",
+        "bonus": 0,
+        "dano": "1d6-1",
+        "tipo_dano": "impacto",
+        "alcance": 1,
+        "atributo": "FOR"
+      },
+      {
+        "id": "adaga",
+        "nome": "Adaga",
+        "bonus": 3,
+        "dano": "1d4+2",
+        "tipo_dano": "perfuracao",
+        "alcance": 1,
+        "atributo": "melhor"
+      },
+      {
+        "id": "adaga_arremesso",
+        "nome": "Adaga (arremesso)",
+        "bonus": 3,
+        "dano": "1d4+2",
+        "tipo_dano": "perfuracao",
+        "alcance": 4,
+        "atributo": "melhor"
+      }
     ],
-    "pericias": {"misticismo": 9, "conhecimento": 8, "vontade": 7, "investigacao": 6, "diplomacia": 4, "percepcao": 3},
-    "condicoes": [], "caido": false, "voz": null, "postura": null
+    "pericias": {
+      "acrobacia": 3,
+      "adestramento": 2,
+      "atletismo": 2,
+      "atuacao": 2,
+      "cavalgar": 3,
+      "conhecimento": 7,
+      "cura": 2,
+      "diplomacia": 2,
+      "enganacao": 2,
+      "fortitude": 2,
+      "furtividade": 3,
+      "guerra": 5,
+      "iniciativa": 3,
+      "intimidacao": 2,
+      "intuicao": 2,
+      "investigacao": 7,
+      "jogatina": 2,
+      "ladinagem": 3,
+      "luta": 0,
+      "misticismo": 7,
+      "nobreza": 5,
+      "oficio": 5,
+      "percepcao": 2,
+      "pilotagem": 3,
+      "pontaria": 3,
+      "reflexos": 3,
+      "religiao": 2,
+      "sobrevivencia": 2,
+      "vontade": 4
+    },
+    "pericias_treinadas": [
+      "atletismo",
+      "conhecimento",
+      "investigacao",
+      "misticismo",
+      "vontade"
+    ],
+    "armadura": "nenhuma",
+    "escudo": false,
+    "habilidades": [
+      {
+        "id": "raio_arcano",
+        "nome": "Raio Arcano",
+        "nivel": 1,
+        "tipo": "ativa",
+        "slot": "padrao",
+        "alvo": "inimigo",
+        "alcance": 10,
+        "descricao": "Projétil de energia: 1d8 (sem custo).",
+        "efeito": {
+          "dano": {
+            "expressao": "1d8",
+            "tipo_dano": "energia",
+            "bonus_ataque": "magia"
+          }
+        }
+      },
+      {
+        "id": "seta_infalivel",
+        "nome": "Seta Infalível de Talude",
+        "nivel": 1,
+        "tipo": "ativa",
+        "slot": "padrao",
+        "alvo": "inimigo",
+        "alcance": 10,
+        "descricao": "Seta mágica que não erra: 2d4+2.",
+        "efeito": {
+          "dano": {
+            "expressao": "2d4+2",
+            "tipo_dano": "energia",
+            "automatico": true
+          }
+        },
+        "custo": {
+          "barra": "pm",
+          "valor": 1
+        }
+      },
+      {
+        "id": "explosao_de_chamas",
+        "nome": "Explosão de Chamas",
+        "nivel": 1,
+        "tipo": "ativa",
+        "slot": "padrao",
+        "alvo": "area",
+        "alcance": 0,
+        "raio": 2,
+        "descricao": "Cone de fogo: 2d6 (Reflexos reduz à metade).",
+        "efeito": {
+          "dano": {
+            "expressao": "2d6",
+            "tipo_dano": "fogo",
+            "raio": 2,
+            "salvaguarda": "reflexos"
+          }
+        },
+        "custo": {
+          "barra": "pm",
+          "valor": 1
+        }
+      },
+      {
+        "id": "armadura_arcana",
+        "nome": "Armadura Arcana",
+        "nivel": 1,
+        "tipo": "ativa",
+        "slot": "bonus",
+        "alvo": "self",
+        "descricao": "+5 na Defesa por 3 rodadas.",
+        "efeito": {
+          "condicao": {
+            "id": "escudo_arcano",
+            "rodadas": 3,
+            "em": "self"
+          }
+        },
+        "custo": {
+          "barra": "pm",
+          "valor": 1
+        }
+      }
+    ],
+    "usos": {},
+    "magia": {
+      "bonus": 5,
+      "cd": 15,
+      "atributo": "INT"
+    },
+    "proficiencia": 2,
+    "condicoes": [],
+    "caido": false,
+    "voz": "feminina",
+    "postura": null,
+    "historia": "",
+    "sistema_id": "tormenta20",
+    "personalizada": false
   },
   "player_bruno": {
-    "id": "player_bruno", "nome": "Bruno", "tipo": "jogador", "faccao": "aliado",
-    "classe": "Clérigo humano", "cor": "#f39c12", "icone": "✨",
-    "x": 0, "y": 0,
-    "barras": {"pv": {"atual": 34, "max": 34}, "pm": {"atual": 14, "max": 14}},
-    "defesa": 18, "deslocamento": 6, "iniciativa_bonus": 1,
+    "id": "player_bruno",
+    "nome": "Bruno",
+    "tipo": "jogador",
+    "faccao": "aliado",
+    "classe": "Clérigo (nível 3)",
+    "classe_id": "clerigo",
+    "nivel": 3,
+    "cor": "#f39c12",
+    "icone": "✨",
+    "x": 0,
+    "y": 0,
+    "barras": {
+      "pv": {
+        "atual": 30,
+        "max": 30
+      },
+      "pm": {
+        "atual": 15,
+        "max": 15
+      }
+    },
+    "defesa": 17,
+    "deslocamento": 6,
+    "iniciativa_bonus": 0,
+    "atributos": {
+      "FOR": 2,
+      "DES": 0,
+      "CON": 2,
+      "INT": 0,
+      "SAB": 4,
+      "CAR": 1
+    },
     "ataques": [
-      {"id": "maca", "nome": "Maça", "bonus": 6, "dano": "1d8+3", "tipo_dano": "impacto", "alcance": 1},
-      {"id": "chama_sagrada", "nome": "Chama Sagrada", "bonus": 6, "dano": "1d8+2", "tipo_dano": "luz", "alcance": 8}
+      {
+        "id": "maca",
+        "nome": "Maça",
+        "bonus": 3,
+        "dano": "1d8+2",
+        "tipo_dano": "impacto",
+        "alcance": 1,
+        "atributo": "FOR"
+      }
     ],
-    "pericias": {"religiao": 8, "cura": 8, "vontade": 8, "diplomacia": 5, "intuicao": 5, "luta": 6},
-    "condicoes": [], "caido": false, "voz": null, "postura": null
+    "pericias": {
+      "acrobacia": 3,
+      "adestramento": 2,
+      "atletismo": 3,
+      "atuacao": 2,
+      "cavalgar": 1,
+      "conhecimento": 1,
+      "cura": 7,
+      "diplomacia": 4,
+      "enganacao": 2,
+      "fortitude": 3,
+      "furtividade": 1,
+      "guerra": 1,
+      "iniciativa": 1,
+      "intimidacao": 2,
+      "intuicao": 5,
+      "investigacao": 1,
+      "jogatina": 2,
+      "ladinagem": 1,
+      "luta": 3,
+      "misticismo": 1,
+      "nobreza": 1,
+      "oficio": 1,
+      "percepcao": 5,
+      "pilotagem": 1,
+      "pontaria": 1,
+      "reflexos": 1,
+      "religiao": 7,
+      "sobrevivencia": 5,
+      "vontade": 7
+    },
+    "pericias_treinadas": [
+      "acrobacia",
+      "cura",
+      "diplomacia",
+      "religiao",
+      "vontade"
+    ],
+    "armadura": "cota_de_malha",
+    "escudo": true,
+    "habilidades": [
+      {
+        "id": "curar_ferimentos",
+        "nome": "Curar Ferimentos",
+        "nivel": 1,
+        "tipo": "ativa",
+        "slot": "padrao",
+        "alvo": "aliado",
+        "alcance": 1,
+        "descricao": "Cura 2d8 + SAB.",
+        "efeito": {
+          "cura": {
+            "expressao": "2d8",
+            "mais_atributo": "SAB"
+          }
+        },
+        "custo": {
+          "barra": "pm",
+          "valor": 1
+        }
+      },
+      {
+        "id": "luz_sagrada",
+        "nome": "Luz Sagrada",
+        "nivel": 1,
+        "tipo": "ativa",
+        "slot": "padrao",
+        "alvo": "inimigo",
+        "alcance": 6,
+        "descricao": "Raio de luz: 1d8 (sem custo).",
+        "efeito": {
+          "dano": {
+            "expressao": "1d8",
+            "tipo_dano": "luz",
+            "bonus_ataque": "magia"
+          }
+        }
+      },
+      {
+        "id": "abencoar",
+        "nome": "Abençoar",
+        "nivel": 1,
+        "tipo": "ativa",
+        "slot": "padrao",
+        "alvo": "aliado",
+        "alcance": 6,
+        "descricao": "+2 em ataques e resistências por 3 rodadas.",
+        "efeito": {
+          "condicao": {
+            "id": "abencoado",
+            "rodadas": 3,
+            "em": "alvo"
+          }
+        },
+        "custo": {
+          "barra": "pm",
+          "valor": 1
+        }
+      },
+      {
+        "id": "canalizar_energia",
+        "nome": "Canalizar Energia Positiva",
+        "nivel": 3,
+        "tipo": "ativa",
+        "slot": "padrao",
+        "alvo": "area",
+        "alcance": 0,
+        "raio": 3,
+        "aliados": true,
+        "descricao": "Cura 1d8 em todos os aliados a 3 quadrados.",
+        "efeito": {
+          "cura": {
+            "expressao": "1d8",
+            "raio": 3,
+            "aliados": true
+          }
+        },
+        "custo": {
+          "barra": "pm",
+          "valor": 2
+        }
+      }
+    ],
+    "usos": {},
+    "magia": {
+      "bonus": 5,
+      "cd": 15,
+      "atributo": "SAB"
+    },
+    "proficiencia": 2,
+    "condicoes": [],
+    "caido": false,
+    "voz": "masculina",
+    "postura": null,
+    "historia": "",
+    "sistema_id": "tormenta20",
+    "personalizada": false
   }
 }

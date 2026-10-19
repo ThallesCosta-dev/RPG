@@ -33,6 +33,7 @@ class Sistema:
     monstros: dict
     plugin: Any = None
     caminho: Path | None = None
+    classes: dict = field(default_factory=dict)
 
     @property
     def revisado(self) -> bool:
@@ -143,6 +144,7 @@ class Biblioteca:
         config = _ler_json(comp / "system_config.json")
         efeitos = _ler_json(comp / "efeitos.json", {"nenhum": {}})
         monstros = _ler_json(comp / "monstros.json", {})
+        classes = _ler_json(comp / "classes.json", {})
         plugin = None
         if (d / "plugin.py").exists():
             spec = importlib.util.spec_from_file_location(f"plugin_{sistema_id}", d / "plugin.py")
@@ -150,7 +152,7 @@ class Biblioteca:
             spec.loader.exec_module(mod)                       # type: ignore[union-attr]
             plugin = getattr(mod, "Plugin", None)
             plugin = plugin() if plugin else mod
-        s = Sistema(sistema_id, manifest.get("nome", sistema_id), manifest, config, efeitos, monstros, plugin, d)
+        s = Sistema(sistema_id, manifest.get("nome", sistema_id), manifest, config, efeitos, monstros, plugin, d, classes)
         self._sistemas[sistema_id] = s
         return s
 

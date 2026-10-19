@@ -1,0 +1,178 @@
+{
+  "_formato": "Classes simplificadas para o motor: habilidades com efeito mecânico que o servidor sabe resolver (ataque/dano/cura/condicao/passiva). Níveis 1–5.",
+  "barbaro": {
+    "nome": "Bárbaro", "descricao": "Guerreiro selvagem movido pela fúria. Muito PV, dano alto, pouca sutileza.",
+    "dado_vida": 12, "atributo_principal": "FOR", "atributo_secundario": "CON",
+    "pericias_de_classe": ["adestrar_animais", "atletismo", "intimidacao", "natureza", "percepcao", "sobrevivencia"], "quantidade_pericias": 2,
+    "armas_iniciais": ["machado_grande", "machadinha"], "armadura_inicial": "nenhuma", "escudo": false,
+    "habilidades": [
+      {"id": "furia", "nome": "Fúria", "nivel": 1, "tipo": "ativa", "slot": "bonus", "alvo": "self", "descricao": "Por 3 rodadas, +2 de dano corpo a corpo e resistência a dano físico (aprox. -2 no dano recebido).",
+       "efeito": {"condicao": {"id": "furioso", "rodadas": 3, "em": "self"}}, "usos": {"max": 2, "recupera": "longo"}},
+      {"id": "ataque_descuidado", "nome": "Ataque Descuidado", "nivel": 2, "tipo": "ativa", "slot": "padrao", "alvo": "inimigo", "alcance": 1, "descricao": "Ataque com vantagem (+4), mas fica desprevenido até o próximo turno.",
+       "efeito": {"ataque": {"bonus": 4, "dano_extra": null}, "condicao": {"id": "desprevenido", "rodadas": 1, "em": "self"}}},
+      {"id": "defesa_sem_armadura", "nome": "Defesa sem Armadura", "nivel": 1, "tipo": "passiva", "descricao": "Sem armadura, CA = 10 + DES + CON.", "efeito": {"passiva": {"defesa_sem_armadura": ["DES", "CON"]}}},
+      {"id": "ataque_extra", "nome": "Ataque Extra", "nivel": 5, "tipo": "passiva", "descricao": "Dois ataques por ação (aprox.: +1d6 de dano por acerto).", "efeito": {"passiva": {"mod_dano_dado": "1d6"}}}
+    ]
+  },
+  "bardo": {
+    "nome": "Bardo", "descricao": "Artista e conjurador versátil; inspira aliados e manipula inimigos.",
+    "dado_vida": 8, "atributo_principal": "CAR", "atributo_secundario": "DES", "conjurador": true,
+    "pericias_de_classe": ["acrobacia", "adestrar_animais", "arcanismo", "atletismo", "atuacao", "enganacao", "furtividade", "historia", "intimidacao", "intuicao", "investigacao", "medicina", "natureza", "percepcao", "persuasao", "prestidigitacao", "religiao", "sobrevivencia"], "quantidade_pericias": 3,
+    "armas_iniciais": ["rapieira", "adaga"], "armadura_inicial": "couro", "escudo": false,
+    "habilidades": [
+      {"id": "inspiracao_bardica", "nome": "Inspiração Bárdica", "nivel": 1, "tipo": "ativa", "slot": "bonus", "alvo": "aliado", "alcance": 12, "descricao": "Um aliado ganha +1d6 (aprox. +3) no próximo ataque ou teste.",
+       "efeito": {"condicao": {"id": "inspirado", "rodadas": 2, "em": "alvo", "bonus": 3}}, "usos": {"max": 3, "recupera": "longo"}},
+      {"id": "zombaria_cruel", "nome": "Zombaria Cruel", "nivel": 1, "tipo": "ativa", "slot": "padrao", "alvo": "inimigo", "alcance": 12, "descricao": "Insulto mágico: 1d4 de dano psíquico e desvantagem (−3) no próximo ataque do alvo.",
+       "efeito": {"dano": {"expressao": "1d4", "tipo_dano": "psiquico", "salvaguarda": "SAB"}, "condicao": {"id": "desmoralizado", "rodadas": 1, "em": "alvo", "salvaguarda": "SAB"}}},
+      {"id": "palavra_curativa", "nome": "Palavra Curativa", "nivel": 1, "tipo": "ativa", "slot": "bonus", "alvo": "aliado", "alcance": 12, "descricao": "Cura 1d4 + CAR à distância.",
+       "efeito": {"cura": {"expressao": "1d4", "mais_atributo": "CAR"}}, "custo": {"barra": "espacos", "valor": 1}},
+      {"id": "onda_trovejante", "nome": "Onda Trovejante", "nivel": 1, "tipo": "ativa", "slot": "padrao", "alvo": "area", "alcance": 0, "raio": 3, "descricao": "Explosão sonora ao redor: 2d8 de dano trovejante (metade se resistir) e empurra.",
+       "efeito": {"dano": {"expressao": "2d8", "tipo_dano": "impacto", "raio": 3, "salvaguarda": "CON"}}, "custo": {"barra": "espacos", "valor": 1}}
+    ]
+  },
+  "clerigo": {
+    "nome": "Clérigo", "descricao": "Sacerdote de combate: cura, protege e canaliza poder divino.",
+    "dado_vida": 8, "atributo_principal": "SAB", "atributo_secundario": "CON", "conjurador": true,
+    "pericias_de_classe": ["historia", "intuicao", "medicina", "persuasao", "religiao"], "quantidade_pericias": 2,
+    "armas_iniciais": ["maca"], "armadura_inicial": "cota_de_escamas", "escudo": true,
+    "habilidades": [
+      {"id": "curar_ferimentos", "nome": "Curar Ferimentos", "nivel": 1, "tipo": "ativa", "slot": "padrao", "alvo": "aliado", "alcance": 1, "descricao": "Toque curativo: 1d8 + SAB.",
+       "efeito": {"cura": {"expressao": "1d8", "mais_atributo": "SAB"}}, "custo": {"barra": "espacos", "valor": 1}},
+      {"id": "chama_sagrada", "nome": "Chama Sagrada", "nivel": 1, "tipo": "ativa", "slot": "padrao", "alvo": "inimigo", "alcance": 12, "descricao": "Fogo radiante do céu: 1d8 (resistência de DES anula).",
+       "efeito": {"dano": {"expressao": "1d8", "tipo_dano": "luz", "salvaguarda": "DES", "anula": true}}},
+      {"id": "bencao", "nome": "Bênção", "nivel": 1, "tipo": "ativa", "slot": "padrao", "alvo": "aliado", "alcance": 6, "descricao": "+1d4 (aprox. +2) em ataques e resistências por 3 rodadas.",
+       "efeito": {"condicao": {"id": "abencoado", "rodadas": 3, "em": "alvo"}}, "custo": {"barra": "espacos", "valor": 1}},
+      {"id": "canalizar_divindade", "nome": "Canalizar Divindade: Preservar a Vida", "nivel": 2, "tipo": "ativa", "slot": "padrao", "alvo": "aliado", "alcance": 6, "descricao": "Cura 5 × nível do clérigo, distribuídos (aqui: num aliado).",
+       "efeito": {"cura": {"expressao": "5", "por_nivel": true}}, "usos": {"max": 1, "recupera": "curto"}}
+    ]
+  },
+  "druida": {
+    "nome": "Druida", "descricao": "Guardião da natureza; magia primal e forma selvagem.",
+    "dado_vida": 8, "atributo_principal": "SAB", "atributo_secundario": "CON", "conjurador": true,
+    "pericias_de_classe": ["arcanismo", "adestrar_animais", "intuicao", "medicina", "natureza", "percepcao", "religiao", "sobrevivencia"], "quantidade_pericias": 2,
+    "armas_iniciais": ["cimitarra", "bordao"], "armadura_inicial": "couro", "escudo": true,
+    "habilidades": [
+      {"id": "chicote_de_espinhos", "nome": "Chicote de Espinhos", "nivel": 1, "tipo": "ativa", "slot": "padrao", "alvo": "inimigo", "alcance": 6, "descricao": "Ataque mágico: 1d6 perfurante e puxa o alvo 1 quadrado.",
+       "efeito": {"dano": {"expressao": "1d6", "tipo_dano": "perfuracao", "bonus_ataque": "magia"}}},
+      {"id": "curar_ferimentos", "nome": "Curar Ferimentos", "nivel": 1, "tipo": "ativa", "slot": "padrao", "alvo": "aliado", "alcance": 1, "descricao": "1d8 + SAB.",
+       "efeito": {"cura": {"expressao": "1d8", "mais_atributo": "SAB"}}, "custo": {"barra": "espacos", "valor": 1}},
+      {"id": "enredar", "nome": "Enredar", "nivel": 1, "tipo": "ativa", "slot": "padrao", "alvo": "area", "alcance": 18, "raio": 2, "descricao": "Plantas agarram todos na área (resistência de FOR).",
+       "efeito": {"condicao": {"id": "agarrado", "rodadas": 2, "em": "area", "raio": 2, "salvaguarda": "FOR"}}, "custo": {"barra": "espacos", "valor": 1}},
+      {"id": "forma_selvagem", "nome": "Forma Selvagem", "nivel": 2, "tipo": "ativa", "slot": "bonus", "alvo": "self", "descricao": "Vira um animal: +10 PV temporários (cura) e +2 de dano por 3 rodadas.",
+       "efeito": {"cura": {"expressao": "10"}, "condicao": {"id": "furioso", "rodadas": 3, "em": "self"}}, "usos": {"max": 2, "recupera": "curto"}}
+    ]
+  },
+  "guerreiro": {
+    "nome": "Guerreiro", "descricao": "Mestre de armas e armaduras; resistente e preciso.",
+    "dado_vida": 10, "atributo_principal": "FOR", "atributo_secundario": "CON",
+    "pericias_de_classe": ["acrobacia", "adestrar_animais", "atletismo", "historia", "intuicao", "intimidacao", "percepcao", "sobrevivencia"], "quantidade_pericias": 2,
+    "armas_iniciais": ["espada_longa", "arco_longo"], "armadura_inicial": "cota_de_malha", "escudo": true,
+    "habilidades": [
+      {"id": "retomar_folego", "nome": "Retomar o Fôlego", "nivel": 1, "tipo": "ativa", "slot": "bonus", "alvo": "self", "descricao": "Recupera 1d10 + nível PV.",
+       "efeito": {"cura": {"expressao": "1d10", "mais_nivel": true}}, "usos": {"max": 1, "recupera": "curto"}},
+      {"id": "surto_de_acao", "nome": "Surto de Ação", "nivel": 2, "tipo": "ativa", "slot": "bonus", "alvo": "inimigo", "alcance": 1, "descricao": "Um ataque adicional neste turno.",
+       "efeito": {"ataque": {"bonus": 0, "dano_extra": null}}, "usos": {"max": 1, "recupera": "curto"}},
+      {"id": "estilo_duelo", "nome": "Estilo de Combate: Duelo", "nivel": 1, "tipo": "passiva", "descricao": "+2 de dano com arma numa mão.", "efeito": {"passiva": {"mod_dano": 2}}},
+      {"id": "ataque_extra", "nome": "Ataque Extra", "nivel": 5, "tipo": "passiva", "descricao": "Dois ataques por ação (aprox.: +1d8 de dano por acerto).", "efeito": {"passiva": {"mod_dano_dado": "1d8"}}}
+    ]
+  },
+  "ladino": {
+    "nome": "Ladino", "descricao": "Furtivo, habilidoso e letal quando o inimigo está distraído.",
+    "dado_vida": 8, "atributo_principal": "DES", "atributo_secundario": "INT",
+    "pericias_de_classe": ["acrobacia", "atletismo", "atuacao", "enganacao", "furtividade", "intimidacao", "intuicao", "investigacao", "percepcao", "persuasao", "prestidigitacao"], "quantidade_pericias": 4,
+    "armas_iniciais": ["rapieira", "arco_curto", "adaga"], "armadura_inicial": "couro", "escudo": false,
+    "habilidades": [
+      {"id": "ataque_furtivo", "nome": "Ataque Furtivo", "nivel": 1, "tipo": "passiva", "descricao": "+1d6 de dano (+1d6 a cada 2 níveis) quando o alvo está desprevenido, caído ou tem um aliado seu adjacente.", "efeito": {"passiva": {"furtivo": "1d6", "furtivo_por_niveis": 2}}},
+      {"id": "acao_ardilosa_esconder", "nome": "Ação Ardilosa: Esconder", "nivel": 2, "tipo": "ativa", "slot": "bonus", "alvo": "self", "descricao": "Esconde-se: ataques contra você têm desvantagem (−2) e seu próximo ataque conta como furtivo.",
+       "efeito": {"condicao": {"id": "escondido", "rodadas": 1, "em": "self"}}},
+      {"id": "esquiva_sobrenatural", "nome": "Esquiva Sobrenatural", "nivel": 5, "tipo": "passiva", "descricao": "Reduz em 2 o dano recebido.", "efeito": {"passiva": {"reducao_dano": 2}}}
+    ]
+  },
+  "mago": {
+    "nome": "Mago", "descricao": "Estudioso da magia arcana; frágil, mas devastador à distância.",
+    "dado_vida": 6, "atributo_principal": "INT", "atributo_secundario": "CON", "conjurador": true,
+    "pericias_de_classe": ["arcanismo", "historia", "intuicao", "investigacao", "medicina", "religiao"], "quantidade_pericias": 2,
+    "armas_iniciais": ["bordao", "adaga"], "armadura_inicial": "nenhuma", "escudo": false,
+    "habilidades": [
+      {"id": "raio_de_fogo", "nome": "Raio de Fogo", "nivel": 1, "tipo": "ativa", "slot": "padrao", "alvo": "inimigo", "alcance": 24, "descricao": "Truque: 1d10 de fogo (2d10 no nível 5).",
+       "efeito": {"dano": {"expressao": "1d10", "tipo_dano": "fogo", "bonus_ataque": "magia", "escala_nivel5": "2d10"}}},
+      {"id": "misseis_magicos", "nome": "Mísseis Mágicos", "nivel": 1, "tipo": "ativa", "slot": "padrao", "alvo": "inimigo", "alcance": 24, "descricao": "Três dardos que nunca erram: 3d4+3.",
+       "efeito": {"dano": {"expressao": "3d4+3", "tipo_dano": "energia", "automatico": true}}, "custo": {"barra": "espacos", "valor": 1}},
+      {"id": "sono", "nome": "Sono", "nivel": 1, "tipo": "ativa", "slot": "padrao", "alvo": "area", "alcance": 18, "raio": 2, "descricao": "Criaturas fracas na área caem adormecidas (atordoadas) por 2 rodadas (resistência de SAB).",
+       "efeito": {"condicao": {"id": "atordoado", "rodadas": 2, "em": "area", "raio": 2, "salvaguarda": "SAB"}}, "custo": {"barra": "espacos", "valor": 1}},
+      {"id": "escudo_arcano", "nome": "Escudo Arcano", "nivel": 1, "tipo": "ativa", "slot": "bonus", "alvo": "self", "descricao": "+5 na CA até o próximo turno.",
+       "efeito": {"condicao": {"id": "escudo_arcano", "rodadas": 1, "em": "self"}}, "custo": {"barra": "espacos", "valor": 1}},
+      {"id": "bola_de_fogo", "nome": "Bola de Fogo", "nivel": 5, "tipo": "ativa", "slot": "padrao", "alvo": "area", "alcance": 24, "raio": 4, "descricao": "8d6 de fogo na área (metade se resistir com DES).",
+       "efeito": {"dano": {"expressao": "8d6", "tipo_dano": "fogo", "raio": 4, "salvaguarda": "DES"}}, "custo": {"barra": "espacos", "valor": 3}}
+    ]
+  },
+  "paladino": {
+    "nome": "Paladino", "descricao": "Cavaleiro sagrado: armadura pesada, cura pelas mãos e golpes divinos.",
+    "dado_vida": 10, "atributo_principal": "FOR", "atributo_secundario": "CAR", "conjurador": true,
+    "pericias_de_classe": ["atletismo", "intuicao", "intimidacao", "medicina", "persuasao", "religiao"], "quantidade_pericias": 2,
+    "armas_iniciais": ["espada_longa", "azagaia"], "armadura_inicial": "cota_de_malha", "escudo": true,
+    "habilidades": [
+      {"id": "cura_pelas_maos", "nome": "Cura pelas Mãos", "nivel": 1, "tipo": "ativa", "slot": "padrao", "alvo": "aliado", "alcance": 1, "descricao": "Reserva de cura: 5 × nível.",
+       "efeito": {"cura": {"expressao": "5", "por_nivel": true}}, "usos": {"max": 1, "recupera": "longo"}},
+      {"id": "golpe_divino", "nome": "Golpe Divino", "nivel": 2, "tipo": "ativa", "slot": "padrao", "alvo": "inimigo", "alcance": 1, "descricao": "Ataque com arma + 2d8 de dano radiante.",
+       "efeito": {"ataque": {"bonus": 0, "dano_extra": "2d8", "tipo_dano_extra": "luz"}}, "custo": {"barra": "espacos", "valor": 1}},
+      {"id": "estilo_defesa", "nome": "Estilo de Combate: Defesa", "nivel": 2, "tipo": "passiva", "descricao": "+1 na CA com armadura.", "efeito": {"passiva": {"mod_defesa": 1}}},
+      {"id": "aura_de_protecao", "nome": "Aura de Proteção", "nivel": 5, "tipo": "passiva", "descricao": "+CAR nas resistências (aprox. +2 na CA contra efeitos).", "efeito": {"passiva": {"mod_salvaguarda": 2}}}
+    ]
+  },
+  "patrulheiro": {
+    "nome": "Patrulheiro", "descricao": "Caçador das fronteiras: arco, rastreamento e companheiro animal.",
+    "dado_vida": 10, "atributo_principal": "DES", "atributo_secundario": "SAB",
+    "pericias_de_classe": ["adestrar_animais", "atletismo", "furtividade", "intuicao", "investigacao", "natureza", "percepcao", "sobrevivencia"], "quantidade_pericias": 3,
+    "armas_iniciais": ["arco_longo", "espada_curta"], "armadura_inicial": "couro_batido", "escudo": false,
+    "habilidades": [
+      {"id": "inimigo_predileto", "nome": "Inimigo Predileto", "nivel": 1, "tipo": "passiva", "descricao": "+2 de dano contra o tipo de inimigo escolhido (aprox. sempre).", "efeito": {"passiva": {"mod_dano": 2}}},
+      {"id": "marca_do_cacador", "nome": "Marca do Caçador", "nivel": 2, "tipo": "ativa", "slot": "bonus", "alvo": "inimigo", "alcance": 18, "descricao": "+1d6 de dano em cada ataque contra o alvo por 3 rodadas.",
+       "efeito": {"condicao": {"id": "marcado", "rodadas": 3, "em": "alvo"}}, "custo": {"barra": "espacos", "valor": 1}},
+      {"id": "tiro_certeiro", "nome": "Estilo: Arquearia", "nivel": 2, "tipo": "passiva", "descricao": "+2 nos ataques à distância.", "efeito": {"passiva": {"mod_ataque_distancia": 2}}}
+    ]
+  },
+  "monge": {
+    "nome": "Monge", "descricao": "Artista marcial veloz; luta sem armas e sem armadura.",
+    "dado_vida": 8, "atributo_principal": "DES", "atributo_secundario": "SAB",
+    "pericias_de_classe": ["acrobacia", "atletismo", "historia", "intuicao", "religiao", "furtividade"], "quantidade_pericias": 2,
+    "armas_iniciais": ["bordao", "adaga"], "armadura_inicial": "nenhuma", "escudo": false,
+    "habilidades": [
+      {"id": "defesa_sem_armadura", "nome": "Defesa sem Armadura", "nivel": 1, "tipo": "passiva", "descricao": "Sem armadura, CA = 10 + DES + SAB.", "efeito": {"passiva": {"defesa_sem_armadura": ["DES", "SAB"]}}},
+      {"id": "artes_marciais", "nome": "Artes Marciais", "nivel": 1, "tipo": "ativa", "slot": "bonus", "alvo": "inimigo", "alcance": 1, "descricao": "Golpe desarmado extra: 1d4 + DES.",
+       "efeito": {"dano": {"expressao": "1d4", "mais_atributo": "DES", "tipo_dano": "impacto", "bonus_ataque": "arma"}}},
+      {"id": "rajada_de_golpes", "nome": "Rajada de Golpes", "nivel": 2, "tipo": "ativa", "slot": "bonus", "alvo": "inimigo", "alcance": 1, "descricao": "Gasta 1 ponto de chi: dois golpes desarmados (2d4 + DES).",
+       "efeito": {"dano": {"expressao": "2d4", "mais_atributo": "DES", "tipo_dano": "impacto", "bonus_ataque": "arma"}}, "custo": {"barra": "espacos", "valor": 1}},
+      {"id": "golpe_atordoante", "nome": "Golpe Atordoante", "nivel": 5, "tipo": "ativa", "slot": "padrao", "alvo": "inimigo", "alcance": 1, "descricao": "Ataque + atordoar (resistência de CON).",
+       "efeito": {"ataque": {"bonus": 0}, "condicao": {"id": "atordoado", "rodadas": 1, "em": "alvo", "salvaguarda": "CON"}}, "custo": {"barra": "espacos", "valor": 1}}
+    ]
+  },
+  "feiticeiro": {
+    "nome": "Feiticeiro", "descricao": "Magia inata e explosiva, alimentada pelo carisma.",
+    "dado_vida": 6, "atributo_principal": "CAR", "atributo_secundario": "CON", "conjurador": true,
+    "pericias_de_classe": ["arcanismo", "enganacao", "intuicao", "intimidacao", "persuasao", "religiao"], "quantidade_pericias": 2,
+    "armas_iniciais": ["adaga", "besta_leve"], "armadura_inicial": "nenhuma", "escudo": false,
+    "habilidades": [
+      {"id": "raio_de_fogo", "nome": "Raio de Fogo", "nivel": 1, "tipo": "ativa", "slot": "padrao", "alvo": "inimigo", "alcance": 24, "descricao": "Truque: 1d10 de fogo.",
+       "efeito": {"dano": {"expressao": "1d10", "tipo_dano": "fogo", "bonus_ataque": "magia", "escala_nivel5": "2d10"}}},
+      {"id": "maos_flamejantes", "nome": "Mãos Flamejantes", "nivel": 1, "tipo": "ativa", "slot": "padrao", "alvo": "area", "alcance": 0, "raio": 3, "descricao": "Cone de fogo: 3d6 (metade se resistir com DES).",
+       "efeito": {"dano": {"expressao": "3d6", "tipo_dano": "fogo", "raio": 3, "salvaguarda": "DES"}}, "custo": {"barra": "espacos", "valor": 1}},
+      {"id": "metamagia_rapida", "nome": "Magia Acelerada", "nivel": 3, "tipo": "ativa", "slot": "bonus", "alvo": "inimigo", "alcance": 24, "descricao": "Truque extra como ação bônus: 1d10 de fogo.",
+       "efeito": {"dano": {"expressao": "1d10", "tipo_dano": "fogo", "bonus_ataque": "magia"}}, "usos": {"max": 2, "recupera": "longo"}}
+    ]
+  },
+  "bruxo": {
+    "nome": "Bruxo", "descricao": "Fez um pacto com uma entidade; rajadas místicas e maldições.",
+    "dado_vida": 8, "atributo_principal": "CAR", "atributo_secundario": "CON", "conjurador": true,
+    "pericias_de_classe": ["arcanismo", "enganacao", "historia", "intimidacao", "investigacao", "natureza", "religiao"], "quantidade_pericias": 2,
+    "armas_iniciais": ["adaga", "besta_leve"], "armadura_inicial": "couro", "escudo": false,
+    "habilidades": [
+      {"id": "rajada_mistica", "nome": "Rajada Mística", "nivel": 1, "tipo": "ativa", "slot": "padrao", "alvo": "inimigo", "alcance": 24, "descricao": "Truque: 1d10 + CAR de energia (2 raios no nível 5).",
+       "efeito": {"dano": {"expressao": "1d10", "mais_atributo": "CAR", "tipo_dano": "energia", "bonus_ataque": "magia", "escala_nivel5": "2d10"}}},
+      {"id": "maldicao", "nome": "Maldição", "nivel": 1, "tipo": "ativa", "slot": "bonus", "alvo": "inimigo", "alcance": 6, "descricao": "+1d6 de dano em cada ataque contra o alvo por 3 rodadas.",
+       "efeito": {"condicao": {"id": "marcado", "rodadas": 3, "em": "alvo"}}, "custo": {"barra": "espacos", "valor": 1}},
+      {"id": "repreensao_infernal", "nome": "Repreensão Infernal", "nivel": 1, "tipo": "ativa", "slot": "padrao", "alvo": "inimigo", "alcance": 12, "descricao": "2d10 de fogo (metade se resistir com DES).",
+       "efeito": {"dano": {"expressao": "2d10", "tipo_dano": "fogo", "salvaguarda": "DES"}}, "custo": {"barra": "espacos", "valor": 1}}
+    ]
+  }
+}

@@ -25,10 +25,10 @@ def test_alcance_e_preview(motor, estado_salao):
 
 def test_validar_declaracao(motor, estado_salao):
     _, estado = estado_salao
-    ok = {"slots": {"padrao": {"tipo": "ataque", "ataque_id": "machado_batalha", "alvo_id": "boss_orc"}},
+    ok = {"slots": {"padrao": {"tipo": "ataque", "ataque_id": "machado_de_batalha", "alvo_id": "boss_orc"}},
           "movimento": None}
     assert motor.validar_declaracao(estado, "u1", ok) == []
-    longe = {"slots": {"padrao": {"tipo": "ataque", "ataque_id": "machado_batalha", "alvo_id": "goblin_arqueiro"}}}
+    longe = {"slots": {"padrao": {"tipo": "ataque", "ataque_id": "machado_de_batalha", "alvo_id": "goblin_arqueiro"}}}
     assert motor.validar_declaracao(estado, "u1", longe)
     arco = {"slots": {"padrao": {"tipo": "ataque", "ataque_id": "arco_longo", "alvo_id": "goblin_arqueiro"}}}
     assert motor.validar_declaracao(estado, "u2", arco) == []
@@ -36,7 +36,7 @@ def test_validar_declaracao(motor, estado_salao):
     assert motor.validar_declaracao(estado, "u1", {"slots": {"xyz": {"tipo": "fala", "texto": "oi"}}})
     assert motor.validar_declaracao(estado, "u1", {"slots": {"livre": {"tipo": "fala", "texto": "x" * 501}}})
     assert motor.validar_declaracao(estado, "u1", {"movimento": {"destino": [6, 4]}, "slots": {}})
-    assert motor.validar_declaracao(estado, "u1", {"slots": {"padrao": {"tipo": "ataque", "ataque_id": "machado_batalha", "alvo_id": "player_lia"}}})
+    assert motor.validar_declaracao(estado, "u1", {"slots": {"padrao": {"tipo": "ataque", "ataque_id": "machado_de_batalha", "alvo_id": "player_lia"}}})
 
 
 def test_opcoes_validas_menu(motor, estado_salao):
@@ -55,10 +55,10 @@ def test_opcoes_validas_menu(motor, estado_salao):
 
 def test_rolagem_por_slot(motor):
     rol = {}
-    r = motor.rolar_para_slot(rol, "u1", "padrao", "1d20+8")
+    r = motor.rolar_para_slot(rol, "u1", "padrao", "1d20+5")
     assert r["id"].startswith("r-") and 9 <= r["total"] <= 28
     try:
-        motor.rolar_para_slot(rol, "u1", "padrao", "1d20+8")
+        motor.rolar_para_slot(rol, "u1", "padrao", "1d20+5")
         assert False, "segunda rolagem no mesmo slot deveria falhar"
     except ValueError:
         pass
@@ -69,8 +69,8 @@ def test_rolagem_por_slot(motor):
 def test_rodada_completa_com_plano_valido(motor, estado_salao):
     store, estado = estado_salao
     rol = {}
-    r = motor.rolar_para_slot(rol, "u1", "padrao", "1d20+8")
-    acoes = {"u1": {"slots": {"padrao": {"tipo": "ataque", "ataque_id": "machado_batalha", "alvo_id": "boss_orc", "rolagem_id": r["id"]},
+    r = motor.rolar_para_slot(rol, "u1", "padrao", "1d20+5")
+    acoes = {"u1": {"slots": {"padrao": {"tipo": "ataque", "ataque_id": "machado_de_batalha", "alvo_id": "boss_orc", "rolagem_id": r["id"]},
                               "livre": {"tipo": "fala", "texto": "Pela honra do meu clã!"}}},
              "u2": {"slots": {"padrao": {"tipo": "criativa", "texto": "Atiro na corrente do lustre para ele cair em cima do orc!"}}}}
     plano = {"intencoes_npcs": [
@@ -144,7 +144,7 @@ def test_desfazer_rodada(motor, estado_salao):
     assert store.estado_atual("t")["rodada"] == 1
     assert store.reverter_ultima_rodada("t") == 1
     de_novo = store.estado_atual("t")
-    assert de_novo["rodada"] == 0 and de_novo["personagens"]["player_thorin"]["barras"]["pv"]["atual"] == 45
+    assert de_novo["rodada"] == 0 and de_novo["personagens"]["player_thorin"]["barras"]["pv"]["atual"] == 39
     assert store.reverter_ultima_rodada("t") == 0
 
 

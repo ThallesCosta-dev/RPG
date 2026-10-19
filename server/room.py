@@ -587,6 +587,13 @@ class Sala:
                     self._revisao.set_result(cmd.get("arbitragens") if comando == "editar_arbitragem" else None)
                 else:
                     self.enviar(player_id, {"type": "error", "code": "sem_revisao_pendente"})
+            case "descanso":
+                tipo_descanso = "longo" if cmd.get("tipo") == "longo" else "curto"
+                self.store.anexar(self.sala_id, [{"tipo": "descanso", "tipo_descanso": tipo_descanso, "npcs": bool(cmd.get("npcs"))}])
+                self._sync()
+                self.broadcast({"type": "chat_message", "id": "c-" + secrets.token_hex(4), "de": "sistema", "nome": "Mesa", "personagem_id": None,
+                                "texto": f"Descanso {tipo_descanso}: " + ("PV, recursos e usos restaurados." if tipo_descanso == "longo" else "metade dos PV e usos de descanso curto restaurados."),
+                                "para": None, "npc": False, "ts": time.time()})
             case "falar_como_npc":
                 estado = self.store.estado_atual(self.sala_id)
                 npc = estado["personagens"].get(str(cmd.get("personagem_id") or ""))

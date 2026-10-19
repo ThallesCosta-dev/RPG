@@ -1,59 +1,693 @@
 {
   "pc_bruenor": {
-    "id": "pc_bruenor", "nome": "Bruenor", "tipo": "jogador", "faccao": "aliado",
-    "classe": "Guerreiro anão (nível 2)", "cor": "#b91c1c", "icone": "🛡️", "voz": "grave",
-    "x": 0, "y": 0,
-    "barras": {"pv": {"atual": 22, "max": 22}, "espacos": {"atual": 0, "max": 0}},
-    "defesa": 17, "deslocamento": 5, "iniciativa_bonus": 1,
-    "atributos": {"FOR": 3, "DES": 1, "CON": 3, "INT": 0, "SAB": 1, "CAR": -1},
+    "id": "pc_bruenor",
+    "nome": "Bruenor",
+    "tipo": "jogador",
+    "faccao": "aliado",
+    "classe": "Guerreiro (nível 2)",
+    "classe_id": "guerreiro",
+    "nivel": 2,
+    "cor": "#b91c1c",
+    "icone": "🛡️",
+    "x": 0,
+    "y": 0,
+    "barras": {
+      "pv": {
+        "atual": 22,
+        "max": 22
+      },
+      "espacos": {
+        "atual": 0,
+        "max": 0
+      }
+    },
+    "defesa": 18,
+    "deslocamento": 6,
+    "iniciativa_bonus": 1,
+    "atributos": {
+      "FOR": 3,
+      "DES": 1,
+      "CON": 3,
+      "INT": 0,
+      "SAB": 1,
+      "CAR": -1
+    },
     "ataques": [
-      {"id": "machado_de_batalha", "nome": "Machado de Batalha", "bonus": 5, "dano": "1d8+3", "tipo_dano": "corte", "alcance": 1},
-      {"id": "machadinha_arremesso", "nome": "Machadinha (arremesso)", "bonus": 5, "dano": "1d6+3", "tipo_dano": "corte", "alcance": 4}
+      {
+        "id": "machado_de_batalha",
+        "nome": "Machado de Batalha",
+        "bonus": 5,
+        "dano": "1d8+3",
+        "tipo_dano": "corte",
+        "alcance": 1,
+        "atributo": "FOR"
+      },
+      {
+        "id": "machadinha",
+        "nome": "Machadinha",
+        "bonus": 5,
+        "dano": "1d6+3",
+        "tipo_dano": "corte",
+        "alcance": 1,
+        "atributo": "FOR"
+      },
+      {
+        "id": "machadinha_arremesso",
+        "nome": "Machadinha (arremesso)",
+        "bonus": 5,
+        "dano": "1d6+3",
+        "tipo_dano": "corte",
+        "alcance": 4,
+        "atributo": "FOR"
+      }
     ],
-    "pericias": {"atletismo": 5, "intimidacao": 1, "percepcao": 3, "sobrevivencia": 3, "forca": 5, "constituicao": 5},
-    "condicoes": [], "caido": false, "postura": null
+    "pericias": {
+      "acrobacia": 1,
+      "adestrar_animais": 1,
+      "arcanismo": 0,
+      "atletismo": 5,
+      "atuacao": -1,
+      "enganacao": -1,
+      "furtividade": 1,
+      "historia": 0,
+      "intimidacao": -1,
+      "intuicao": 1,
+      "investigacao": 0,
+      "medicina": 1,
+      "natureza": 0,
+      "percepcao": 3,
+      "persuasao": -1,
+      "prestidigitacao": 1,
+      "religiao": 2,
+      "sobrevivencia": 1,
+      "forca": 3,
+      "destreza": 1,
+      "constituicao": 3,
+      "inteligencia": 0,
+      "sabedoria": 1,
+      "carisma": -1
+    },
+    "pericias_treinadas": [
+      "atletismo",
+      "percepcao",
+      "religiao"
+    ],
+    "armadura": "cota_de_malha",
+    "escudo": true,
+    "habilidades": [
+      {
+        "id": "retomar_folego",
+        "nome": "Retomar o Fôlego",
+        "nivel": 1,
+        "tipo": "ativa",
+        "slot": "bonus",
+        "alvo": "self",
+        "descricao": "Recupera 1d10 + nível PV.",
+        "efeito": {
+          "cura": {
+            "expressao": "1d10",
+            "mais_nivel": true
+          }
+        },
+        "usos": {
+          "max": 1,
+          "recupera": "curto"
+        },
+        "usos_restantes": 1
+      },
+      {
+        "id": "surto_de_acao",
+        "nome": "Surto de Ação",
+        "nivel": 2,
+        "tipo": "ativa",
+        "slot": "bonus",
+        "alvo": "inimigo",
+        "alcance": 1,
+        "descricao": "Um ataque adicional neste turno.",
+        "efeito": {
+          "ataque": {
+            "bonus": 0,
+            "dano_extra": null
+          }
+        },
+        "usos": {
+          "max": 1,
+          "recupera": "curto"
+        },
+        "usos_restantes": 1
+      },
+      {
+        "id": "estilo_duelo",
+        "nome": "Estilo de Combate: Duelo",
+        "nivel": 1,
+        "tipo": "passiva",
+        "descricao": "+2 de dano com arma numa mão.",
+        "efeito": {
+          "passiva": {
+            "mod_dano": 2
+          }
+        }
+      }
+    ],
+    "usos": {
+      "retomar_folego": 1,
+      "surto_de_acao": 1
+    },
+    "magia": {
+      "bonus": 5,
+      "cd": 13,
+      "atributo": "FOR"
+    },
+    "proficiencia": 2,
+    "condicoes": [],
+    "caido": false,
+    "voz": "grave",
+    "postura": null,
+    "historia": "Anão guerreiro de Phandalin, amigo de Gundren Pedrapique.",
+    "sistema_id": "dnd5e",
+    "personalizada": false
   },
   "pc_lyra": {
-    "id": "pc_lyra", "nome": "Lyra", "tipo": "jogador", "faccao": "aliado",
-    "classe": "Ladina meio-elfa (nível 2)", "cor": "#15803d", "icone": "🗡️", "voz": "jovem",
-    "x": 0, "y": 0,
-    "barras": {"pv": {"atual": 15, "max": 15}, "espacos": {"atual": 0, "max": 0}},
-    "defesa": 15, "deslocamento": 6, "iniciativa_bonus": 4,
-    "atributos": {"FOR": 0, "DES": 4, "CON": 1, "INT": 1, "SAB": 0, "CAR": 2},
+    "id": "pc_lyra",
+    "nome": "Lyra",
+    "tipo": "jogador",
+    "faccao": "aliado",
+    "classe": "Ladino (nível 2)",
+    "classe_id": "ladino",
+    "nivel": 2,
+    "cor": "#15803d",
+    "icone": "🗡️",
+    "x": 0,
+    "y": 0,
+    "barras": {
+      "pv": {
+        "atual": 15,
+        "max": 15
+      },
+      "espacos": {
+        "atual": 0,
+        "max": 0
+      }
+    },
+    "defesa": 15,
+    "deslocamento": 6,
+    "iniciativa_bonus": 4,
+    "atributos": {
+      "FOR": 0,
+      "DES": 4,
+      "CON": 1,
+      "INT": 1,
+      "SAB": 0,
+      "CAR": 2
+    },
     "ataques": [
-      {"id": "rapieira", "nome": "Rapieira", "bonus": 6, "dano": "1d8+4", "tipo_dano": "perfuracao", "alcance": 1},
-      {"id": "arco_curto", "nome": "Arco Curto", "bonus": 6, "dano": "1d6+4", "tipo_dano": "perfuracao", "alcance": 16}
+      {
+        "id": "rapieira",
+        "nome": "Rapieira",
+        "bonus": 6,
+        "dano": "1d8+4",
+        "tipo_dano": "perfuracao",
+        "alcance": 1,
+        "atributo": "melhor"
+      },
+      {
+        "id": "arco_curto",
+        "nome": "Arco Curto",
+        "bonus": 6,
+        "dano": "1d6+4",
+        "tipo_dano": "perfuracao",
+        "alcance": 16,
+        "atributo": "DES"
+      },
+      {
+        "id": "adaga",
+        "nome": "Adaga",
+        "bonus": 6,
+        "dano": "1d4+4",
+        "tipo_dano": "perfuracao",
+        "alcance": 1,
+        "atributo": "melhor"
+      },
+      {
+        "id": "adaga_arremesso",
+        "nome": "Adaga (arremesso)",
+        "bonus": 6,
+        "dano": "1d4+4",
+        "tipo_dano": "perfuracao",
+        "alcance": 4,
+        "atributo": "melhor"
+      }
     ],
-    "pericias": {"furtividade": 8, "acrobacia": 6, "prestidigitacao": 6, "percepcao": 4, "enganacao": 4, "investigacao": 3, "destreza": 6},
-    "condicoes": [], "caido": false, "postura": null
+    "pericias": {
+      "acrobacia": 6,
+      "adestrar_animais": 0,
+      "arcanismo": 3,
+      "atletismo": 0,
+      "atuacao": 2,
+      "enganacao": 2,
+      "furtividade": 6,
+      "historia": 1,
+      "intimidacao": 2,
+      "intuicao": 0,
+      "investigacao": 1,
+      "medicina": 0,
+      "natureza": 1,
+      "percepcao": 2,
+      "persuasao": 2,
+      "prestidigitacao": 6,
+      "religiao": 1,
+      "sobrevivencia": 0,
+      "forca": 0,
+      "destreza": 4,
+      "constituicao": 1,
+      "inteligencia": 1,
+      "sabedoria": 0,
+      "carisma": 2
+    },
+    "pericias_treinadas": [
+      "acrobacia",
+      "arcanismo",
+      "furtividade",
+      "percepcao",
+      "prestidigitacao"
+    ],
+    "armadura": "couro",
+    "escudo": false,
+    "habilidades": [
+      {
+        "id": "ataque_furtivo",
+        "nome": "Ataque Furtivo",
+        "nivel": 1,
+        "tipo": "passiva",
+        "descricao": "+1d6 de dano (+1d6 a cada 2 níveis) quando o alvo está desprevenido, caído ou tem um aliado seu adjacente.",
+        "efeito": {
+          "passiva": {
+            "furtivo": "1d6",
+            "furtivo_por_niveis": 2
+          }
+        }
+      },
+      {
+        "id": "acao_ardilosa_esconder",
+        "nome": "Ação Ardilosa: Esconder",
+        "nivel": 2,
+        "tipo": "ativa",
+        "slot": "bonus",
+        "alvo": "self",
+        "descricao": "Esconde-se: ataques contra você têm desvantagem (−2) e seu próximo ataque conta como furtivo.",
+        "efeito": {
+          "condicao": {
+            "id": "escondido",
+            "rodadas": 1,
+            "em": "self"
+          }
+        }
+      }
+    ],
+    "usos": {},
+    "magia": {
+      "bonus": 6,
+      "cd": 14,
+      "atributo": "DES"
+    },
+    "proficiencia": 2,
+    "condicoes": [],
+    "caido": false,
+    "voz": "jovem",
+    "postura": null,
+    "historia": "Meio-elfa criada nas ruas de Neverwinter; batedora do grupo.",
+    "sistema_id": "dnd5e",
+    "personalizada": false
   },
   "pc_elian": {
-    "id": "pc_elian", "nome": "Elian", "tipo": "jogador", "faccao": "aliado",
-    "classe": "Mago humano (nível 2)", "cor": "#6d28d9", "icone": "🔮", "voz": "masculina",
-    "x": 0, "y": 0,
-    "barras": {"pv": {"atual": 12, "max": 12}, "espacos": {"atual": 3, "max": 3}},
-    "defesa": 12, "deslocamento": 6, "iniciativa_bonus": 2,
-    "atributos": {"FOR": -1, "DES": 2, "CON": 1, "INT": 4, "SAB": 1, "CAR": 0},
+    "id": "pc_elian",
+    "nome": "Elian",
+    "tipo": "jogador",
+    "faccao": "aliado",
+    "classe": "Mago (nível 2)",
+    "classe_id": "mago",
+    "nivel": 2,
+    "cor": "#6d28d9",
+    "icone": "🔮",
+    "x": 0,
+    "y": 0,
+    "barras": {
+      "pv": {
+        "atual": 12,
+        "max": 12
+      },
+      "espacos": {
+        "atual": 3,
+        "max": 3
+      }
+    },
+    "defesa": 12,
+    "deslocamento": 6,
+    "iniciativa_bonus": 2,
+    "atributos": {
+      "FOR": -1,
+      "DES": 2,
+      "CON": 1,
+      "INT": 4,
+      "SAB": 1,
+      "CAR": 0
+    },
     "ataques": [
-      {"id": "raio_de_fogo", "nome": "Raio de Fogo", "bonus": 6, "dano": "1d10", "tipo_dano": "fogo", "alcance": 24},
-      {"id": "misseis_magicos", "nome": "Mísseis Mágicos (gasta espaço)", "bonus": 20, "dano": "3d4+3", "tipo_dano": "energia", "alcance": 24},
-      {"id": "bordao", "nome": "Bordão", "bonus": 1, "dano": "1d6-1", "tipo_dano": "impacto", "alcance": 1}
+      {
+        "id": "bordao",
+        "nome": "Bordão",
+        "bonus": 1,
+        "dano": "1d6-1",
+        "tipo_dano": "impacto",
+        "alcance": 1,
+        "atributo": "FOR"
+      },
+      {
+        "id": "adaga",
+        "nome": "Adaga",
+        "bonus": 4,
+        "dano": "1d4+2",
+        "tipo_dano": "perfuracao",
+        "alcance": 1,
+        "atributo": "melhor"
+      },
+      {
+        "id": "adaga_arremesso",
+        "nome": "Adaga (arremesso)",
+        "bonus": 4,
+        "dano": "1d4+2",
+        "tipo_dano": "perfuracao",
+        "alcance": 4,
+        "atributo": "melhor"
+      }
     ],
-    "pericias": {"arcanismo": 6, "historia": 6, "investigacao": 6, "percepcao": 1, "inteligencia": 6},
-    "condicoes": [], "caido": false, "postura": null
+    "pericias": {
+      "acrobacia": 2,
+      "adestrar_animais": 1,
+      "arcanismo": 6,
+      "atletismo": -1,
+      "atuacao": 0,
+      "enganacao": 0,
+      "furtividade": 2,
+      "historia": 6,
+      "intimidacao": 0,
+      "intuicao": 1,
+      "investigacao": 4,
+      "medicina": 1,
+      "natureza": 4,
+      "percepcao": 3,
+      "persuasao": 0,
+      "prestidigitacao": 2,
+      "religiao": 4,
+      "sobrevivencia": 1,
+      "forca": -1,
+      "destreza": 2,
+      "constituicao": 1,
+      "inteligencia": 4,
+      "sabedoria": 1,
+      "carisma": 0
+    },
+    "pericias_treinadas": [
+      "arcanismo",
+      "historia",
+      "percepcao"
+    ],
+    "armadura": "nenhuma",
+    "escudo": false,
+    "habilidades": [
+      {
+        "id": "raio_de_fogo",
+        "nome": "Raio de Fogo",
+        "nivel": 1,
+        "tipo": "ativa",
+        "slot": "padrao",
+        "alvo": "inimigo",
+        "alcance": 24,
+        "descricao": "Truque: 1d10 de fogo (2d10 no nível 5).",
+        "efeito": {
+          "dano": {
+            "expressao": "1d10",
+            "tipo_dano": "fogo",
+            "bonus_ataque": "magia",
+            "escala_nivel5": "2d10"
+          }
+        }
+      },
+      {
+        "id": "misseis_magicos",
+        "nome": "Mísseis Mágicos",
+        "nivel": 1,
+        "tipo": "ativa",
+        "slot": "padrao",
+        "alvo": "inimigo",
+        "alcance": 24,
+        "descricao": "Três dardos que nunca erram: 3d4+3.",
+        "efeito": {
+          "dano": {
+            "expressao": "3d4+3",
+            "tipo_dano": "energia",
+            "automatico": true
+          }
+        },
+        "custo": {
+          "barra": "espacos",
+          "valor": 1
+        }
+      },
+      {
+        "id": "sono",
+        "nome": "Sono",
+        "nivel": 1,
+        "tipo": "ativa",
+        "slot": "padrao",
+        "alvo": "area",
+        "alcance": 18,
+        "raio": 2,
+        "descricao": "Criaturas fracas na área caem adormecidas (atordoadas) por 2 rodadas (resistência de SAB).",
+        "efeito": {
+          "condicao": {
+            "id": "atordoado",
+            "rodadas": 2,
+            "em": "area",
+            "raio": 2,
+            "salvaguarda": "SAB"
+          }
+        },
+        "custo": {
+          "barra": "espacos",
+          "valor": 1
+        }
+      },
+      {
+        "id": "escudo_arcano",
+        "nome": "Escudo Arcano",
+        "nivel": 1,
+        "tipo": "ativa",
+        "slot": "bonus",
+        "alvo": "self",
+        "descricao": "+5 na CA até o próximo turno.",
+        "efeito": {
+          "condicao": {
+            "id": "escudo_arcano",
+            "rodadas": 1,
+            "em": "self"
+          }
+        },
+        "custo": {
+          "barra": "espacos",
+          "valor": 1
+        }
+      }
+    ],
+    "usos": {},
+    "magia": {
+      "bonus": 6,
+      "cd": 14,
+      "atributo": "INT"
+    },
+    "proficiencia": 2,
+    "condicoes": [],
+    "caido": false,
+    "voz": "masculina",
+    "postura": null,
+    "historia": "Aprendiz de Candlekeep em busca de magia perdida.",
+    "sistema_id": "dnd5e",
+    "personalizada": false
   },
   "pc_mirela": {
-    "id": "pc_mirela", "nome": "Mirela", "tipo": "jogador", "faccao": "aliado",
-    "classe": "Clériga humana da Vida (nível 2)", "cor": "#ca8a04", "icone": "✨", "voz": "feminina",
-    "x": 0, "y": 0,
-    "barras": {"pv": {"atual": 19, "max": 19}, "espacos": {"atual": 3, "max": 3}},
-    "defesa": 18, "deslocamento": 5, "iniciativa_bonus": 0,
-    "atributos": {"FOR": 2, "DES": 0, "CON": 2, "INT": 0, "SAB": 3, "CAR": 1},
+    "id": "pc_mirela",
+    "nome": "Mirela",
+    "tipo": "jogador",
+    "faccao": "aliado",
+    "classe": "Clérigo (nível 2)",
+    "classe_id": "clerigo",
+    "nivel": 2,
+    "cor": "#ca8a04",
+    "icone": "✨",
+    "x": 0,
+    "y": 0,
+    "barras": {
+      "pv": {
+        "atual": 17,
+        "max": 17
+      },
+      "espacos": {
+        "atual": 3,
+        "max": 3
+      }
+    },
+    "defesa": 16,
+    "deslocamento": 6,
+    "iniciativa_bonus": 0,
+    "atributos": {
+      "FOR": 2,
+      "DES": 0,
+      "CON": 2,
+      "INT": 0,
+      "SAB": 3,
+      "CAR": 1
+    },
     "ataques": [
-      {"id": "maca", "nome": "Maça", "bonus": 4, "dano": "1d6+2", "tipo_dano": "impacto", "alcance": 1},
-      {"id": "chama_sagrada", "nome": "Chama Sagrada", "bonus": 5, "dano": "1d8", "tipo_dano": "luz", "alcance": 12}
+      {
+        "id": "maca",
+        "nome": "Maça",
+        "bonus": 4,
+        "dano": "1d6+2",
+        "tipo_dano": "impacto",
+        "alcance": 1,
+        "atributo": "FOR"
+      }
     ],
-    "pericias": {"medicina": 5, "religiao": 2, "intuicao": 5, "persuasao": 3, "sabedoria": 5},
-    "condicoes": [], "caido": false, "postura": null
+    "pericias": {
+      "acrobacia": 0,
+      "adestrar_animais": 3,
+      "arcanismo": 0,
+      "atletismo": 4,
+      "atuacao": 1,
+      "enganacao": 1,
+      "furtividade": 0,
+      "historia": 0,
+      "intimidacao": 1,
+      "intuicao": 3,
+      "investigacao": 0,
+      "medicina": 5,
+      "natureza": 0,
+      "percepcao": 3,
+      "persuasao": 1,
+      "prestidigitacao": 0,
+      "religiao": 2,
+      "sobrevivencia": 3,
+      "forca": 2,
+      "destreza": 0,
+      "constituicao": 2,
+      "inteligencia": 0,
+      "sabedoria": 3,
+      "carisma": 1
+    },
+    "pericias_treinadas": [
+      "atletismo",
+      "medicina",
+      "religiao"
+    ],
+    "armadura": "cota_de_escamas",
+    "escudo": true,
+    "habilidades": [
+      {
+        "id": "curar_ferimentos",
+        "nome": "Curar Ferimentos",
+        "nivel": 1,
+        "tipo": "ativa",
+        "slot": "padrao",
+        "alvo": "aliado",
+        "alcance": 1,
+        "descricao": "Toque curativo: 1d8 + SAB.",
+        "efeito": {
+          "cura": {
+            "expressao": "1d8",
+            "mais_atributo": "SAB"
+          }
+        },
+        "custo": {
+          "barra": "espacos",
+          "valor": 1
+        }
+      },
+      {
+        "id": "chama_sagrada",
+        "nome": "Chama Sagrada",
+        "nivel": 1,
+        "tipo": "ativa",
+        "slot": "padrao",
+        "alvo": "inimigo",
+        "alcance": 12,
+        "descricao": "Fogo radiante do céu: 1d8 (resistência de DES anula).",
+        "efeito": {
+          "dano": {
+            "expressao": "1d8",
+            "tipo_dano": "luz",
+            "salvaguarda": "DES",
+            "anula": true
+          }
+        }
+      },
+      {
+        "id": "bencao",
+        "nome": "Bênção",
+        "nivel": 1,
+        "tipo": "ativa",
+        "slot": "padrao",
+        "alvo": "aliado",
+        "alcance": 6,
+        "descricao": "+1d4 (aprox. +2) em ataques e resistências por 3 rodadas.",
+        "efeito": {
+          "condicao": {
+            "id": "abencoado",
+            "rodadas": 3,
+            "em": "alvo"
+          }
+        },
+        "custo": {
+          "barra": "espacos",
+          "valor": 1
+        }
+      },
+      {
+        "id": "canalizar_divindade",
+        "nome": "Canalizar Divindade: Preservar a Vida",
+        "nivel": 2,
+        "tipo": "ativa",
+        "slot": "padrao",
+        "alvo": "aliado",
+        "alcance": 6,
+        "descricao": "Cura 5 × nível do clérigo, distribuídos (aqui: num aliado).",
+        "efeito": {
+          "cura": {
+            "expressao": "5",
+            "por_nivel": true
+          }
+        },
+        "usos": {
+          "max": 1,
+          "recupera": "curto"
+        },
+        "usos_restantes": 1
+      }
+    ],
+    "usos": {
+      "canalizar_divindade": 1
+    },
+    "magia": {
+      "bonus": 5,
+      "cd": 13,
+      "atributo": "SAB"
+    },
+    "proficiencia": 2,
+    "condicoes": [],
+    "caido": false,
+    "voz": "feminina",
+    "postura": null,
+    "historia": "Clériga da Vida devota de Lathander.",
+    "sistema_id": "dnd5e",
+    "personalizada": false
   }
 }

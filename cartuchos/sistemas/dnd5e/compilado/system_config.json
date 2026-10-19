@@ -7,39 +7,470 @@
     "metrica_diagonal": "1-1-1",
     "terreno_dificil_multiplicador": 2
   },
-  "atributos_principais": ["FOR", "DES", "CON", "INT", "SAB", "CAR"],
+  "atributos_principais": [
+    "FOR",
+    "DES",
+    "CON",
+    "INT",
+    "SAB",
+    "CAR"
+  ],
   "campo_defesa": "defesa",
   "nome_defesa": "CA",
   "bonus_cobertura": 2,
   "barras_status": [
-    {"id": "pv", "nome": "Pontos de Vida (PV)", "cor_token": "--status-vida"},
-    {"id": "espacos", "nome": "Espaços de Magia", "cor_token": "--status-recurso"}
+    {
+      "id": "pv",
+      "nome": "Pontos de Vida (PV)",
+      "cor_token": "--status-vida"
+    },
+    {
+      "id": "espacos",
+      "nome": "Espaços / pontos de classe",
+      "cor_token": "--status-recurso"
+    }
   ],
-  "iniciativa": {"expressao": "1d20+{iniciativa}"},
-  "ataque": {"expressao": "1d20+{bonus}", "compara_com": "defesa"},
-  "teste": {"expressao": "1d20+{bonus}"},
-  "critico": {"margem_padrao": 20, "multiplicador_padrao": 2, "modo": "multiplica_dados", "natural_20_acerta": true, "natural_1_erra": true},
-  "tabela_dificuldade": {"facil": 10, "media": 15, "dificil": 20, "muito_dificil": 25},
-  "pericias": ["acrobacia", "adestrar_animais", "arcanismo", "atletismo", "atuacao", "enganacao", "furtividade", "historia",
-               "intimidacao", "intuicao", "investigacao", "medicina", "natureza", "percepcao", "persuasao", "prestidigitacao",
-               "religiao", "sobrevivencia", "forca", "destreza", "constituicao", "inteligencia", "sabedoria", "carisma"],
+  "iniciativa": {
+    "expressao": "1d20+{iniciativa}"
+  },
+  "ataque": {
+    "expressao": "1d20+{bonus}",
+    "compara_com": "defesa"
+  },
+  "teste": {
+    "expressao": "1d20+{bonus}"
+  },
+  "critico": {
+    "margem_padrao": 20,
+    "multiplicador_padrao": 2,
+    "modo": "multiplica_dados",
+    "natural_20_acerta": true,
+    "natural_1_erra": true
+  },
+  "tabela_dificuldade": {
+    "facil": 10,
+    "media": 15,
+    "dificil": 20,
+    "muito_dificil": 25
+  },
+  "pericias": [
+    "acrobacia",
+    "adestrar_animais",
+    "arcanismo",
+    "atletismo",
+    "atuacao",
+    "enganacao",
+    "furtividade",
+    "historia",
+    "intimidacao",
+    "intuicao",
+    "investigacao",
+    "medicina",
+    "natureza",
+    "percepcao",
+    "persuasao",
+    "prestidigitacao",
+    "religiao",
+    "sobrevivencia",
+    "forca",
+    "destreza",
+    "constituicao",
+    "inteligencia",
+    "sabedoria",
+    "carisma"
+  ],
   "condicoes": {
-    "caido":        {"nome": "Caído", "mod_defesa": -2, "mod_ataque": -2, "duracao_padrao": 1, "descricao": "Ataques corpo a corpo contra você têm vantagem; os seus têm desvantagem (aproximado como -2/+2)"},
-    "desprevenido": {"nome": "Surpreso", "mod_defesa": -5, "duracao_padrao": 1, "descricao": "Não reage; ataques contra você têm vantagem (aprox. -5 na CA)"},
-    "ofuscado":     {"nome": "Cego", "mod_ataque": -5, "mod_defesa": -5, "duracao_padrao": 1, "descricao": "Falha em testes de visão; ataca com desvantagem e é atacado com vantagem"},
-    "defendendo":   {"nome": "Esquivar", "mod_defesa": 2, "duracao_padrao": 1, "descricao": "Ação Esquivar: ataques contra você têm desvantagem (aprox. +2 na CA)"},
-    "agarrado":     {"nome": "Agarrado", "duracao_padrao": 2, "descricao": "Deslocamento 0 até escapar"},
-    "envenenado":   {"nome": "Envenenado", "mod_ataque": -3, "dano_por_turno": "1d4", "tipo_dano": "veneno", "duracao_padrao": 3, "descricao": "Desvantagem em ataques e testes (aprox. -3)"},
-    "sangrando":    {"nome": "Sangrando", "dano_por_turno": "1d4", "tipo_dano": "sangramento", "duracao_padrao": 2, "descricao": "Ferimento aberto"},
-    "amedrontado":  {"nome": "Amedrontado", "mod_ataque": -3, "duracao_padrao": 2, "descricao": "Desvantagem enquanto vê a fonte do medo; não pode se aproximar dela"},
-    "atordoado":    {"nome": "Atordoado", "mod_defesa": -5, "duracao_padrao": 1, "descricao": "Incapacitado; ataques contra você têm vantagem"},
-    "inspirado":    {"nome": "Inspiração Bárdica / Ajuda", "duracao_padrao": 1, "descricao": "Bônus no próximo ataque"},
-    "abencoado":    {"nome": "Abençoado", "mod_ataque": 2, "duracao_padrao": 3, "descricao": "Bless: +1d4 (aprox. +2) em ataques e salvaguardas"}
+    "caido": {
+      "nome": "Caído",
+      "mod_defesa": -2,
+      "mod_ataque": -2,
+      "duracao_padrao": 1,
+      "descricao": "Ataques corpo a corpo contra você têm vantagem; os seus têm desvantagem (aproximado como -2/+2)"
+    },
+    "desprevenido": {
+      "nome": "Surpreso",
+      "mod_defesa": -5,
+      "duracao_padrao": 1,
+      "descricao": "Não reage; ataques contra você têm vantagem (aprox. -5 na CA)"
+    },
+    "ofuscado": {
+      "nome": "Cego",
+      "mod_ataque": -5,
+      "mod_defesa": -5,
+      "duracao_padrao": 1,
+      "descricao": "Falha em testes de visão; ataca com desvantagem e é atacado com vantagem"
+    },
+    "defendendo": {
+      "nome": "Esquivar",
+      "mod_defesa": 2,
+      "duracao_padrao": 1,
+      "descricao": "Ação Esquivar: ataques contra você têm desvantagem (aprox. +2 na CA)"
+    },
+    "agarrado": {
+      "nome": "Agarrado",
+      "duracao_padrao": 2,
+      "descricao": "Deslocamento 0 até escapar"
+    },
+    "envenenado": {
+      "nome": "Envenenado",
+      "mod_ataque": -3,
+      "dano_por_turno": "1d4",
+      "tipo_dano": "veneno",
+      "duracao_padrao": 3,
+      "descricao": "Desvantagem em ataques e testes (aprox. -3)"
+    },
+    "sangrando": {
+      "nome": "Sangrando",
+      "dano_por_turno": "1d4",
+      "tipo_dano": "sangramento",
+      "duracao_padrao": 2,
+      "descricao": "Ferimento aberto"
+    },
+    "amedrontado": {
+      "nome": "Amedrontado",
+      "mod_ataque": -3,
+      "duracao_padrao": 2,
+      "descricao": "Desvantagem enquanto vê a fonte do medo; não pode se aproximar dela"
+    },
+    "atordoado": {
+      "nome": "Atordoado",
+      "mod_defesa": -5,
+      "duracao_padrao": 1,
+      "descricao": "Incapacitado; ataques contra você têm vantagem"
+    },
+    "inspirado": {
+      "nome": "Inspiração Bárdica / Ajuda",
+      "duracao_padrao": 1,
+      "descricao": "Bônus no próximo ataque"
+    },
+    "abencoado": {
+      "nome": "Abençoado",
+      "mod_ataque": 2,
+      "duracao_padrao": 3,
+      "descricao": "Bless: +1d4 (aprox. +2) em ataques e salvaguardas"
+    },
+    "furioso": {
+      "nome": "Fúria",
+      "mod_dano": 2,
+      "reducao_dano": 2,
+      "duracao_padrao": 3,
+      "descricao": "+2 de dano e -2 no dano recebido"
+    },
+    "desmoralizado": {
+      "nome": "Desmoralizado",
+      "mod_ataque": -3,
+      "duracao_padrao": 1,
+      "descricao": "Desvantagem no próximo ataque"
+    },
+    "escudo_arcano": {
+      "nome": "Escudo Arcano",
+      "mod_defesa": 5,
+      "duracao_padrao": 1,
+      "descricao": "+5 na CA"
+    },
+    "escondido": {
+      "nome": "Escondido",
+      "mod_defesa": 2,
+      "furtivo": true,
+      "duracao_padrao": 1,
+      "descricao": "Ataques contra você com desvantagem; seu próximo ataque é furtivo"
+    },
+    "marcado": {
+      "nome": "Marcado",
+      "dano_extra_recebido": "1d6",
+      "duracao_padrao": 3,
+      "descricao": "+1d6 de dano em cada ataque de quem marcou"
+    }
   },
   "slots_de_acao_por_turno": [
-    {"id": "padrao", "label": "Ação", "icone": "⚔️", "tipos_permitidos": ["ataque", "pericia", "criativa"]},
-    {"id": "movimento", "label": "Movimento", "icone": "🥾", "vinculado_ao_grid": true},
-    {"id": "bonus", "label": "Ação Bônus", "icone": "⚡", "tipos_permitidos": ["pericia", "criativa"]},
-    {"id": "livre", "label": "Fala / Interação", "icone": "💬", "tipos_permitidos": ["fala"]}
-  ]
+    {
+      "id": "padrao",
+      "label": "Ação",
+      "icone": "⚔️",
+      "tipos_permitidos": [
+        "ataque",
+        "habilidade",
+        "pericia",
+        "criativa"
+      ]
+    },
+    {
+      "id": "movimento",
+      "label": "Movimento",
+      "icone": "🥾",
+      "vinculado_ao_grid": true
+    },
+    {
+      "id": "bonus",
+      "label": "Ação Bônus",
+      "icone": "⚡",
+      "tipos_permitidos": [
+        "habilidade",
+        "pericia",
+        "criativa"
+      ]
+    },
+    {
+      "id": "livre",
+      "label": "Fala / Interação",
+      "icone": "💬",
+      "tipos_permitidos": [
+        "fala"
+      ]
+    }
+  ],
+  "progressao": {
+    "tipo": "5e",
+    "nivel_max": 5,
+    "proficiencia": [
+      2,
+      2,
+      2,
+      2,
+      3
+    ],
+    "pv_nivel1": "dado_vida + CON",
+    "pv_por_nivel": "dado_vida/2 + 1 + CON",
+    "espacos_conjurador": [
+      2,
+      3,
+      4,
+      4,
+      4
+    ],
+    "cd_salvaguarda": "8 + proficiencia + atributo_principal"
+  },
+  "pericia_atributo": {
+    "acrobacia": "DES",
+    "adestrar_animais": "SAB",
+    "arcanismo": "INT",
+    "atletismo": "FOR",
+    "atuacao": "CAR",
+    "enganacao": "CAR",
+    "furtividade": "DES",
+    "historia": "INT",
+    "intimidacao": "CAR",
+    "intuicao": "SAB",
+    "investigacao": "INT",
+    "medicina": "SAB",
+    "natureza": "INT",
+    "percepcao": "SAB",
+    "persuasao": "CAR",
+    "prestidigitacao": "DES",
+    "religiao": "INT",
+    "sobrevivencia": "SAB",
+    "forca": "FOR",
+    "destreza": "DES",
+    "constituicao": "CON",
+    "inteligencia": "INT",
+    "sabedoria": "SAB",
+    "carisma": "CAR"
+  },
+  "salvaguardas": [
+    "FOR",
+    "DES",
+    "CON",
+    "INT",
+    "SAB",
+    "CAR"
+  ],
+  "armas": [
+    {
+      "id": "adaga",
+      "nome": "Adaga",
+      "dano": "1d4",
+      "tipo_dano": "perfuracao",
+      "alcance": 1,
+      "atributo": "melhor",
+      "arremesso": 4
+    },
+    {
+      "id": "espada_curta",
+      "nome": "Espada Curta",
+      "dano": "1d6",
+      "tipo_dano": "perfuracao",
+      "alcance": 1,
+      "atributo": "melhor"
+    },
+    {
+      "id": "rapieira",
+      "nome": "Rapieira",
+      "dano": "1d8",
+      "tipo_dano": "perfuracao",
+      "alcance": 1,
+      "atributo": "melhor"
+    },
+    {
+      "id": "cimitarra",
+      "nome": "Cimitarra",
+      "dano": "1d6",
+      "tipo_dano": "corte",
+      "alcance": 1,
+      "atributo": "melhor"
+    },
+    {
+      "id": "espada_longa",
+      "nome": "Espada Longa",
+      "dano": "1d8",
+      "tipo_dano": "corte",
+      "alcance": 1,
+      "atributo": "FOR"
+    },
+    {
+      "id": "machado_de_batalha",
+      "nome": "Machado de Batalha",
+      "dano": "1d8",
+      "tipo_dano": "corte",
+      "alcance": 1,
+      "atributo": "FOR"
+    },
+    {
+      "id": "machado_grande",
+      "nome": "Machado Grande",
+      "dano": "1d12",
+      "tipo_dano": "corte",
+      "alcance": 1,
+      "atributo": "FOR",
+      "duas_maos": true
+    },
+    {
+      "id": "espada_grande",
+      "nome": "Espada Grande",
+      "dano": "2d6",
+      "tipo_dano": "corte",
+      "alcance": 1,
+      "atributo": "FOR",
+      "duas_maos": true
+    },
+    {
+      "id": "maca",
+      "nome": "Maça",
+      "dano": "1d6",
+      "tipo_dano": "impacto",
+      "alcance": 1,
+      "atributo": "FOR"
+    },
+    {
+      "id": "martelo_de_guerra",
+      "nome": "Martelo de Guerra",
+      "dano": "1d8",
+      "tipo_dano": "impacto",
+      "alcance": 1,
+      "atributo": "FOR"
+    },
+    {
+      "id": "bordao",
+      "nome": "Bordão",
+      "dano": "1d6",
+      "tipo_dano": "impacto",
+      "alcance": 1,
+      "atributo": "FOR"
+    },
+    {
+      "id": "lanca",
+      "nome": "Lança",
+      "dano": "1d6",
+      "tipo_dano": "perfuracao",
+      "alcance": 1,
+      "atributo": "FOR",
+      "arremesso": 4
+    },
+    {
+      "id": "machadinha",
+      "nome": "Machadinha",
+      "dano": "1d6",
+      "tipo_dano": "corte",
+      "alcance": 1,
+      "atributo": "FOR",
+      "arremesso": 4
+    },
+    {
+      "id": "azagaia",
+      "nome": "Azagaia",
+      "dano": "1d6",
+      "tipo_dano": "perfuracao",
+      "alcance": 1,
+      "atributo": "FOR",
+      "arremesso": 6
+    },
+    {
+      "id": "arco_curto",
+      "nome": "Arco Curto",
+      "dano": "1d6",
+      "tipo_dano": "perfuracao",
+      "alcance": 16,
+      "atributo": "DES"
+    },
+    {
+      "id": "arco_longo",
+      "nome": "Arco Longo",
+      "dano": "1d8",
+      "tipo_dano": "perfuracao",
+      "alcance": 30,
+      "atributo": "DES"
+    },
+    {
+      "id": "besta_leve",
+      "nome": "Besta Leve",
+      "dano": "1d8",
+      "tipo_dano": "perfuracao",
+      "alcance": 16,
+      "atributo": "DES"
+    },
+    {
+      "id": "funda",
+      "nome": "Funda",
+      "dano": "1d4",
+      "tipo_dano": "impacto",
+      "alcance": 6,
+      "atributo": "DES"
+    }
+  ],
+  "armaduras": [
+    {
+      "id": "nenhuma",
+      "nome": "Sem armadura",
+      "defesa_base": 10,
+      "max_des": null
+    },
+    {
+      "id": "couro",
+      "nome": "Couro",
+      "defesa_base": 11,
+      "max_des": null
+    },
+    {
+      "id": "couro_batido",
+      "nome": "Couro Batido",
+      "defesa_base": 12,
+      "max_des": null
+    },
+    {
+      "id": "camisao_de_malha",
+      "nome": "Camisão de Malha",
+      "defesa_base": 13,
+      "max_des": 2
+    },
+    {
+      "id": "cota_de_escamas",
+      "nome": "Cota de Escamas",
+      "defesa_base": 14,
+      "max_des": 2
+    },
+    {
+      "id": "cota_de_malha",
+      "nome": "Cota de Malha",
+      "defesa_base": 16,
+      "max_des": 0
+    },
+    {
+      "id": "placas",
+      "nome": "Placas",
+      "defesa_base": 18,
+      "max_des": 0
+    }
+  ],
+  "escudo": {
+    "bonus": 2
+  }
 }

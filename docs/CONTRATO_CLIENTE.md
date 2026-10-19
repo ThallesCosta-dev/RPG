@@ -181,7 +181,14 @@ Comando do Host: `falar_como_npc {personagem_id, texto}` → `chat_message` com 
 | POST | `/api/salas/{id}/fichas` | `{convite?, ficha}` + opcional `Authorization: Bearer` → `{personagem_id, ficha}`; 400 com a lista de erros em `detail` |
 | POST | `/api/salas/{id}/personagem` | `{personagem_id}` (token) → vincula um personagem disponível a quem ainda não tem (host incluído) |
 
-`ficha` enviada: `{nome, classe?, icone?, cor? (#rrggbb), historia?, atributos: {ATR: int}, barras: {pv: max, pm: max…}, defesa, deslocamento, iniciativa_bonus, pericias: {nome: bônus} (só perícias do modelo), ataques: [{nome, bonus, dano: "1d8+3", tipo_dano, alcance}]}`.
+`ficha` enviada (modo **classes**, quando `modelo-ficha.modo === "classes"`): `{nome, classe_id, nivel, atributos: {ATR: modificador}, pericias: [ids escolhidos], armas: [ids de modelo.armas, ≤3], armadura_id, escudo: bool, voz?, icone?, cor?, historia?}`.
+O servidor calcula PV, recurso de classe, Defesa/CA, bônus de ataque e perícia, CD de magia e a lista `habilidades` (com `usos_restantes`). Regras: perícias fixas da classe sempre treinadas; até `quantidade_pericias` da lista da classe + 2 livres; soma dos modificadores de atributo ≤ `limites.soma_atributos` (+2 a cada 4 níveis).
+
+`ficha` enviada (modo **livre**, sistemas sem `classes.json`): `{nome, classe?, icone?, cor?, historia?, atributos: {ATR: int}, barras: {pv: max, pm: max…}, defesa, deslocamento, iniciativa_bonus, pericias: {nome: bônus}, ataques: [{nome, bonus, dano, tipo_dano, alcance}]}`.
+
+### Habilidades de classe (slot `habilidade`)
+`Personagem.habilidades: [{id, nome, nivel, tipo: "ativa"|"passiva", slot: "padrao"|"bonus", alvo: "self"|"aliado"|"inimigo"|"area", alcance, raio?, descricao, efeito, custo?: {barra, valor}, usos?: {max, recupera}}]`
+e `Personagem.usos: {habilidade_id: restantes}`. Slot: `{tipo: "habilidade", habilidade_id, alvo_id?, ataque_id?}` (o `slot` da habilidade diz em qual slot ela entra; `ataque_id` só para efeitos de ataque com arma). Eventos novos no `round_log`: `habilidade {personagem, habilidade, nome, alvo}`, `recurso {personagem, barra, valor}`, `uso_gasto {personagem, habilidade}`, `habilidade_erro`. Comando do Host: `descanso {tipo: "curto"|"longo", npcs?: bool}` (restaura PV/recursos/usos e envia um `chat_message` de sistema).
 
 Com **token** (jogador já na sala sem personagem, ou o Host): a ficha é criada e vinculada na hora; o servidor manda um novo `room_state`. Com **convite** (antes de entrar): a ficha aparece em `personagens_disponiveis` com `origem: "sala"` e o jogador entra com `/entrar {personagem_id}`.
 

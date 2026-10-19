@@ -158,6 +158,10 @@ class Motor:
             elif tipo == "pericia":
                 if s.get("pericia") not in p.get("pericias", {}):
                     erros.append("perícia não está na ficha")
+            elif tipo == "habilidade":
+                erro = self._erro_habilidade(estado, p, s, sid, mov)
+                if erro:
+                    erros.append(erro)
             elif tipo in ("criativa", "fala"):
                 texto = s.get("texto", "")
                 if not isinstance(texto, str) or not texto.strip():
@@ -410,6 +414,8 @@ class Motor:
             tipo = s.get("tipo")
             if tipo == "ataque":
                 self._ataque_jogador(ctx, p, s, rolagens.get(sid))
+            elif tipo == "habilidade":
+                self._habilidade(ctx, p, s, sid)
             elif tipo == "pericia":
                 cd = re_.cd_por_faixa(arbitragem["dificuldade"], self.cfg) if arbitragem and arbitragem.get("pericia") == s.get("pericia") else re_.cd_por_faixa("media", self.cfg)
                 ev = re_.resolver_teste(p, s["pericia"], cd, self.cfg, motivo=(s.get("texto") or "")[:MAX_TEXTO])
@@ -460,8 +466,203 @@ class Motor:
         if danos:
             conds = [e["condicao"] for e in evs if e["tipo"] == "condicao"]
             extra = f" e condição {', '.join(conds)}" if conds else ""
-            ctx.acoes[-1]["texto"] += f"; {danos[0]['valor']} de dano{extra} ({alvo['nome']} {re_.resumo_barra(alvo_atual)})"
+            origens = [x["origem"] for x in danos[0].get("extras", []) if x.get("valor")]
+            det = f" (+{', '.join(origens)})" if origens else ""
+            ctx.acoes[-1]["texto"] += f"; {danos[0]['valor']} de dano{det}{extra} ({alvo['nome']} {re_.resumo_barra(alvo_atual)})"
         ctx.checar_queda(alvo["id"])
+
+    # ---------------------------------------------------------------- habilidades de classe
+    def habilidade_de(self, p: dict, hid: str) -> dict | None:
+        return next((h for h in p.get("habilidades", []) or [] if h.get("id") == hid), None)
+
+    def _pode_pagar(self, p: dict, hab: dict) -> str | None:
+        custo = hab.get("custo")
+        if custo:
+            b = p["barras"].get(custo.get("barra", "pm"), {"atual": 0})
+            if b["atual"] < int(custo.get("valor", 1)):
+                return f"sem {custo.get('barra', 'pm')} suficiente para {hab['nome']}"
+        if hab.get("usos") and int((p.get("usos") or {}).get(hab["id"], 0)) <= 0:
+            return f"{hab['nome']} já foi usada; recupera com descanso {hab['usos'].get('recupera', 'longo')}"
+        return None
+
+    def _erro_habilidade(self, estado: dict, p: dict, s: dict, slot_id: str, mov) -> str | None:
+        hab = self.habilidade_de(p, s.get("habilidade_id", ""))
+        if hab is None:
+            return "habilidade não está na ficha"
+        if hab.get("tipo") != "ativa":
+            return f"{hab['nome']} é passiva (já está valendo)"
+        if hab.get("slot", "padrao") != slot_id:
+            return f"{hab['nome']} usa o slot '{hab.get('slot', 'padrao')}'"
+        erro = self._pode_pagar(p, hab)
+        if erro:
+            return erro
+        origem = tuple(mov["destino"]) if mov and isinstance(mov, dict) and isinstance(mov.get("destino"), list) else _pos(p)
+        alvo_tipo = hab.get("alvo", "self")
+        if alvo_tipo in ("aliado", "inimigo", "area"):
+            alvo = estado["personagens"].get(s.get("alvo_id") or "")
+            if alvo_tipo == "self" or (alvo_tipo == "area" and int(hab.get("alcance", 0)) == 0):
+                return None
+            if alvo is None:
+                return f"{hab['nome']} precisa de um alvo"
+            if alvo_tipo == "aliado" and alvo["faccao"] != p["faccao"]:
+                return "o alvo precisa ser um aliado"
+            if alvo_tipo == "inimigo" and (alvo["faccao"] == p["faccao"] or not re_.vivo(alvo)):
+                return "o alvo precisa ser um inimigo vivo"
+            if gm.distancia_quadrados(origem, _pos(alvo), self.metrica) > int(hab.get("alcance", 1)):
+                return f"{hab['nome']}: alvo fora de alcance ({hab.get('alcance', 1)} q)"
+        if (hab.get("efeito") or {}).get("ataque"):
+            atq = re_.ataque_de(p, s.get("ataque_id") or (p.get("ataques") or [{}])[0].get("id", ""))
+            if atq is None:
+                return "arma inválida para a habilidade"
+        return None
+
+    def _rolar_salvaguarda(self, alvo: dict, atributo: str | None, cd: int) -> dict | None:
+        """d20 + modificador (atributo em 5e; perícia de resistência em T20) + mod_salvaguarda, contra a CD."""
+        if not atributo:
+            return None
+        if atributo in (alvo.get("atributos") or {}):
+            mod = int(alvo["atributos"][atributo])
+        else:
+            mod = int((alvo.get("pericias") or {}).get(atributo, 0))
+        mod += re_.passivas(alvo)["mod_salvaguarda"] + sum(int(self.cfg.get("condicoes", {}).get(c["id"], {}).get("mod_salvaguarda", 0)) for c in alvo.get("condicoes", []))
+        r = re_.rolar(f"1d20{mod:+d}" if mod else "1d20")
+        return {"atributo": atributo, "cd": cd, "rolagem": r, "sucesso": r["total"] >= cd}
+
+    def _alvos_em_area(self, estado: dict, origem: dict, centro: tuple[int, int], raio: int, aliados: bool) -> list[dict]:
+        mapa = self.mapa_logico(estado)
+        celulas = set(gm.area_raio(centro, raio, mapa, self.metrica))
+        out = []
+        for o in estado["personagens"].values():
+            if not re_.vivo(o) or _pos(o) not in celulas:
+                continue
+            if aliados and o["faccao"] != origem["faccao"]:
+                continue
+            if not aliados and o["id"] == origem["id"]:
+                continue
+            out.append(o)
+        return out
+
+    def _habilidade(self, ctx: "_Rodada", p: dict, s: dict, slot_id: str) -> None:
+        estado = ctx.estado
+        hab = self.habilidade_de(p, s.get("habilidade_id", ""))
+        if hab is None or self._pode_pagar(p, hab):
+            return
+        ef = hab.get("efeito") or {}
+        alvo_tipo = hab.get("alvo", "self")
+        alvo = estado["personagens"].get(s.get("alvo_id") or "") if alvo_tipo != "self" else p
+        if alvo_tipo in ("aliado", "inimigo") and (alvo is None or not re_.vivo(alvo)):
+            alvo = p if alvo_tipo == "aliado" else None
+            if alvo is None:
+                ctx.emitir([evento("preparar", personagem=p["id"], motivo="alvo da habilidade caiu")], texto=f"{p['nome']} prepara {hab['nome']}, mas o alvo já caiu", ator=p["id"])
+                return
+        # custo e usos
+        pagamento = []
+        if hab.get("custo"):
+            pagamento.append(evento("recurso", personagem=p["id"], barra=hab["custo"].get("barra", "pm"), valor=int(hab["custo"].get("valor", 1))))
+        if hab.get("usos"):
+            pagamento.append(evento("uso_gasto", personagem=p["id"], habilidade=hab["id"]))
+        cd = int((p.get("magia") or {}).get("cd", 12))
+        nivel = int(p.get("nivel", 1))
+        mag = p.get("magia") or {}
+        texto = f"{p['nome']} usa {hab['nome']}"
+        if alvo is not None and alvo["id"] != p["id"]:
+            texto += f" em {alvo['nome']}"
+        quedas: list[str] = []
+        evs = [evento("habilidade", personagem=p["id"], habilidade=hab["id"], nome=hab["nome"], alvo=alvo["id"] if alvo else None)] + pagamento
+        ctx.emitir(evs, texto=texto, ator=p["id"])
+        detalhes = []
+
+        # --- ataque com arma + extras
+        if ef.get("ataque") and alvo is not None and alvo["id"] != p["id"]:
+            base = re_.ataque_de(p, s.get("ataque_id") or (p.get("ataques") or [{}])[0].get("id", ""))
+            if base:
+                atq = {**base, "bonus": int(base.get("bonus", 0)) + int(ef["ataque"].get("bonus", 0)), "dano_extra": ef["ataque"].get("dano_extra"),
+                       "origem_extra": hab["id"], "nome": f"{base.get('nome', base['id'])} ({hab['nome']})"}
+                self._resolver_ataque(ctx, p, alvo, atq, None, self.mapa_logico(estado, {p["id"]}))
+        # --- dano direto / área
+        if ef.get("dano"):
+            d = ef["dano"]
+            expr = d.get("escala_nivel5") if nivel >= 5 and d.get("escala_nivel5") else d["expressao"]
+            if d.get("mais_atributo"):
+                m = int((p.get("atributos") or {}).get(d["mais_atributo"], 0))
+                expr = f"{expr}{m:+d}" if m else expr
+            if d.get("raio") is not None and alvo_tipo == "area":
+                centro = _pos(alvo) if alvo is not None and s.get("alvo_id") else _pos(p)
+                alvos = self._alvos_em_area(estado, p, centro, int(d["raio"]), False)
+            else:
+                alvos = [alvo] if alvo is not None and alvo["id"] != p["id"] else []
+            for o in alvos:
+                rol = re_.rolar(expr)
+                valor = rol["total"]
+                acertou = True
+                nota = ""
+                if d.get("automatico"):
+                    pass
+                elif d.get("salvaguarda"):
+                    sv = self._rolar_salvaguarda(o, d["salvaguarda"], cd)
+                    if sv and sv["sucesso"]:
+                        valor = 0 if d.get("anula") else valor // 2
+                        nota = " (resistiu)"
+                elif d.get("bonus_ataque") is not None:
+                    bonus = int(mag.get("bonus", 0)) if d["bonus_ataque"] == "magia" else (int((p.get("ataques") or [{}])[0].get("bonus", 0)) if d["bonus_ataque"] == "arma" else int(d["bonus_ataque"]))
+                    teste = re_.rolar(f"1d20{bonus:+d}" if bonus else "1d20")
+                    acertou = teste["total"] >= re_.defesa_efetiva(o, self.cfg) or (re_.natural(teste) == 20)
+                    if re_.natural(teste) == 1:
+                        acertou = False
+                    nota = f" ({teste['total']} vs {re_.defesa_efetiva(o, self.cfg)})"
+                if not acertou:
+                    ctx.emitir([evento("habilidade_erro", personagem=p["id"], alvo=o["id"], habilidade=hab["id"])])
+                    detalhes.append(f"erra {o['nome']}{nota}")
+                    continue
+                reducao = re_.passivas(o)["reducao_dano"] + sum(int(self.cfg.get("condicoes", {}).get(c["id"], {}).get("reducao_dano", 0)) for c in o.get("condicoes", []))
+                valor = max(0, valor - reducao)
+                ctx.emitir([evento("dano", alvo=o["id"], valor=valor, barra="pv", tipo_dano=d.get("tipo_dano", "energia"), rolagem=rol, origem=hab["id"])])
+                detalhes.append(f"{valor} de dano em {o['nome']}{nota} ({re_.resumo_barra(estado['personagens'][o['id']])})")
+                quedas.append(o["id"])
+        # --- cura
+        if ef.get("cura"):
+            c = ef["cura"]
+            expr = c["expressao"]
+            if c.get("por_nivel"):
+                expr = str(int(expr) * nivel)
+            if c.get("mais_atributo"):
+                m = int((p.get("atributos") or {}).get(c["mais_atributo"], 0))
+                expr = f"{expr}{m:+d}" if m else expr
+            if c.get("mais_nivel"):
+                expr = f"{expr}+{nivel}"
+            alvos = self._alvos_em_area(estado, p, _pos(p), int(c["raio"]), True) if c.get("raio") else [alvo or p]
+            for o in alvos:
+                rol = re_.rolar(expr) if "d" in expr else {"expressao": expr, "total": int(expr.replace("+", "")) if expr.lstrip("+-").isdigit() else 0, "termos": []}
+                if not rol["termos"] and not expr.lstrip("+-").isdigit():
+                    rol = re_.rolar(expr)
+                ctx.emitir([evento("cura", alvo=o["id"], valor=max(0, rol["total"]), barra="pv", rolagem=rol, origem=hab["id"])])
+                detalhes.append(f"{o['nome']} recupera {rol['total']} ({re_.resumo_barra(estado['personagens'][o['id']])})")
+        # --- condição
+        if ef.get("condicao"):
+            c = ef["condicao"]
+            em = c.get("em", "alvo")
+            if em == "self":
+                alvos = [p]
+            elif em == "area":
+                centro = _pos(alvo) if alvo is not None and s.get("alvo_id") and alvo["id"] != p["id"] else _pos(p)
+                alvos = self._alvos_em_area(estado, p, centro, int(c.get("raio", 2)), bool(c.get("aliados")))
+            else:
+                alvos = [alvo] if alvo is not None else []
+            for o in alvos:
+                if c.get("salvaguarda") and o["id"] != p["id"]:
+                    sv = self._rolar_salvaguarda(o, c["salvaguarda"], cd)
+                    if sv and sv["sucesso"]:
+                        detalhes.append(f"{o['nome']} resiste")
+                        continue
+                ev = evento("condicao", alvo=o["id"], condicao=c["id"], rodadas=int(c.get("rodadas", 1)))
+                if c.get("bonus"):
+                    ev["bonus"] = int(c["bonus"])
+                ctx.emitir([ev])
+                detalhes.append(f"{o['nome']} fica {self.cfg.get('condicoes', {}).get(c['id'], {}).get('nome', c['id'])}")
+        if detalhes:
+            ctx.acoes[-1]["texto"] += ": " + "; ".join(detalhes)
+        for pid in quedas:
+            ctx.checar_queda(pid)
 
     def _criativa(self, ctx: "_Rodada", p: dict, texto: str, arb: dict | None) -> None:
         estado = ctx.estado

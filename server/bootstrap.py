@@ -14,7 +14,7 @@ load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 from . import auth, map_engine, tts_engine  # noqa: E402
 from .cartuchos import Biblioteca, montar_cena_inicial  # noqa: E402
 from .events import EventStore  # noqa: E402
-from .fichas import FichasSalvas, modelo_ficha, validar_ficha  # noqa: E402
+from .fichas import FichasSalvas, construir_ficha, modelo_ficha, validar_ficha  # noqa: E402
 from .gpu_scheduler import GPUScheduler  # noqa: E402
 from .llm.gemini import GeminiProvider  # noqa: E402
 from .llm.heuristico import HeuristicoProvider  # noqa: E402
@@ -160,7 +160,11 @@ class App:
         if player_id is None and not (convite and self.store.convite_valido(sala_id, convite)):
             raise PermissionError("convite inválido")
         sistema = self.biblioteca.sistema(info["sistema_id"])
-        ficha, erros = validar_ficha(dados, sistema, self.voices)
+        classes = {k for k in (sistema.classes or {}) if not k.startswith("_")}
+        if classes and (dados.get("classe_id") or not dados.get("ataques")):
+            ficha, erros = construir_ficha(dados, sistema, self.voices)      # construtor por classe (padrão)
+        else:
+            ficha, erros = validar_ficha(dados, sistema, self.voices)        # ficha livre (sistemas sem classes)
         if erros:
             raise ValueError("; ".join(erros))
         estado = self.store.estado_atual(sala_id)

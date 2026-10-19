@@ -95,6 +95,7 @@ def tem_condicao(p: dict, cond: str) -> bool:
 
 def defesa_efetiva(alvo: dict, cfg: dict, em_cobertura: bool = False) -> int:
     base = int(alvo[cfg.get("campo_defesa", "defesa")])
+    # passivas de defesa já entram no número da ficha (fichas.construir_ficha); aqui só condições e cobertura
     for c in alvo.get("condicoes", []):
         base += int(cfg.get("condicoes", {}).get(c["id"], {}).get("mod_defesa", 0))
     if em_cobertura:
@@ -102,11 +103,30 @@ def defesa_efetiva(alvo: dict, cfg: dict, em_cobertura: bool = False) -> int:
     return base
 
 
+def passivas(p: dict) -> dict:
+    """Soma dos efeitos passivos das habilidades de classe."""
+    out: dict = {"mod_ataque": 0, "mod_ataque_distancia": 0, "mod_dano": 0, "mod_defesa": 0, "reducao_dano": 0,
+                 "mod_salvaguarda": 0, "mod_dano_dado": [], "furtivo": None}
+    for h in p.get("habilidades", []) or []:
+        pas = (h.get("efeito") or {}).get("passiva") or {}
+        for k in ("mod_ataque", "mod_ataque_distancia", "mod_dano", "mod_defesa", "reducao_dano", "mod_salvaguarda"):
+            out[k] += int(pas.get(k, 0))
+        if pas.get("mod_dano_dado"):
+            out["mod_dano_dado"].append(pas["mod_dano_dado"])
+        if pas.get("furtivo"):
+            n = 1 + (int(p.get("nivel", 1)) - 1) // int(pas.get("furtivo_por_niveis", 2))
+            m = re.fullmatch(r"(\d+)d(\d+)", pas["furtivo"])
+            out["furtivo"] = f"{n * int(m.group(1))}d{m.group(2)}" if m else pas["furtivo"]
+    return out
+
+
 def bonus_ataque_efetivo(atacante: dict, ataque: dict, cfg: dict) -> int:
     bonus = int(ataque.get("bonus", 0))
     for c in atacante.get("condicoes", []):
         regra = cfg.get("condicoes", {}).get(c["id"], {})
         bonus += int(regra.get("mod_ataque", 0)) + int(c.get("bonus", 0) if c["id"] == "inspirado" else 0)
+    pas = passivas(atacante)
+    bonus += pas["mod_ataque"] + (pas["mod_ataque_distancia"] if int(ataque.get("alcance", 1)) > 1 else 0)
     return bonus
 
 
@@ -133,13 +153,45 @@ def resolver_ataque(atacante: dict, alvo: dict, ataque: dict, cfg: dict,
     if acertou:
         mult = ataque.get("mult_critico", crit_cfg["multiplicador_padrao"]) if critico else 1
         dano = rolar(ataque["dano"], mult_dados=mult)
-        valor = max(0, dano["total"] - int(alvo.get("reducao_dano", 0)))
+        extras = extras_de_dano(atacante, alvo, ataque, cfg, mult)
+        reducao = int(alvo.get("reducao_dano", 0)) + passivas(alvo)["reducao_dano"] + sum(
+            int(cfg.get("condicoes", {}).get(c["id"], {}).get("reducao_dano", 0)) for c in alvo.get("condicoes", []))
+        valor = max(0, dano["total"] + sum(e["valor"] for e in extras) - reducao)
         eventos.append(evento("dano", alvo=alvo["id"], valor=valor, barra="pv",
-                              tipo_dano=ataque.get("tipo_dano", "fisico"), rolagem=dano))
+                              tipo_dano=ataque.get("tipo_dano", "fisico"), rolagem=dano, extras=extras, reducao=reducao))
         for cond in ataque.get("condicoes_ao_acertar", []):
             eventos.append(evento("condicao", alvo=alvo["id"], condicao=cond,
                                   rodadas=int(cfg.get("condicoes", {}).get(cond, {}).get("duracao_padrao", 3))))
     return eventos
+
+
+def extras_de_dano(atacante: dict, alvo: dict, ataque: dict, cfg: dict, mult: int = 1) -> list[dict]:
+    """Dano adicional de passivas (estilo, ataque extra, furtivo), condições (fúria, marcado) e da própria ação (dano_extra)."""
+    extras: list[dict] = []
+    pas = passivas(atacante)
+    corpo_a_corpo = int(ataque.get("alcance", 1)) <= 1
+    if pas["mod_dano"] and corpo_a_corpo:
+        extras.append({"origem": "passiva", "valor": pas["mod_dano"]})
+    for d in pas["mod_dano_dado"]:
+        r = rolar(d, mult_dados=mult)
+        extras.append({"origem": "ataque_extra", "valor": r["total"], "rolagem": r})
+    for c in atacante.get("condicoes", []):
+        regra = cfg.get("condicoes", {}).get(c["id"], {})
+        if regra.get("mod_dano") and corpo_a_corpo:
+            extras.append({"origem": c["id"], "valor": int(regra["mod_dano"])})
+    for c in alvo.get("condicoes", []):
+        regra = cfg.get("condicoes", {}).get(c["id"], {})
+        if regra.get("dano_extra_recebido"):
+            r = rolar(regra["dano_extra_recebido"], mult_dados=mult)
+            extras.append({"origem": c["id"], "valor": r["total"], "rolagem": r})
+    if pas["furtivo"] and (ataque.get("furtivo_valido") or tem_condicao(atacante, "escondido")
+                           or any(tem_condicao(alvo, cnd) for cnd in ("desprevenido", "caido", "atordoado", "agarrado"))):
+        r = rolar(pas["furtivo"], mult_dados=mult)
+        extras.append({"origem": "furtivo", "valor": r["total"], "rolagem": r})
+    if ataque.get("dano_extra"):
+        r = rolar(str(ataque["dano_extra"]), mult_dados=mult) if "d" in str(ataque["dano_extra"]) else {"total": int(ataque["dano_extra"])}
+        extras.append({"origem": ataque.get("origem_extra", "habilidade"), "valor": r["total"], **({"rolagem": r} if "termos" in r else {})})
+    return extras
 
 
 # ------------------------------------------------------------------ testes de perícia / arbitragem

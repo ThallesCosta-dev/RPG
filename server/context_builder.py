@@ -118,6 +118,8 @@ def bloco_cena(estado: dict, motor, opcoes: dict) -> str:
         if p["tipo"] == "npc" and p.get("personalidade"):
             extra += f" — {p['personalidade']}"
         atqs = ", ".join(f"{a['id']} (alcance {a.get('alcance', 1)})" for a in p.get("ataques", [])) if p["tipo"] == "npc" else ""
+        if p["tipo"] == "jogador" and p.get("classe"):
+            extra += f" — {p['classe']}"
         linhas.append(f"- {p['id']} \"{p['nome']}\" ({p['x']},{p['y']}) PV {re_.resumo_barra(p)} Defesa {p['defesa']} {status}{extra}" + (f" — ataques: {atqs}" if atqs else ""))
     if estado["modo"] == "combate" and estado.get("iniciativa"):
         linhas.append("ORDEM DE INICIATIVA: " + ", ".join(estado["iniciativa"]))
