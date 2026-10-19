@@ -658,7 +658,8 @@ class Motor:
                 if c.get("bonus"):
                     ev["bonus"] = int(c["bonus"])
                 ctx.emitir([ev])
-                detalhes.append(f"{o['nome']} fica {self.cfg.get('condicoes', {}).get(c['id'], {}).get('nome', c['id'])}")
+                nome_c = self.cfg.get('condicoes', {}).get(c['id'], {}).get('nome', c['id'])
+                detalhes.append(f"{o['nome']} ganha {nome_c}" if (em == "self" or o["faccao"] == p["faccao"]) else f"{o['nome']} fica {nome_c}")
         if detalhes:
             ctx.acoes[-1]["texto"] += ": " + "; ".join(detalhes)
         for pid in quedas:

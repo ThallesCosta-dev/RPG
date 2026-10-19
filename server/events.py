@@ -204,7 +204,7 @@ def aplicar(estado: dict, ev: dict) -> dict:
         p = _p(estado, ev["alvo"])
         if p:
             conds = p.setdefault("condicoes", [])
-            nova = {"id": ev["condicao"], "rodadas_restantes": ev.get("rodadas")}
+            nova = {"id": ev["condicao"], "rodadas_restantes": ev.get("rodadas"), "nova": True}   # não conta o turno em que foi aplicada
             if "bonus" in ev:
                 nova["bonus"] = ev["bonus"]
             for c in conds:
@@ -221,7 +221,11 @@ def aplicar(estado: dict, ev: dict) -> dict:
         p = _p(estado, ev["alvo"])
         if p:
             for c in p.get("condicoes", []):
-                if c["id"] == ev["condicao"] and c.get("rodadas_restantes") is not None:
+                if c["id"] != ev["condicao"]:
+                    continue
+                if c.pop("nova", False):
+                    continue                                   # 1º fim de turno: só deixa de ser nova
+                if c.get("rodadas_restantes") is not None:
                     c["rodadas_restantes"] -= 1
     elif t == "caiu":
         p = _p(estado, ev["personagem"])

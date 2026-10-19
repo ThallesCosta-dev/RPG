@@ -271,7 +271,9 @@ def fim_de_turno(personagem: dict) -> list[dict]:
     for c in personagem.get("condicoes", []):
         if c.get("rodadas_restantes") is None:
             continue
-        if c["rodadas_restantes"] - 1 <= 0:
+        if c.get("nova"):                                            # aplicada neste turno: vale até o fim do próximo
+            eventos.append(evento("condicao_tick", alvo=personagem["id"], condicao=c["id"]))
+        elif c["rodadas_restantes"] - 1 <= 0:
             eventos.append(evento("condicao_removida", alvo=personagem["id"], condicao=c["id"]))
         else:
             eventos.append(evento("condicao_tick", alvo=personagem["id"], condicao=c["id"]))

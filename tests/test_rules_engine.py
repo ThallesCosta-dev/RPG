@@ -84,6 +84,8 @@ def test_condicoes_por_turno():
     assert ini[0]["tipo"] == "dano" and 1 <= ini[0]["valor"] <= 6
     fim = re_.fim_de_turno(p)
     assert fim == [{"tipo": "condicao_removida", "alvo": "a", "condicao": "sangrando"}]
+    p["condicoes"] = [{"id": "defendendo", "rodadas_restantes": 1, "nova": True}]
+    assert re_.fim_de_turno(p) == [{"tipo": "condicao_tick", "alvo": "a", "condicao": "defendendo"}]   # aplicada agora: ainda não expira
 
 
 def test_catalogo_de_efeitos_limita_valores():

@@ -189,7 +189,7 @@ def test_projecao_eventos_basicos():
     ])
     a = estado["personagens"]["a"]
     assert a["barras"]["pv"]["atual"] == 3 and a["caido"] is False and (a["x"], a["y"]) == (2, 3)
-    assert a["condicoes"] == [{"id": "sangrando", "rodadas_restantes": 1}]
+    assert a["condicoes"] == [{"id": "sangrando", "rodadas_restantes": 2}]     # 1º tick só tira o "nova"
     assert estado["obstaculos"] == []
     aplicar(estado, {"tipo": "evento_desconhecido"})   # ignorado sem erro
 
@@ -215,3 +215,16 @@ def test_criativa_com_ficha_sem_pericias(motor, estado_salao):
         teste = next(e for e in eventos if e["tipo"] == "teste")
         assert teste["personagem"] == "pc_vyn" and teste["pericia"] == "improviso" and teste["cd"] == 15
         assert not [e for e in eventos if e["tipo"] == "intencao_rejeitada"]
+
+
+def test_defender_dura_ate_o_proximo_turno(motor, estado_salao):
+    """Esquivar/Defender no próprio turno precisa valer contra os ataques que vêm depois, até o fim do turno seguinte."""
+    store, estado = estado_salao
+    plano = {"intencoes_npcs": [], "arbitragens": [], "iniciar_combate": False, "mudar_cena_para": None}
+    eventos, _ = motor.resolver_rodada(estado, {"u1": {"slots": {"padrao": {"tipo": "defender"}}}}, plano)
+    store.anexar("t", eventos, rodada=1)
+    thorin = store.estado_atual("t")["personagens"]["player_thorin"]
+    assert [c["id"] for c in thorin["condicoes"]] == ["defendendo"]            # sobreviveu ao fim do próprio turno
+    eventos, _ = motor.resolver_rodada(store.estado_atual("t"), {"u1": {"slots": {"padrao": {"tipo": "esperar"}}}}, plano)
+    store.anexar("t", eventos, rodada=2)
+    assert "defendendo" not in [c["id"] for c in store.estado_atual("t")["personagens"]["player_thorin"]["condicoes"]]   # expira no fim do turno seguinte
