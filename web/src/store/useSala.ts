@@ -13,7 +13,9 @@ import type {
   Rolagem,
   Slot,
   SystemConfig,
-  Tema,, MsgArbitragens } from "../types"
+  Tema,
+  MsgArbitragens,
+} from "../types"
 import { FilaNarracao, type Segmento } from "../lib/narracao"
 import { aplicarEvento } from "../lib/eventos"
 import { barramento } from "../lib/animacoes"
