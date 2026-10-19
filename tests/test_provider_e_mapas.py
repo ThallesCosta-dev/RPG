@@ -51,8 +51,10 @@ def test_gestor_cota_niveis():
     cota = GestorCota(rpm=2, rpd=4, limiar=0.5)
     assert cota.disponivel("gemini")
     cota.registrar("gemini"); cota.registrar("gemini")
-    assert not cota.disponivel("gemini")             # RPM estourado
-    assert cota.fracao_diaria("gemini") == 0.5
+    assert cota.disponivel("gemini")                 # contador local não bloqueia: só o 429 real
+    assert cota.acima_dos_limites("gemini") and cota.fracao_diaria("gemini") == 0.5
+    cota.penalizar("gemini", 60); cota.penalizar("gemini", 60)
+    assert not cota.disponivel("gemini") and cota.resumo("gemini")["cooldown_s"] >= 100   # escalou
     cadeia = CadeiaProvedores([HeuristicoProvider()], cota)
     cadeia.nivel_forcado = 3
     assert cadeia.status()["nivel"] == 3

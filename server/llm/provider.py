@@ -9,6 +9,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import time
 from collections import deque
 from collections.abc import AsyncIterator
@@ -30,6 +31,7 @@ class GestorCota:
         self._minuto: dict[str, deque] = {}
         self._dia: dict[str, deque] = {}
         self._cooldown: dict[str, float] = {}
+        self._penalidades: dict[str, list[float]] = {}
 
     def _limpar(self, nome: str) -> None:
         agora = time.time()
@@ -47,15 +49,22 @@ class GestorCota:
         self._dia[nome].append(t)
 
     def penalizar(self, nome: str, segundos: float = 60) -> None:
-        self._cooldown[nome] = time.time() + segundos
+        """Cooldown após erro real da API. 429 repetidos em 10 min escalam (60 s → 120 → 240 … até 1 h)."""
+        agora = time.time()
+        hist = self._penalidades.setdefault(nome, [])
+        hist[:] = [t for t in hist if t > agora - 600]
+        hist.append(agora)
+        fator = 2 ** min(len(hist) - 1, 6)
+        self._cooldown[nome] = agora + min(3600, segundos * fator)
 
     def disponivel(self, nome: str, limitado: bool = True) -> bool:
-        if self._cooldown.get(nome, 0) > time.time():
-            return False
-        if not limitado:
-            return True
+        """Só o cooldown por erro real bloqueia. Os contadores locais são estimativas (viram nível 'econômico'), não barreira:
+        quem sabe a cota de verdade é a API (429)."""
+        return self._cooldown.get(nome, 0) <= time.time()
+
+    def acima_dos_limites(self, nome: str) -> bool:
         self._limpar(nome)
-        return len(self._minuto[nome]) < self.rpm and len(self._dia[nome]) < self.rpd
+        return len(self._minuto[nome]) >= self.rpm or len(self._dia[nome]) >= self.rpd
 
     def fracao_diaria(self, nome: str) -> float:
         self._limpar(nome)
@@ -84,7 +93,7 @@ class CadeiaProvedores:
             return self.nivel_forcado
         g = self._por_nome("gemini")
         if g and g.ativo and self.cota.disponivel("gemini"):
-            return 2 if self.cota.fracao_diaria("gemini") >= self.cota.limiar else 1
+            return 2 if (self.cota.fracao_diaria("gemini") >= self.cota.limiar or self.cota.acima_dos_limites("gemini")) else 1
         l = self._por_nome("local")
         if l and l.ativo and self.cota.disponivel("local", limitado=False):
             return 3
@@ -128,9 +137,13 @@ class CadeiaProvedores:
         if p.nome == "gemini" and ("429" in msg or "RESOURCE_EXHAUSTED" in msg or "quota" in msg.lower()):
             if ctx is not None and ctx.tipo == "narrar":
                 return                                       # a narração já caiu para o modelo lite por conta própria
-            self.cota.penalizar("gemini", 60)
+            m = re.search(r"retry(?:Delay|\s+in)\D*(\d+(?:\.\d+)?)\s*s", msg, re.I)
+            self.cota.penalizar("gemini", float(m.group(1)) + 1 if m else 60)
         elif p.nome == "local":
-            self.cota.penalizar("local", 120)
+            if "404" in msg or "not found" in msg.lower() or "connect" in msg.lower():
+                p.desligar(msg[:120])                        # modelo inexistente / servidor fora: não insistir a cada rodada
+            else:
+                self.cota.penalizar("local", 120)
 
     # ---------------------------------------------------------------- interface
     async def planejar(self, ctx: Contexto):

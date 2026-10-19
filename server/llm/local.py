@@ -30,10 +30,17 @@ class LocalProvider:
         self.timeout_planejar = self.timeout          # a cadeia usa isto no wait_for
         self.num_ctx = int(os.getenv("LLM_LOCAL_CTX", "8192"))
         self._ollama: bool | None = None
+        self._desligado: str | None = None               # motivo, quando o servidor local provou que não funciona
 
     @property
     def ativo(self) -> bool:
-        return bool(self.url)
+        return bool(self.url) and self._desligado is None
+
+    def desligar(self, motivo: str) -> None:
+        if self._desligado is None:
+            import logging
+            logging.getLogger("ai_vtt.llm").warning("LLM local desligado até reiniciar: %s", motivo)
+        self._desligado = motivo
 
     @property
     def base_ollama(self) -> str:
