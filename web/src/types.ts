@@ -485,6 +485,13 @@ export interface ModeloFicha {
   expressao_ataque: string
   exemplo_dano: string
   monstros_modelo?: { id: string; nome: string }[]
+  vozes?: VozDisponivel[]
+}
+
+export interface VozDisponivel {
+  id: string
+  descricao: string
+  motor: string
 }
 
 export interface AtaqueEnvio {
@@ -501,6 +508,7 @@ export interface FichaEnvio {
   icone?: string
   cor?: string // #rrggbb
   historia?: string
+  voz?: string | null
   atributos: Record<string, number>
   barras: Record<string, number> // id da barra → máximo
   defesa: number

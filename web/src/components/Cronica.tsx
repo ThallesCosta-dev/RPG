@@ -34,6 +34,22 @@ export default function Cronica({ semCabecalho = false }: { semCabecalho?: boole
   const pendentes = useSala((s) => s.segmentosPendentes)
   const pular = useSala((s) => s.pularNarracao)
   const [abertas, setAbertas] = useState<Set<number>>(new Set())
+  const [mostrarLog, setMostrarLog] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("aivtt_log_mecanico") !== "0"
+    } catch {
+      return true
+    }
+  })
+  const alternarLog = () =>
+    setMostrarLog((v) => {
+      try {
+        localStorage.setItem("aivtt_log_mecanico", v ? "0" : "1")
+      } catch {
+        /* sem storage */
+      }
+      return !v
+    })
   const fim = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -64,8 +80,9 @@ export default function Cronica({ semCabecalho = false }: { semCabecalho?: boole
           </p>
         )
       case "acao":
+        if (!mostrarLog) return null
         return (
-          <p key={`a${i}`} className="text-[12px] text-suave">
+          <p key={`a${i}`} className="text-[11px] text-suave opacity-80">
             <span className="chip mr-1">{it.id}</span>
             {it.texto}
           </p>
@@ -105,6 +122,9 @@ export default function Cronica({ semCabecalho = false }: { semCabecalho?: boole
       {!semCabecalho && (
         <div className="flex items-center justify-between border-b px-3 py-2" style={{ borderColor: "var(--painel-borda)" }}>
           <h2 className="text-sm uppercase tracking-wider text-suave">Crônica</h2>
+          <button className="botao px-2 py-0.5 text-[11px]" onClick={alternarLog} aria-pressed={mostrarLog} title="Mostra ou esconde as linhas mecânicas (e1, e2…) do log">
+            {mostrarLog ? "log: ligado" : "log: oculto"}
+          </button>
           {narrando && (
             <button className="botao px-2 py-0.5 text-xs" onClick={pular} title="Esvazia a fila e aplica as animações pendentes">
               ⏭ Pular narração{pendentes > 0 ? ` (${pendentes})` : ""}

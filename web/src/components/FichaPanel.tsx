@@ -17,6 +17,7 @@ export default function FichaPanel({ p, config }: { p: Personagem; config: Syste
             {p.classe ? `${p.classe} · ` : ""}
             {p.tipo === "npc" ? "NPC" : "personagem de jogador"} · {p.faccao} · posição ({p.x}, {p.y})
             {p.caido ? " · caído" : ""}
+            {p.voz ? ` · voz: ${p.voz}` : ""}
           </p>
         </div>
       </header>

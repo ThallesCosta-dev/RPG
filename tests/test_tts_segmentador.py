@@ -106,3 +106,13 @@ async def test_pipeline_junta_frases_curtas_da_mesma_voz():
     segs = [s async for s in pipe.narrar(_stream([texto]), vozes)]
     assert [s["voz"] for s in segs] == ["NARRADOR", "bram", "NARRADOR"]          # 3 segmentos, não 6
     assert segs[1]["texto"].count(".") == 3 and segs[2]["texto"] == "Bram aperta a caneca. O vento uiva."
+
+
+@pytest.mark.asyncio
+async def test_marcador_antes_da_troca_de_voz_vai_para_o_proximo_segmento():
+    pipe = PipelineNarracao(GPUScheduler({}))
+    vozes = {"NARRADOR": {}, "bram": {}}
+    texto = "[VOZ:NARRADOR] [EVENTO:e1] O anão pergunta. [EVENTO:e2] [VOZ:bram] \"Não sei de nada.\" [VOZ:NARRADOR] Ele desvia o olhar. [EVENTO:e3]"
+    segs = [s async for s in pipe.narrar(_stream([texto]), vozes)]
+    assert all(s["texto"] or s["eventos"] for s in segs)
+    assert [(s["voz"], s["eventos"]) for s in segs] == [("NARRADOR", ["e1"]), ("bram", ["e2"]), ("NARRADOR", ["e3"])]   # e3 órfão junta-se ao último

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { api, errosDoDetail } from "../lib/api"
 import { expressaoValida } from "../lib/dados"
 import type { AtaqueEnvio, FichaEnvio, Intervalo, ModeloFicha } from "../types"
@@ -51,6 +51,10 @@ export default function FichaForm({ sistemaId, aoCriar, aoCancelar }: Props) {
   const [icone, setIcone] = useState("")
   const [cor, setCor] = useState("#2563eb")
   const [historia, setHistoria] = useState("")
+  const [voz, setVoz] = useState("")
+  const [ouvindo, setOuvindo] = useState<string | null>(null)
+  const [erroVoz, setErroVoz] = useState<string | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
   const [atributos, setAtributos] = useState<Record<string, string>>({})
   const [barras, setBarras] = useState<Record<string, string>>({})
   const [defesa, setDefesa] = useState("10")
@@ -134,9 +138,38 @@ export default function FichaForm({ sistemaId, aoCriar, aoCancelar }: Props) {
       if (classe.trim()) ficha.classe = classe.trim()
       if (icone) ficha.icone = icone
       if (historia.trim()) ficha.historia = historia.trim()
+      if (voz) ficha.voz = voz
       return { ficha, erros: [] }
     }
-  }, [modelo, nome, classe, cor, historia, atributos, barras, defesa, deslocamento, iniciativa, pericias, ataques])
+  }, [modelo, nome, classe, cor, historia, voz, atributos, barras, defesa, deslocamento, iniciativa, pericias, ataques])
+
+  const ouvir = async (id: string) => {
+    setErroVoz(null)
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current = null
+      if (ouvindo === id) {
+        setOuvindo(null)
+        return
+      }
+    }
+    try {
+      setOuvindo(id)
+      const r = await fetch(`/api/vozes/${encodeURIComponent(id)}/amostra`)
+      if (!r.ok) throw new Error(r.status === 404 || r.status === 503 ? "TTS desligado no servidor" : `erro ${r.status}`)
+      const { audio_url } = (await r.json()) as { audio_url: string | null }
+      if (!audio_url) throw new Error("sem áudio de amostra")
+      const a = new Audio(audio_url)
+      audioRef.current = a
+      a.onended = () => setOuvindo((v) => (v === id ? null : v))
+      await a.play()
+    } catch (e) {
+      setOuvindo(null)
+      setErroVoz(e instanceof Error ? e.message : "não foi possível tocar a amostra")
+    }
+  }
+
+  useEffect(() => () => audioRef.current?.pause(), [])
 
   const enviar = async (ev: React.FormEvent) => {
     ev.preventDefault()
@@ -208,6 +241,23 @@ export default function FichaForm({ sistemaId, aoCriar, aoCancelar }: Props) {
             </span>
             <code className="text-xs text-suave">{cor}</code>
           </div>
+        </div>
+        <div className="sm:col-span-2">
+          <label className="rotulo" htmlFor="ficha-voz">Voz do personagem</label>
+          <div className="flex items-center gap-2">
+            <select id="ficha-voz" className="campo flex-1" value={voz} onChange={(e) => setVoz(e.target.value)}>
+              <option value="">Sem voz própria (o narrador cita as falas)</option>
+              {(modelo.vozes ?? []).map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.descricao} ({v.motor})
+                </option>
+              ))}
+            </select>
+            <button type="button" className="botao px-3 py-1" disabled={!voz} onClick={() => ouvir(voz)} aria-pressed={ouvindo === voz} title="Ouvir uma frase de amostra">
+              {ouvindo === voz ? "■ Parar" : "▶ Ouvir"}
+            </button>
+          </div>
+          <p className="text-[11px] text-suave">Suas falas na narração saem com essa voz. {erroVoz && <span className="text-perigo">{erroVoz}</span>}</p>
         </div>
         <div className="sm:col-span-2">
           <label className="rotulo" htmlFor="ficha-historia">História</label>

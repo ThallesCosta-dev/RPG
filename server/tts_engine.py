@@ -75,6 +75,9 @@ class PipelineNarracao:
             except Exception:
                 log.exception("stream de narração interrompido")
             finally:
+                if ctx.get("eventos_pendentes"):          # marcadores órfãos no fim: segmento sem texto, só para animar
+                    ctx["pendente"] = ctx["pendente"] or {"texto": "", "voz": voz, "eventos": []}
+                    ctx["pendente"]["eventos"] = ctx["pendente"]["eventos"] + ctx.pop("eventos_pendentes")
                 self._despachar_pendente(ctx)
                 fila.put_nowait(None)
 
@@ -117,6 +120,11 @@ class PipelineNarracao:
         texto = " ".join(TAG_FALA.sub("", texto).split())
         if not texto and not eventos:
             return
+        if not texto:                                     # só marcadores (ex.: [EVENTO:e3] logo antes de [VOZ:x]): passam para o próximo trecho
+            ctx["eventos_pendentes"] = ctx.get("eventos_pendentes", []) + list(eventos)
+            return
+        if ctx.get("eventos_pendentes"):
+            eventos = ctx.pop("eventos_pendentes") + list(eventos)
         pend = ctx["pendente"]
         if pend and pend["voz"] == voz and not eventos and len(pend["texto"]) + len(texto) + 1 <= self.MAX_SEGMENTO:
             pend["texto"] = (pend["texto"] + " " + texto).strip()        # mesma voz, sem novo marcador: junta
