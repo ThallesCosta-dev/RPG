@@ -16,6 +16,16 @@ const hora = (ts: number) => {
 function Linha({ m, personagens, minha }: { m: ChatMessage; personagens: Record<string, Personagem>; minha: boolean }) {
   const p = m.personagem_id ? personagens[m.personagem_id] : undefined
   const destino = m.para ? (personagens[m.para]?.nome ?? m.para) : null
+  if (m.de === "sistema") {
+    // Aviso da mesa (descanso, etc.): discreto, centralizado, sem avatar.
+    return (
+      <div className="px-1 py-0.5 text-center text-[11px] italic text-suave" role="status" aria-label={`${m.nome}: ${m.texto}`}>
+        <span className="tabular-nums">{hora(m.ts)} </span>
+        <span className="chip mr-1 not-italic">{m.nome}</span>
+        {m.texto}
+      </div>
+    )
+  }
   if (m.npc) {
     return (
       <div className="msg-npc flex gap-2 rounded px-2 py-1.5" aria-label={`${m.nome} (NPC)`}>

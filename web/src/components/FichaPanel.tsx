@@ -1,12 +1,21 @@
 import type { Personagem, SystemConfig } from "../types"
+import { sinal } from "../lib/ficha"
+import { LinhaHabilidade } from "./FichaFormClasses"
 import TokenAvatar from "./TokenAvatar"
-
-const sinal = (n: number) => (n >= 0 ? `+${n}` : String(n))
 
 /** Ficha completa de um personagem (painel "Minha ficha"). */
 export default function FichaPanel({ p, config }: { p: Personagem; config: SystemConfig }) {
-  const pericias = Object.entries(p.pericias).sort(([a], [b]) => a.localeCompare(b))
+  const treinadas = p.pericias_treinadas ? new Set(p.pericias_treinadas) : null
+  // Ficha de classe: só as treinadas (as demais ficam no "ver todas"); ficha livre/NPC: tudo o que há.
+  const pericias = Object.entries(p.pericias)
+    .filter(([k]) => !treinadas || treinadas.has(k))
+    .sort(([a], [b]) => a.localeCompare(b))
+  const destreinadas = treinadas ? Object.entries(p.pericias).filter(([k]) => !treinadas.has(k)).sort(([a], [b]) => a.localeCompare(b)) : []
   const atributos = Object.entries(p.atributos ?? {})
+  const habilidades = p.habilidades ?? []
+  const passivas = habilidades.filter((h) => h.tipo === "passiva")
+  const ativas = habilidades.filter((h) => h.tipo === "ativa")
+  const nomeArmadura = p.armadura ? p.armadura.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase()) : null
   return (
     <div className="space-y-4 text-sm">
       <header className="flex items-center gap-3">
@@ -64,8 +73,57 @@ export default function FichaPanel({ p, config }: { p: Personagem; config: Syste
             <dt className="text-[10px] uppercase text-suave">Iniciativa</dt>
             <dd className="tabular-nums">{sinal(p.iniciativa_bonus)}</dd>
           </div>
+          {p.magia && (
+            <div className="rounded px-2 py-1" style={{ background: "#00000033" }}>
+              <dt className="text-[10px] uppercase text-suave">CD de magia</dt>
+              <dd className="tabular-nums">
+                {p.magia.cd} <span className="text-[11px] text-suave">({p.magia.atributo} {sinal(p.magia.bonus)})</span>
+              </dd>
+            </div>
+          )}
+          {p.proficiencia !== undefined && (
+            <div className="rounded px-2 py-1" style={{ background: "#00000033" }}>
+              <dt className="text-[10px] uppercase text-suave">Proficiência / treino</dt>
+              <dd className="tabular-nums">{sinal(p.proficiencia)}</dd>
+            </div>
+          )}
+          {(nomeArmadura || p.escudo !== undefined) && (
+            <div className="rounded px-2 py-1" style={{ background: "#00000033" }}>
+              <dt className="text-[10px] uppercase text-suave">Armadura</dt>
+              <dd>
+                {nomeArmadura ?? "—"}
+                {p.escudo ? " + escudo" : ""}
+              </dd>
+            </div>
+          )}
         </dl>
       </section>
+
+      {habilidades.length > 0 && (
+        <section>
+          <h4 className="rotulo">Habilidades</h4>
+          {ativas.length > 0 && (
+            <>
+              <h5 className="mb-1 text-[11px] uppercase text-suave">Ativas</h5>
+              <ul className="mb-2 space-y-1">
+                {ativas.map((h) => (
+                  <LinhaHabilidade key={h.id} h={h} usosRestantes={h.usos ? (p.usos?.[h.id] ?? h.usos_restantes ?? 0) : undefined} />
+                ))}
+              </ul>
+            </>
+          )}
+          {passivas.length > 0 && (
+            <>
+              <h5 className="mb-1 text-[11px] uppercase text-suave">Passivas</h5>
+              <ul className="space-y-1">
+                {passivas.map((h) => (
+                  <LinhaHabilidade key={h.id} h={h} />
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
+      )}
 
       <section>
         <h4 className="rotulo">Ataques</h4>
@@ -117,6 +175,18 @@ export default function FichaPanel({ p, config }: { p: Personagem; config: Syste
               </li>
             ))}
           </ul>
+        )}
+        {destreinadas.length > 0 && (
+          <details className="mt-1 text-[11px]">
+            <summary className="cursor-pointer text-suave">Destreinadas ({destreinadas.length})</summary>
+            <ul className="mt-1 flex flex-wrap gap-1">
+              {destreinadas.map(([k, v]) => (
+                <li key={k} className="chip capitalize opacity-70">
+                  {k} <span className="tabular-nums text-suave">{sinal(v)}</span>
+                </li>
+              ))}
+            </ul>
+          </details>
         )}
       </section>
 

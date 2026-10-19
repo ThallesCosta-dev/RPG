@@ -210,6 +210,22 @@ export class GridRenderer {
         this.flutuar(tv, `+${ev.valor}`, 0x4ade80, imediato)
         return
       }
+      case "recurso": {
+        // Barra de recurso descendo: o HUD acompanha o estado; aqui só o número flutuante na cor do recurso.
+        const tv = this.tokens.get(ev.personagem)
+        if (tv) this.flutuar(tv, `-${ev.valor} ${(ev.barra || "pm").toUpperCase()}`, 0x60a5fa, imediato, 13)
+        return
+      }
+      case "habilidade": {
+        const tv = this.tokens.get(ev.personagem)
+        if (tv) this.flutuar(tv, `✨ ${ev.nome}`, 0xfacc15, imediato, 13)
+        return
+      }
+      case "habilidade_erro": {
+        const tv = ev.alvo ? this.tokens.get(ev.alvo) : undefined
+        if (tv) this.flutuar(tv, "resistiu", 0xcccccc, imediato, 12)
+        return
+      }
       case "ataque": {
         if (ev.acertou) return
         const atacante = this.tokens.get(ev.atacante)

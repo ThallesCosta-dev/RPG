@@ -24,6 +24,11 @@ export function aplicarEvento(state: Estado, ev: Evento): Estado {
       return comPersonagem(state, ev.alvo, (p) => ajustarBarra(p, ev.barra || "pv", -ev.valor))
     case "cura":
       return comPersonagem(state, ev.alvo, (p) => ajustarBarra(p, ev.barra || "pv", ev.valor))
+    case "recurso":
+      // Custo de habilidade: a barra indicada (PM, espaços…) desce como no dano.
+      return comPersonagem(state, ev.personagem, (p) => ajustarBarra(p, ev.barra || "pm", -ev.valor))
+    case "uso_gasto":
+      return comPersonagem(state, ev.personagem, (p) => ({ ...p, usos: { ...(p.usos ?? {}), [ev.habilidade]: Math.max(0, (p.usos?.[ev.habilidade] ?? 0) - 1) } }))
     case "condicao":
       return comPersonagem(state, ev.alvo, (p) => ({
         ...p,

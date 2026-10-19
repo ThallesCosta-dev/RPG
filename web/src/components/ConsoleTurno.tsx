@@ -2,14 +2,16 @@ import { useCallback, useEffect, useMemo } from "react"
 import { montarSlot, useSala, type SlotEditor } from "../store/useSala"
 import { DADOS_RAPIDOS, SLOT_LIVRE_DADO, expressaoDeAtaque } from "../lib/dados"
 import { distanciaQuadrados } from "../lib/grid"
-import type { AcaoDeclarada, Ataque, Coord, Personagem, Slot, SlotConfig } from "../types"
+import { custoDaHabilidade, rotuloBarra } from "../lib/ficha"
+import type { AcaoDeclarada, Ataque, Coord, Habilidade, Personagem, Slot, SlotConfig } from "../types"
 import Temporizador from "./Temporizador"
 
 // Tipos do contrato que o console sabe montar; "magia" e outros do system_config ficam de fora por enquanto.
-const TIPOS_SUPORTADOS = new Set(["ataque", "pericia", "criativa", "fala"])
+const TIPOS_SUPORTADOS = new Set(["ataque", "habilidade", "pericia", "criativa", "fala"])
 const TIPOS_EXTRAS = ["defender", "esperar"]
 const ROTULO_TIPO: Record<string, string> = {
   ataque: "Ataque",
+  habilidade: "Habilidade",
   pericia: "Perícia",
   criativa: "Ação criativa",
   fala: "Fala",
@@ -18,20 +20,53 @@ const ROTULO_TIPO: Record<string, string> = {
 }
 const MAX_TEXTO = 500
 
-function alvosValidos(
-  personagens: Record<string, Personagem>,
-  eu: Personagem,
-  ataque: Ataque | undefined,
-  origem: Coord,
-  metrica: "1-1-1" | "1-2-1-2" | "manhattan",
-): Personagem[] {
+type Metrica = "1-1-1" | "1-2-1-2" | "manhattan"
+
+const vivo = (p: Personagem) => !p.caido && !(p.barras.pv && p.barras.pv.atual <= 0)
+
+function alvosValidos(personagens: Record<string, Personagem>, eu: Personagem, ataque: Ataque | undefined, origem: Coord, metrica: Metrica): Personagem[] {
   if (!ataque) return []
   return Object.values(personagens).filter((p) => {
-    if (p.id === eu.id || p.faccao === "aliado" || p.caido) return false
-    const pv = p.barras.pv
-    if (pv && pv.atual <= 0) return false
+    if (p.id === eu.id || p.faccao === "aliado" || !vivo(p)) return false
     return distanciaQuadrados(origem, [p.x, p.y], metrica) <= ataque.alcance
   })
+}
+
+/** Habilidades ativas do personagem que entram no slot `slotId` (o `slot` da habilidade diz onde ela entra). */
+function habilidadesDoSlot(p: Personagem, slotId: string): Habilidade[] {
+  return (p.habilidades ?? []).filter((h) => h.tipo === "ativa" && (h.slot ?? "padrao") === slotId)
+}
+
+/** Motivo de a habilidade não poder ser usada agora (sem recurso / sem usos), ou null. */
+function semRecurso(p: Personagem, h: Habilidade): string | null {
+  if (h.custo) {
+    const b = p.barras[h.custo.barra]
+    if (b && b.atual < h.custo.valor) return `sem ${rotuloBarra(h.custo.barra)} suficiente`
+  }
+  if (h.usos && (p.usos?.[h.id] ?? 0) <= 0) return `sem usos (recupera com descanso ${h.usos.recupera})`
+  return null
+}
+
+/** Alvos válidos de uma habilidade, conforme `alvo` e `alcance` (mesmas regras do servidor). */
+function alvosHabilidade(personagens: Record<string, Personagem>, eu: Personagem, h: Habilidade | undefined, origem: Coord, metrica: Metrica): Personagem[] {
+  if (!h) return []
+  const alvo = h.alvo ?? "self"
+  if (alvo === "self") return []
+  const alcance = h.alcance ?? 1
+  if (alvo === "area" && alcance === 0) return []
+  return Object.values(personagens).filter((p) => {
+    if (alvo === "aliado" && p.faccao !== eu.faccao) return false
+    if (alvo === "inimigo" && (p.faccao === eu.faccao || p.id === eu.id)) return false
+    if (alvo !== "aliado" && !vivo(p)) return false
+    if (alvo === "aliado" && !vivo(p)) return false
+    return distanciaQuadrados(origem, [p.x, p.y], metrica) <= alcance
+  })
+}
+
+/** A habilidade precisa de `alvo_id` para ser enviada? (self e área centrada em mim não precisam.) */
+const precisaDeAlvo = (h: Habilidade) => {
+  const alvo = h.alvo ?? "self"
+  return alvo === "aliado" || alvo === "inimigo" || (alvo === "area" && (h.alcance ?? 1) > 0)
 }
 
 export default function ConsoleTurno() {
@@ -79,6 +114,11 @@ export default function ConsoleTurno() {
       return
     }
     const ed = slotAtivo ? planejamento[slotAtivo] : undefined
+    if (ed?.tipo === "habilidade") {
+      const hab = meuPersonagem.habilidades?.find((h) => h.id === ed.habilidade_id)
+      setAlvosRealcados(alvosHabilidade(state.personagens, meuPersonagem, hab, origem, metrica).map((p) => p.id))
+      return
+    }
     if (!ed || ed.tipo !== "ataque") {
       setAlvosRealcados([])
       return
@@ -103,7 +143,13 @@ export default function ConsoleTurno() {
     const slotsAcao: Record<string, Slot> = {}
     const incompletos: string[] = []
     for (const s of slotsDeAcao) {
-      const slot = montarSlot(planejamento[s.id], rolagensPorSlot[s.id]?.rolagem_id)
+      let slot = montarSlot(planejamento[s.id], rolagensPorSlot[s.id]?.rolagem_id)
+      if (slot?.tipo === "habilidade") {
+        // Habilidade que exige alvo (ou arma) ainda sem escolha: incompleta.
+        const hid = slot.habilidade_id
+        const hab = meuPersonagem?.habilidades?.find((h) => h.id === hid)
+        if (!hab || (precisaDeAlvo(hab) && !slot.alvo_id) || (hab.efeito?.ataque && !slot.ataque_id)) slot = null
+      }
       if (slot) slotsAcao[s.id] = slot
       else {
         slotsAcao[s.id] = { tipo: "esperar" }
@@ -113,7 +159,7 @@ export default function ConsoleTurno() {
     const acao: AcaoDeclarada = { slots: slotsAcao }
     if (meuDestino) acao.movimento = { destino: meuDestino }
     return { acao, incompletos }
-  }, [slotsDeAcao, planejamento, rolagensPorSlot, meuDestino])
+  }, [slotsDeAcao, planejamento, rolagensPorSlot, meuDestino, meuPersonagem])
 
   const confirmar = useCallback(() => {
     if (travado) return
@@ -169,7 +215,7 @@ export default function ConsoleTurno() {
           {s.label}
         </legend>
         <div className="space-y-1.5">
-          <select className="campo" value={ed.tipo} onChange={(e) => definirSlot(s.id, { tipo: e.target.value, ataque_id: undefined, alvo_id: undefined, pericia: undefined })} aria-label={`Tipo de ${s.label}`}>
+          <select className="campo" value={ed.tipo} onChange={(e) => definirSlot(s.id, { tipo: e.target.value, ataque_id: undefined, alvo_id: undefined, pericia: undefined, habilidade_id: undefined })} aria-label={`Tipo de ${s.label}`}>
             <option value="">— escolher —</option>
             {tipos.map((t) => (
               <option key={t} value={t}>
@@ -219,6 +265,8 @@ export default function ConsoleTurno() {
             </>
           )}
 
+          {ed.tipo === "habilidade" && renderHabilidade(s, ed)}
+
           {ed.tipo === "pericia" && (
             <>
               <select className="campo" value={ed.pericia ?? ""} onChange={(e) => definirSlot(s.id, { pericia: e.target.value })} aria-label="Perícia">
@@ -250,6 +298,70 @@ export default function ConsoleTurno() {
           )}
         </div>
       </fieldset>
+    )
+  }
+
+  /** Seletor de habilidade de classe: lista as ativas deste slot, custo/usos, alvo conforme `alvo`/`alcance` e arma se o efeito for de ataque. */
+  function renderHabilidade(s: SlotConfig, ed: SlotEditor) {
+    const lista = habilidadesDoSlot(meuPersonagem!, s.id)
+    const hab = lista.find((h) => h.id === ed.habilidade_id)
+    const alvo = hab?.alvo ?? "self"
+    const alvos = alvosHabilidade(state!.personagens, meuPersonagem!, hab, origem, metrica)
+    const rotuloRecurso = (h: Habilidade) => {
+      if (h.custo) {
+        const b = meuPersonagem!.barras[h.custo.barra]
+        return `${h.custo.valor} ${rotuloBarra(h.custo.barra)}${b ? ` (${b.atual}/${b.max})` : ""}`
+      }
+      if (h.usos) return `${meuPersonagem!.usos?.[h.id] ?? 0}/${h.usos.max} usos`
+      return "sem custo"
+    }
+    const rotuloAlvo = alvo === "aliado" ? "— aliado —" : alvo === "inimigo" ? "— inimigo —" : "— centro da área —"
+    return (
+      <>
+        <select className="campo" value={ed.habilidade_id ?? ""} onChange={(e) => definirSlot(s.id, { habilidade_id: e.target.value, alvo_id: undefined, ataque_id: undefined })} aria-label="Habilidade">
+          <option value="">{lista.length ? "— habilidade —" : "nenhuma habilidade para este slot"}</option>
+          {lista.map((h) => (
+            <option key={h.id} value={h.id} disabled={!!semRecurso(meuPersonagem!, h)}>
+              {h.nome} · {rotuloRecurso(h)}
+              {semRecurso(meuPersonagem!, h) ? " ✕" : ""}
+            </option>
+          ))}
+        </select>
+        {hab && (
+          <div className="rounded px-2 py-1 text-[11px]" style={{ background: "#00000033" }}>
+            <div className="flex flex-wrap items-baseline gap-x-2">
+              <span className="text-suave">
+                {alvo === "self" ? "em si mesmo" : alvo === "area" ? `área · raio ${hab.raio ?? 1}` : alvo}
+                {hab.alcance ? ` · alcance ${hab.alcance} q` : alvo === "area" ? " · centrada em você" : ""}
+              </span>
+              {custoDaHabilidade(hab) && <span className="chip" style={{ borderColor: "var(--status-recurso)" }}>{custoDaHabilidade(hab)}</span>}
+              {semRecurso(meuPersonagem!, hab) && <span style={{ color: "var(--status-vida)" }}>{semRecurso(meuPersonagem!, hab)}</span>}
+            </div>
+            <p className="leading-snug">{hab.descricao}</p>
+          </div>
+        )}
+        {hab && precisaDeAlvo(hab) && (
+          <select className="campo" value={ed.alvo_id ?? ""} onChange={(e) => definirSlot(s.id, { alvo_id: e.target.value })} aria-label={alvo === "area" ? "Centro da área" : "Alvo da habilidade"}>
+            <option value="">{alvos.length ? rotuloAlvo : "nenhum alvo no alcance"}</option>
+            {alvos.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.icone} {p.nome}
+                {p.id === meuPersonagem!.id ? " (você)" : ""} ({distanciaQuadrados(origem, [p.x, p.y], metrica)} q)
+              </option>
+            ))}
+          </select>
+        )}
+        {hab?.efeito?.ataque && (
+          <select className="campo" value={ed.ataque_id ?? ""} onChange={(e) => definirSlot(s.id, { ataque_id: e.target.value })} aria-label="Arma da habilidade">
+            <option value="">— arma —</option>
+            {meuPersonagem!.ataques.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.nome} (+{a.bonus}, {a.dano} {a.tipo_dano}, alc. {a.alcance})
+              </option>
+            ))}
+          </select>
+        )}
+      </>
     )
   }
 

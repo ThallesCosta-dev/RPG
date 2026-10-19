@@ -111,6 +111,15 @@ export default function HostDrawer({ salaId, token, aoFechar }: Props) {
         </section>
 
         <section className="space-y-1">
+          <h3 className="rotulo">Descanso</h3>
+          <div className="flex flex-wrap gap-1">
+            <button className="botao" onClick={() => comando({ comando: "descanso", tipo: "curto" })} title="Metade dos PV e usos de descanso curto restaurados">🌙 Descanso curto</button>
+            <button className="botao" onClick={() => comando({ comando: "descanso", tipo: "longo" })} title="PV, recursos, usos e condições restaurados">🛌 Descanso longo</button>
+          </div>
+          <p className="text-[10px] text-suave">Restaura os personagens dos jogadores; a mesa recebe um aviso no chat.</p>
+        </section>
+
+        <section className="space-y-1">
           <h3 className="rotulo">Nível da IA (atual: {nivelIa})</h3>
           <div className="flex gap-1">
             {([1, 2, 3, 4] as NivelIa[]).map((n) => (

@@ -43,6 +43,8 @@ export interface SlotEditor {
   ataque_id?: string
   alvo_id?: string
   pericia?: string
+  /** Habilidade de classe escolhida (tipo "habilidade"). */
+  habilidade_id?: string
   texto: string
 }
 
@@ -350,7 +352,9 @@ export const useSala = create<SalaStore>((set, get) => ({
           // A narração ainda está tocando: limpa o planejamento anterior agora, mas só troca de fase no fim da fila.
           set({ state: comModo(s.state), ...limpeza, fasePendente: { fase: msg.fase, prazo } })
         } else {
-          if (s.narrando) narracao.pular() // aplica o state_sync pendente antes de trocar a fase
+          // `narrando` chega logo depois do `round_log` (a narração está começando): não pular, senão os eventos
+          // seriam aplicados agora e de novo quando os segmentos chegassem (barras descendo em dobro).
+          if (s.narrando && msg.fase !== "narrando") narracao.pular() // aplica o state_sync pendente antes de trocar a fase
           set({ fase: msg.fase, prazo, state: comModo(get().state), ...limpeza, fasePendente: null })
         }
         break
@@ -547,6 +551,13 @@ export function montarSlot(editor: SlotEditor | undefined, rolagemId?: string): 
       return rolagemId
         ? { tipo: "ataque", ataque_id: editor.ataque_id, alvo_id: editor.alvo_id, rolagem_id: rolagemId }
         : { tipo: "ataque", ataque_id: editor.ataque_id, alvo_id: editor.alvo_id }
+    case "habilidade": {
+      if (!editor.habilidade_id) return null
+      const slot: Slot = { tipo: "habilidade", habilidade_id: editor.habilidade_id }
+      if (editor.alvo_id) slot.alvo_id = editor.alvo_id
+      if (editor.ataque_id) slot.ataque_id = editor.ataque_id
+      return slot
+    }
     case "pericia":
       if (!editor.pericia) return null
       return editor.texto.trim() ? { tipo: "pericia", pericia: editor.pericia, texto: editor.texto.trim() } : { tipo: "pericia", pericia: editor.pericia }

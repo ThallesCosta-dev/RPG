@@ -1,7 +1,46 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { api, errosDoDetail } from "../lib/api"
 import { expressaoValida } from "../lib/dados"
-import type { AtaqueEnvio, FichaEnvio, Intervalo, ModeloFicha } from "../types"
+import type { AtaqueEnvio, FichaEnvio, FichaEnvioLivre, Intervalo, ModeloFicha } from "../types"
+import FichaCamposBasicos, { COR_PADRAO, ErrosFicha, validarBasicos, type Basicos } from "./FichaCamposBasicos"
+import FichaFormClasses from "./FichaFormClasses"
+
+interface Props {
+  sistemaId: string
+  /** Faz o POST; deve lançar `ErroApi` (400 com `detail`) para os erros aparecerem no formulário. */
+  aoCriar(ficha: FichaEnvio): Promise<void>
+  aoCancelar?(): void
+}
+
+/**
+ * Formulário de ficha gerado a partir de `GET /api/sistemas/{id}/modelo-ficha` (§7).
+ * `modo: "classes"` → o jogador escolhe classe, nível, atributos, perícias e equipamento e o servidor calcula o resto;
+ * `modo: "livre"` (ou ausente) → o jogador digita todos os números.
+ */
+export default function FichaForm({ sistemaId, aoCriar, aoCancelar }: Props) {
+  const [modelo, setModelo] = useState<ModeloFicha | null>(null)
+  const [erroCarga, setErroCarga] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelado = false
+    setModelo(null)
+    setErroCarga(null)
+    api
+      .modeloFicha(sistemaId)
+      .then((m) => !cancelado && setModelo(m))
+      .catch((e: Error) => !cancelado && setErroCarga(e.message))
+    return () => {
+      cancelado = true
+    }
+  }, [sistemaId])
+
+  if (erroCarga) return <p style={{ color: "var(--status-vida)" }}>Não foi possível carregar o modelo de ficha: {erroCarga}</p>
+  if (!modelo) return <p className="piscando text-suave">Carregando o modelo de ficha…</p>
+  if (modelo.modo === "classes" && (modelo.classes?.length ?? 0) > 0) return <FichaFormClasses modelo={modelo} aoCriar={aoCriar} aoCancelar={aoCancelar} />
+  return <FichaFormLivre modelo={modelo} aoCriar={aoCriar} aoCancelar={aoCancelar} />
+}
+
+// ====================================================================== modo "livre"
 
 interface AtaqueEditor {
   chave: number
@@ -10,13 +49,6 @@ interface AtaqueEditor {
   dano: string
   tipo_dano: string
   alcance: string
-}
-
-interface Props {
-  sistemaId: string
-  /** Faz o POST; deve lançar `ErroApi` (400 com `detail`) para os erros aparecerem no formulário. */
-  aoCriar(ficha: FichaEnvio): Promise<void>
-  aoCancelar?(): void
 }
 
 let proximaChave = 1
@@ -38,62 +70,34 @@ function checarInt(v: string, lim: Intervalo, rotulo: string, erros: string[]): 
   return n
 }
 
-/** Formulário de ficha gerado a partir de `GET /api/sistemas/{id}/modelo-ficha` (§7). */
-export default function FichaForm({ sistemaId, aoCriar, aoCancelar }: Props) {
-  const [modelo, setModelo] = useState<ModeloFicha | null>(null)
-  const [erroCarga, setErroCarga] = useState<string | null>(null)
+interface PropsLivre {
+  modelo: ModeloFicha
+  aoCriar(ficha: FichaEnvio): Promise<void>
+  aoCancelar?(): void
+}
+
+/** Ficha livre: todos os números digitados pelo jogador, validados pelos `limites` do modelo. */
+export function FichaFormLivre({ modelo, aoCriar, aoCancelar }: PropsLivre) {
   const [ocupado, setOcupado] = useState(false)
   const [errosServidor, setErrosServidor] = useState<string[]>([])
   const [tentou, setTentou] = useState(false)
 
-  const [nome, setNome] = useState("")
+  const [basicos, setBasicos] = useState<Basicos>({ nome: "", icone: modelo.icones[0] ?? "", cor: COR_PADRAO, voz: "", historia: "" })
   const [classe, setClasse] = useState("")
-  const [icone, setIcone] = useState("")
-  const [cor, setCor] = useState("#2563eb")
-  const [historia, setHistoria] = useState("")
-  const [voz, setVoz] = useState("")
-  const [ouvindo, setOuvindo] = useState<string | null>(null)
-  const [erroVoz, setErroVoz] = useState<string | null>(null)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const [atributos, setAtributos] = useState<Record<string, string>>({})
-  const [barras, setBarras] = useState<Record<string, string>>({})
+  const [atributos, setAtributos] = useState<Record<string, string>>(() => Object.fromEntries(modelo.atributos.map((a) => [a, "0"])))
+  const [barras, setBarras] = useState<Record<string, string>>(() => Object.fromEntries(modelo.barras.map((b) => [b.id, b.id === "pv" ? "10" : "0"])))
   const [defesa, setDefesa] = useState("10")
   const [deslocamento, setDeslocamento] = useState("6")
   const [iniciativa, setIniciativa] = useState("0")
-  const [pericias, setPericias] = useState<Record<string, { ativa: boolean; bonus: string }>>({})
-  const [ataques, setAtaques] = useState<AtaqueEditor[]>([novoAtaque()])
-
-  useEffect(() => {
-    let cancelado = false
-    api
-      .modeloFicha(sistemaId)
-      .then((m) => {
-        if (cancelado) return
-        setModelo(m)
-        setIcone(m.icones[0] ?? "")
-        setAtributos(Object.fromEntries(m.atributos.map((a) => [a, "0"])))
-        setBarras(Object.fromEntries(m.barras.map((b) => [b.id, b.id === "pv" ? "10" : "0"])))
-        setPericias(Object.fromEntries(m.pericias.map((p) => [p, { ativa: false, bonus: "0" }])))
-        setAtaques([novoAtaque(m.tipos_dano[0] ?? "corte")])
-      })
-      .catch((e: Error) => !cancelado && setErroCarga(e.message))
-    return () => {
-      cancelado = true
-    }
-  }, [sistemaId])
+  const [pericias, setPericias] = useState<Record<string, { ativa: boolean; bonus: string }>>(() => Object.fromEntries(modelo.pericias.map((p) => [p, { ativa: false, bonus: "0" }])))
+  const [ataques, setAtaques] = useState<AtaqueEditor[]>(() => [novoAtaque(modelo.tipos_dano[0] ?? "corte")])
 
   /** Validação local com os `limites` do modelo; devolve a ficha pronta para envio ou a lista de erros. */
   const validar = useMemo(() => {
-    return (): { ficha: FichaEnvio | null; erros: string[] } => {
-      if (!modelo) return { ficha: null, erros: ["modelo de ficha ainda não carregado"] }
+    return (): { ficha: FichaEnvioLivre | null; erros: string[] } => {
       const L = modelo.limites
-      const e: string[] = []
-      const n = nome.trim()
-      if (!n) e.push("nome é obrigatório")
-      if (n.length > L.nome) e.push(`nome com no máximo ${L.nome} caracteres`)
+      const e: string[] = validarBasicos(basicos, modelo)
       if (classe.length > L.classe) e.push(`classe com no máximo ${L.classe} caracteres`)
-      if (!/^#[0-9a-fA-F]{6}$/.test(cor)) e.push("cor deve ser #rrggbb")
-      if (historia.length > L.historia) e.push(`história com no máximo ${L.historia} caracteres`)
       const atr: Record<string, number> = {}
       for (const a of modelo.atributos) atr[a] = checarInt(atributos[a] ?? "0", L.atributo, `atributo ${a}`, e)
       const bar: Record<string, number> = {}
@@ -124,8 +128,8 @@ export default function FichaForm({ sistemaId, aoCriar, aoCancelar }: Props) {
         })
       })
       if (e.length > 0) return { ficha: null, erros: e }
-      const ficha: FichaEnvio = {
-        nome: n,
+      const ficha: FichaEnvioLivre = {
+        nome: basicos.nome.trim(),
         atributos: atr,
         barras: bar,
         defesa: def,
@@ -133,43 +137,15 @@ export default function FichaForm({ sistemaId, aoCriar, aoCancelar }: Props) {
         iniciativa_bonus: ini,
         pericias: per,
         ataques: atq,
-        cor,
+        cor: basicos.cor,
       }
       if (classe.trim()) ficha.classe = classe.trim()
-      if (icone) ficha.icone = icone
-      if (historia.trim()) ficha.historia = historia.trim()
-      if (voz) ficha.voz = voz
+      if (basicos.icone) ficha.icone = basicos.icone
+      if (basicos.historia.trim()) ficha.historia = basicos.historia.trim()
+      if (basicos.voz) ficha.voz = basicos.voz
       return { ficha, erros: [] }
     }
-  }, [modelo, nome, classe, cor, historia, voz, atributos, barras, defesa, deslocamento, iniciativa, pericias, ataques])
-
-  const ouvir = async (id: string) => {
-    setErroVoz(null)
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current = null
-      if (ouvindo === id) {
-        setOuvindo(null)
-        return
-      }
-    }
-    try {
-      setOuvindo(id)
-      const r = await fetch(`/api/vozes/${encodeURIComponent(id)}/amostra`)
-      if (!r.ok) throw new Error(r.status === 404 || r.status === 503 ? "TTS desligado no servidor" : `erro ${r.status}`)
-      const { audio_url } = (await r.json()) as { audio_url: string | null }
-      if (!audio_url) throw new Error("sem áudio de amostra")
-      const a = new Audio(audio_url)
-      audioRef.current = a
-      a.onended = () => setOuvindo((v) => (v === id ? null : v))
-      await a.play()
-    } catch (e) {
-      setOuvindo(null)
-      setErroVoz(e instanceof Error ? e.message : "não foi possível tocar a amostra")
-    }
-  }
-
-  useEffect(() => () => audioRef.current?.pause(), [])
+  }, [modelo, basicos, classe, atributos, barras, defesa, deslocamento, iniciativa, pericias, ataques])
 
   const enviar = async (ev: React.FormEvent) => {
     ev.preventDefault()
@@ -187,9 +163,6 @@ export default function FichaForm({ sistemaId, aoCriar, aoCancelar }: Props) {
     }
   }
 
-  if (erroCarga) return <p style={{ color: "var(--status-vida)" }}>Não foi possível carregar o modelo de ficha: {erroCarga}</p>
-  if (!modelo) return <p className="piscando text-suave">Carregando o modelo de ficha…</p>
-
   const L = modelo.limites
   // Depois da primeira tentativa, os erros locais acompanham a edição; os do servidor ficam até o próximo envio.
   const errosLocais = tentou ? validar().erros : []
@@ -201,72 +174,17 @@ export default function FichaForm({ sistemaId, aoCriar, aoCancelar }: Props) {
         Sistema <strong className="text-texto">{modelo.sistema_nome}</strong>. Os campos seguem os limites do sistema; o servidor valida de novo ao criar.
       </p>
 
-      <section className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className="rotulo" htmlFor="ficha-nome">Nome *</label>
-          <input id="ficha-nome" className="campo" value={nome} maxLength={L.nome} onChange={(e) => setNome(e.target.value)} required autoFocus />
-        </div>
-        <div>
-          <label className="rotulo" htmlFor="ficha-classe">Classe</label>
-          <input id="ficha-classe" className="campo" value={classe} maxLength={L.classe} onChange={(e) => setClasse(e.target.value)} placeholder="Guerreiro, Arcanista…" />
-        </div>
-        <div className="sm:col-span-2">
-          <span className="rotulo" id="ficha-icone-rotulo">Ícone do token</span>
-          <div className="flex flex-wrap gap-1" role="radiogroup" aria-labelledby="ficha-icone-rotulo">
-            {modelo.icones.map((ic) => (
-              <button
-                key={ic}
-                type="button"
-                role="radio"
-                aria-checked={icone === ic}
-                aria-label={`Ícone ${ic}`}
-                className={`botao h-9 w-9 px-0 text-lg ${icone === ic ? "botao-primario" : ""}`}
-                onClick={() => setIcone(ic)}
-              >
-                {ic}
-              </button>
-            ))}
+      <FichaCamposBasicos
+        modelo={modelo}
+        valor={basicos}
+        aoMudar={(patch) => setBasicos((b) => ({ ...b, ...patch }))}
+        aposNome={
+          <div>
+            <label className="rotulo" htmlFor="ficha-classe">Classe</label>
+            <input id="ficha-classe" className="campo" value={classe} maxLength={L.classe} onChange={(e) => setClasse(e.target.value)} placeholder="Guerreiro, Arcanista…" />
           </div>
-        </div>
-        <div>
-          <label className="rotulo" htmlFor="ficha-cor">Cor do token</label>
-          <div className="flex items-center gap-2">
-            <input id="ficha-cor" type="color" value={cor} onChange={(e) => setCor(e.target.value)} className="h-9 w-12 cursor-pointer rounded border bg-transparent" style={{ borderColor: "var(--painel-borda)" }} />
-            <span
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-base"
-              style={{ background: cor, border: "3px solid #4ade80", textShadow: "0 1px 2px #000" }}
-              aria-hidden
-            >
-              {icone || nome.charAt(0).toUpperCase()}
-            </span>
-            <code className="text-xs text-suave">{cor}</code>
-          </div>
-        </div>
-        <div className="sm:col-span-2">
-          <label className="rotulo" htmlFor="ficha-voz">Voz do personagem</label>
-          <div className="flex items-center gap-2">
-            <select id="ficha-voz" className="campo flex-1" value={voz} onChange={(e) => setVoz(e.target.value)}>
-              <option value="">Sem voz própria (o narrador cita as falas)</option>
-              {(modelo.vozes ?? []).map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.descricao} ({v.motor})
-                </option>
-              ))}
-            </select>
-            <button type="button" className="botao px-3 py-1" disabled={!voz} onClick={() => ouvir(voz)} aria-pressed={ouvindo === voz} title="Ouvir uma frase de amostra">
-              {ouvindo === voz ? "■ Parar" : "▶ Ouvir"}
-            </button>
-          </div>
-          <p className="text-[11px] text-suave">Suas falas na narração saem com essa voz. {erroVoz && <span className="text-perigo">{erroVoz}</span>}</p>
-        </div>
-        <div className="sm:col-span-2">
-          <label className="rotulo" htmlFor="ficha-historia">História</label>
-          <textarea id="ficha-historia" className="campo h-20 resize-y" value={historia} maxLength={L.historia} onChange={(e) => setHistoria(e.target.value)} placeholder="Quem é, de onde veio, o que busca…" />
-          <div className="text-right text-[10px] text-suave">
-            {historia.length}/{L.historia}
-          </div>
-        </div>
-      </section>
+        }
+      />
 
       {modelo.atributos.length > 0 && (
         <section>
@@ -304,7 +222,7 @@ export default function FichaForm({ sistemaId, aoCriar, aoCancelar }: Props) {
             )
           })}
           <div>
-            <label className="block text-[11px] text-suave" htmlFor="ficha-defesa">{modelo.campo_defesa}</label>
+            <label className="block text-[11px] text-suave" htmlFor="ficha-defesa">{modelo.nome_defesa ?? modelo.campo_defesa}</label>
             <input id="ficha-defesa" className="campo tabular-nums" type="number" inputMode="numeric" min={L.defesa[0]} max={L.defesa[1]} value={defesa} onChange={(e) => setDefesa(e.target.value)} />
           </div>
           <div>
@@ -416,27 +334,7 @@ export default function FichaForm({ sistemaId, aoCriar, aoCancelar }: Props) {
         </ul>
       </section>
 
-      {(errosLocais.length > 0 || errosServidor.length > 0) && (
-        <div className="rounded border px-3 py-2 text-[12px]" style={{ borderColor: "var(--status-vida)", color: "var(--status-vida)" }} role="alert">
-          {errosServidor.length > 0 && (
-            <>
-              <p className="font-semibold">O servidor recusou a ficha:</p>
-              <ul className="list-disc pl-5">
-                {errosServidor.map((e, i) => (
-                  <li key={`s${i}`}>{e}</li>
-                ))}
-              </ul>
-            </>
-          )}
-          {errosLocais.length > 0 && (
-            <ul className="list-disc pl-5">
-              {errosLocais.map((e, i) => (
-                <li key={`l${i}`}>{e}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
+      <ErrosFicha locais={errosLocais} servidor={errosServidor} />
 
       <div className="flex gap-2">
         <button className="botao botao-primario flex-1 py-2" disabled={ocupado}>

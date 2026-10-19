@@ -1,7 +1,8 @@
 // Mock do servidor para validar a UI sem backend (VITE_MOCK=1).
 // Simula room_state com a cena da §10.2, alcance, previews, rolagens e o ciclo
 // planejamento → resolvendo → round_log → narration_segment (sem áudio) → narration_end → state_sync,
-// além do chat (§6: eco + resposta de NPC após 1 s) e das fichas (§7: modelo-ficha, fichas, personagem).
+// além do chat (§6: eco + resposta de NPC após 1 s), das fichas (§7: modelo-ficha em modo "classes", fichas, personagem),
+// das habilidades de classe (slot `habilidade`, eventos `habilidade`/`recurso`/`uso_gasto`) e do descanso do Host.
 // Atalhos de URL: `?auto=1` resolve a rodada sozinho; `?sem_personagem=1` abre a mesa como Host sem personagem.
 
 import type {
@@ -14,7 +15,10 @@ import type {
   Evento,
   Fase,
   FichaEnvio,
+  FichaEnvioClasses,
+  FichaEnvioLivre,
   FichaSalva,
+  Habilidade,
   ModeloFicha,
   MsgCliente,
   MsgServidor,
@@ -25,6 +29,7 @@ import type {
   RespostaEntrar,
   RespostaLobby,
   Rolagem,
+  Slot,
   SystemConfig,
 } from "../types"
 import type { Conexao, FabricaConexao, HandlersConexao } from "../lib/ws"
@@ -32,6 +37,8 @@ import { chave, custosDeMovimento } from "../lib/grid"
 import { aplicarEvento } from "../lib/eventos"
 import { ErroApi } from "../lib/api"
 import { expressaoValida } from "../lib/dados"
+import { derivarFicha } from "../lib/ficha"
+import modeloFichaJson from "./modelo-ficha.mock.json"
 
 const TILEMAP = [
   "####################",
@@ -67,8 +74,9 @@ export const CONFIG_MOCK: SystemConfig = {
   critico: { margem_padrao: 20, multiplicador_padrao: 2, modo: "multiplica_dados" },
   tabela_dificuldade: { facil: 10, media: 15, dificil: 20, muito_dificil: 25 },
   slots_de_acao_por_turno: [
-    { id: "padrao", label: "Ação Padrão", icone: "⚔️", tipos_permitidos: ["ataque", "magia", "pericia", "criativa"] },
+    { id: "padrao", label: "Ação Padrão", icone: "⚔️", tipos_permitidos: ["ataque", "habilidade", "pericia", "criativa"] },
     { id: "movimento", label: "Ação de Movimento", icone: "🥾", vinculado_ao_grid: true },
+    { id: "bonus", label: "Ação Bônus", icone: "⚡", tipos_permitidos: ["habilidade", "pericia", "criativa"] },
     { id: "livre", label: "Ação Livre / Fala", icone: "💬", tipos_permitidos: ["fala"] },
   ],
 }
@@ -92,6 +100,15 @@ function personagem(p: Partial<Personagem> & Pick<Personagem, "id" | "nome" | "x
     ...p,
   }
 }
+
+/** Habilidades do Guerreiro (T20) + um grito de guerra com usos, para testar custo em PM, usos e alvos aliados. */
+const HABILIDADES_GUERREIRO: Habilidade[] = [
+  { id: "ataque_especial", nome: "Ataque Especial", nivel: 1, tipo: "ativa", slot: "padrao", alvo: "inimigo", alcance: 1, descricao: "Ataque com +4 no acerto e +4 no dano (custo 1 PM).", efeito: { ataque: { bonus: 4, dano_extra: "4" } }, custo: { barra: "pm", valor: 1 } },
+  { id: "grito_de_guerra", nome: "Grito de Guerra", nivel: 2, tipo: "ativa", slot: "bonus", alvo: "aliado", alcance: 6, descricao: "Um aliado (ou você) ganha +2 em ataques por 2 rodadas.", efeito: { condicao: { id: "inspirado", rodadas: 2, em: "alvo", bonus: 2 } }, usos: { max: 1, recupera: "curto" } },
+  { id: "investida_brutal", nome: "Investida Brutal", nivel: 3, tipo: "ativa", slot: "padrao", alvo: "area", alcance: 0, raio: 1, descricao: "Golpe giratório: 1d8+FOR em todos os inimigos adjacentes (custo 2 PM).", efeito: { dano: { expressao: "1d8", mais_atributo: "FOR", tipo_dano: "corte", raio: 1 } }, custo: { barra: "pm", valor: 2 } },
+  { id: "durao", nome: "Durão", nivel: 2, tipo: "passiva", descricao: "Reduz em 1 o dano recebido.", efeito: { passiva: { reducao_dano: 1 } } },
+  { id: "golpe_poderoso", nome: "Golpe Poderoso", nivel: 3, tipo: "passiva", descricao: "+2 de dano corpo a corpo.", efeito: { passiva: { mod_dano: 2 } } },
+]
 
 function estadoInicial(): Estado {
   return {
@@ -125,6 +142,17 @@ function estadoInicial(): Estado {
         pericias: { atletismo: 9, intimidacao: 6, percepcao: 3 },
         cor: "#b45309",
         icone: "🪓",
+        classe: "Guerreiro (nível 3)",
+        classe_id: "guerreiro",
+        nivel: 3,
+        atributos: { FOR: 4, DES: 1, CON: 3, INT: 0, SAB: 1, CAR: 0 },
+        armadura: "cota_de_malha",
+        escudo: true,
+        proficiencia: 2,
+        pericias_treinadas: ["atletismo", "fortitude", "intimidacao", "luta"],
+        magia: { bonus: 5, cd: 15, atributo: "FOR" },
+        habilidades: HABILIDADES_GUERREIRO,
+        usos: { grito_de_guerra: 1 },
       }),
       player_lia: personagem({
         id: "player_lia",
@@ -138,6 +166,14 @@ function estadoInicial(): Estado {
         pericias: { furtividade: 10, acrobacia: 8, percepcao: 7 },
         cor: "#15803d",
         icone: "🏹",
+        classe: "Caçadora (nível 3)",
+        classe_id: "cacador",
+        nivel: 3,
+        habilidades: [
+          { id: "marca_da_presa", nome: "Marca da Presa", nivel: 1, tipo: "ativa", slot: "bonus", alvo: "inimigo", alcance: 10, descricao: "+1d6 de dano em cada ataque contra o alvo por 3 rodadas.", efeito: { condicao: { id: "marcado", rodadas: 3, em: "alvo" } }, custo: { barra: "pm", valor: 1 } },
+          { id: "mira_precisa", nome: "Mira Precisa", nivel: 1, tipo: "passiva", descricao: "+2 nos ataques à distância.", efeito: { passiva: { mod_ataque_distancia: 2 } } },
+        ],
+        usos: {},
       }),
       boss_orc: personagem({
         id: "boss_orc",
@@ -196,39 +232,8 @@ function estadoInicial(): Estado {
   }
 }
 
-const MODELO_FICHA_MOCK: ModeloFicha = {
-  sistema_id: "tormenta20",
-  sistema_nome: "Tormenta20",
-  atributos: ["FOR", "DES", "CON", "INT", "SAB", "CAR"],
-  pericias: ["acrobacia", "atletismo", "atuacao", "cavalgar", "conhecimento", "cura", "diplomacia", "enganacao", "fortitude", "furtividade", "guerra", "iniciativa", "intimidacao", "intuicao", "investigacao", "jogatina", "ladinagem", "luta", "misticismo", "nobreza", "oficio", "percepcao", "pilotagem", "pontaria", "reflexos", "religiao", "sobrevivencia", "vontade"],
-  barras: [
-    { id: "pv", nome: "Pontos de Vida (PV)" },
-    { id: "pm", nome: "Pontos de Mana (PM)" },
-  ],
-  campo_defesa: "defesa",
-  tipos_dano: ["corte", "perfuracao", "impacto", "fogo", "frio", "eletricidade", "acido", "energia", "luz", "trevas", "veneno", "psiquico"],
-  icones: ["⚔️", "🛡️", "🏹", "🔮", "✨", "🗡️", "🪓", "🔥", "🌿", "🎭", "📖", "🐾", "💀", "🎵", "🧪", "🪄"],
-  limites: {
-    atributo: [-5, 15],
-    pv: [1, 999],
-    barra: [0, 999],
-    defesa: [1, 60],
-    deslocamento: [1, 30],
-    iniciativa_bonus: [-5, 30],
-    pericia: [-5, 40],
-    bonus_ataque: [-5, 40],
-    alcance: [1, 40],
-    max_ataques: 6,
-    max_pericias: 30,
-    nome: 40,
-    classe: 60,
-    icone: 4,
-    historia: 1500,
-  },
-  expressao_ataque: "1d20+{bonus}",
-  exemplo_dano: "1d8+3",
-  monstros_modelo: [{ id: "goblin", nome: "Goblin" }],
-}
+/** Recorte real de `GET /api/sistemas/tormenta20/modelo-ficha` (modo "classes", 3 classes, armas e armaduras). */
+const MODELO_FICHA_MOCK = modeloFichaJson as unknown as ModeloFicha
 
 const slug = (t: string) =>
   t
@@ -239,8 +244,55 @@ const slug = (t: string) =>
     .replace(/^_+|_+$/g, "")
     .slice(0, 24) || "pc"
 
+/** Ficha no modo "classes": usa a mesma derivação da prévia (lib/ficha) e devolve `habilidades`/`usos`/`magia` como o servidor. */
+function construirFichaMock(f: FichaEnvioClasses): Personagem {
+  const erros: string[] = []
+  const L = MODELO_FICHA_MOCK.limites
+  const nome = (f.nome ?? "").trim()
+  if (!nome) erros.push("nome é obrigatório")
+  if (f.cor && !/^#[0-9a-fA-F]{6}$/.test(f.cor)) erros.push("cor deve ser #rrggbb")
+  const classe = (MODELO_FICHA_MOCK.classes ?? []).find((c) => c.id === f.classe_id)
+  if (!classe) erros.push(`classe inválida: escolha uma de ${(MODELO_FICHA_MOCK.classes ?? []).map((c) => c.id).join(", ")}`)
+  const nivelMax = MODELO_FICHA_MOCK.progressao?.nivel_max ?? 5
+  if (!Number.isInteger(f.nivel) || f.nivel < 1 || f.nivel > nivelMax) erros.push(`nível fora dos limites (1 a ${nivelMax})`)
+  const previa = classe ? derivarFicha(MODELO_FICHA_MOCK, f) : null
+  if (previa) erros.push(...previa.erros)
+  if (erros.length || !previa || !classe) throw new ErroApi(400, erros.join("; "), { detail: erros.join("; ") })
+  const barras: Personagem["barras"] = { pv: { atual: previa.pv, max: previa.pv } }
+  for (const b of MODELO_FICHA_MOCK.barras) if (b.id !== "pv") barras[b.id] = { atual: previa.recurso, max: previa.recurso }
+  const usos: Record<string, number> = {}
+  for (const h of previa.habilidades) if (h.usos) usos[h.id] = h.usos.max
+  return personagem({
+    id: `pc_${slug(nome)}_${Math.random().toString(16).slice(2, 6)}`,
+    nome: nome.slice(0, L.nome),
+    x: 1,
+    y: 7,
+    classe: `${classe.nome} (nível ${f.nivel})`,
+    classe_id: classe.id,
+    nivel: f.nivel,
+    icone: (f.icone ?? "⚔️").slice(0, L.icone),
+    cor: f.cor ?? "#2563eb",
+    historia: (f.historia ?? "").slice(0, L.historia),
+    voz: f.voz ?? null,
+    atributos: { ...f.atributos },
+    barras,
+    defesa: previa.defesa,
+    deslocamento: 6,
+    iniciativa_bonus: f.atributos.DES ?? 0,
+    pericias: previa.pericias,
+    pericias_treinadas: previa.treinadas,
+    ataques: previa.ataques.map((a) => ({ ...a })),
+    armadura: f.armadura_id,
+    escudo: f.escudo,
+    habilidades: previa.habilidades,
+    usos,
+    magia: { bonus: previa.bonusMagia, cd: previa.cd, atributo: classe.atributo_principal ?? "FOR" },
+    proficiencia: previa.prof,
+  })
+}
+
 /** Validação simplificada no estilo de `server/fichas.py` (lança ErroApi 400 com `detail` como o servidor). */
-function validarFichaMock(f: FichaEnvio): Personagem {
+function validarFichaMock(f: FichaEnvioLivre): Personagem {
   const erros: string[] = []
   const L = MODELO_FICHA_MOCK.limites
   const nome = (f.nome ?? "").trim()
@@ -361,7 +413,7 @@ export const apiMock = {
   },
   async criarFicha(_salaId: string, corpo: { convite?: string; ficha: FichaEnvio }, token?: string | null): Promise<RespostaCriarFicha> {
     await new Promise((r) => setTimeout(r, 300))
-    const ficha = validarFichaMock(corpo.ficha)
+    const ficha = "classe_id" in corpo.ficha ? construirFichaMock(corpo.ficha) : validarFichaMock(corpo.ficha)
     if (token && simuladorAtivo) simuladorAtivo.adicionarFicha(ficha, true)
     else if (!corpo.convite) throw new ErroApi(403, "convite inválido", { detail: "convite inválido" })
     else fichasDaSala.push(ficha)
@@ -686,6 +738,38 @@ class SimuladorSala {
       case "nova_narracao":
         this.enviar({ type: "error", code: "sem_rodada", msg: "Mock: re-narração não simulada." })
         break
+      case "descanso": {
+        const longo = msg.tipo === "longo"
+        const personagens = { ...this.state.personagens }
+        for (const p of Object.values(personagens)) {
+          if (p.tipo !== "jogador" && !msg.npcs) continue
+          const barras = { ...p.barras }
+          const usos = { ...(p.usos ?? {}) }
+          if (longo) {
+            for (const [k, b] of Object.entries(barras)) barras[k] = { ...b, atual: b.max }
+            for (const h of p.habilidades ?? []) if (h.usos) usos[h.id] = h.usos.max
+            personagens[p.id] = { ...p, barras, usos, condicoes: [], caido: false }
+          } else {
+            const pv = barras.pv
+            if (pv && pv.atual > 0) barras.pv = { ...pv, atual: Math.min(pv.max, pv.atual + Math.max(1, Math.floor(pv.max / 2))) }
+            for (const h of p.habilidades ?? []) if (h.usos?.recupera === "curto") usos[h.id] = h.usos.max
+            personagens[p.id] = { ...p, barras, usos }
+          }
+        }
+        this.state = { ...this.state, personagens }
+        this.enviar({ type: "state_sync", state: this.state })
+        this.registrarChat(
+          this.mensagemChat({
+            de: "sistema",
+            nome: "Mesa",
+            personagem_id: null,
+            texto: `Descanso ${msg.tipo}: ${longo ? "PV, recursos e usos restaurados." : "metade dos PV e usos de descanso curto restaurados."}`,
+            para: null,
+            npc: false,
+          }),
+        )
+        break
+      }
       case "falar_como_npc": {
         const npc = this.state.personagens[msg.personagem_id]
         const texto = msg.texto.replace(/\s+/g, " ").trim().slice(0, 500)
@@ -715,6 +799,59 @@ class SimuladorSala {
     } else {
       this.enviar({ type: "phase", fase, prazo: null, modo: this.state.modo })
     }
+  }
+
+  /** Resolve um slot `habilidade` como o motor: paga custo/usos, depois dano/cura/condição/ataque com arma. Devolve o texto do log. */
+  private habilidade(meu: Personagem, slot: Extract<Slot, { tipo: "habilidade" }>, eventos: Evento[]): string {
+    const hab = meu.habilidades?.find((h) => h.id === slot.habilidade_id)
+    if (!hab) return `${meu.nome} tenta uma habilidade que não tem.`
+    const s = this.state
+    const alvoTipo = hab.alvo ?? "self"
+    const alvo = alvoTipo === "self" ? meu : slot.alvo_id ? s.personagens[slot.alvo_id] : undefined
+    eventos.push({ tipo: "habilidade", personagem: meu.id, habilidade: hab.id, nome: hab.nome, alvo: alvo?.id ?? null })
+    if (hab.custo) eventos.push({ tipo: "recurso", personagem: meu.id, barra: hab.custo.barra, valor: hab.custo.valor })
+    if (hab.usos) eventos.push({ tipo: "uso_gasto", personagem: meu.id, habilidade: hab.id })
+    const ef = hab.efeito ?? {}
+    const partes: string[] = []
+    const centro: Coord = alvo ? [alvo.x, alvo.y] : [meu.x, meu.y]
+    const emArea = (raio: number, aliados: boolean) =>
+      Object.values(s.personagens).filter((p) => !p.caido && (aliados ? p.faccao === meu.faccao : p.id !== meu.id && p.faccao !== meu.faccao) && Math.max(Math.abs(p.x - centro[0]), Math.abs(p.y - centro[1])) <= raio)
+    if (ef.ataque && alvo && alvo.id !== meu.id) {
+      const atq = meu.ataques.find((a) => a.id === slot.ataque_id) ?? meu.ataques[0]
+      const r = rolar(`1d20+${(atq?.bonus ?? 0) + (ef.ataque.bonus ?? 0)}`)
+      const acertou = r.total >= alvo.defesa
+      eventos.push({ tipo: "ataque", atacante: meu.id, alvo: alvo.id, ataque: atq?.id ?? "arma", rolagem: r, defesa: alvo.defesa, acertou, critico: false })
+      if (acertou) {
+        const dano = rolar(atq?.dano ?? "1d6").total + (ef.ataque.dano_extra ? rolar(ef.ataque.dano_extra).total : 0)
+        eventos.push({ tipo: "dano", alvo: alvo.id, valor: dano, tipo_dano: atq?.tipo_dano ?? "corte", barra: "pv" })
+        partes.push(`${r.total} vs Defesa ${alvo.defesa} — acerta, ${dano} de dano em ${alvo.nome}`)
+      } else partes.push(`${r.total} vs Defesa ${alvo.defesa} — erra ${alvo.nome}`)
+    }
+    if (ef.dano) {
+      const alvos = ef.dano.raio !== undefined && alvoTipo === "area" ? emArea(ef.dano.raio, false) : alvo && alvo.id !== meu.id ? [alvo] : []
+      for (const o of alvos) {
+        const valor = rolar(ef.dano.expressao).total + (ef.dano.mais_atributo ? (meu.atributos?.[ef.dano.mais_atributo] ?? 0) : 0)
+        eventos.push({ tipo: "dano", alvo: o.id, valor, tipo_dano: ef.dano.tipo_dano ?? "energia", barra: "pv" })
+        partes.push(`${valor} de dano em ${o.nome}`)
+      }
+      if (alvos.length === 0) partes.push("ninguém na área")
+    }
+    if (ef.cura) {
+      const alvos = ef.cura.raio !== undefined ? emArea(ef.cura.raio, true) : [alvo ?? meu]
+      for (const o of alvos) {
+        const valor = rolar(ef.cura.expressao).total + (ef.cura.mais_atributo ? (meu.atributos?.[ef.cura.mais_atributo] ?? 0) : 0)
+        eventos.push({ tipo: "cura", alvo: o.id, valor, barra: "pv" })
+        partes.push(`cura ${valor} em ${o.nome}`)
+      }
+    }
+    if (ef.condicao) {
+      const alvos = ef.condicao.em === "self" ? [meu] : ef.condicao.em === "area" ? emArea(ef.condicao.raio ?? 1, !!ef.condicao.aliados) : [alvo ?? meu]
+      for (const o of alvos) {
+        eventos.push({ tipo: "condicao", alvo: o.id, condicao: ef.condicao.id, rodadas: ef.condicao.rodadas })
+        partes.push(`${o.nome} fica ${ef.condicao.id}`)
+      }
+    }
+    return `${meu.nome} usa ${hab.nome}${alvo && alvo.id !== meu.id ? ` em ${alvo.nome}` : ""}${partes.length ? `: ${partes.join("; ")}` : ""}.`
   }
 
   /** Resolve a rodada com eventos fixos (mais o movimento escolhido no preview). */
@@ -747,6 +884,8 @@ class SimuladorSala {
         eventos1.push({ tipo: "dano", alvo: alvo.id, valor: dano, tipo_dano: atq?.tipo_dano ?? "corte", barra: "pv" })
         textoMeu = `${meu.nome} ataca ${alvo.nome} com ${atq?.nome ?? "arma"}: ${r.total} vs Defesa ${alvo.defesa} — acerta, ${dano} de dano.`
       } else textoMeu = `${meu.nome} ataca ${alvo?.nome ?? "?"}: ${r.total} vs Defesa ${alvo?.defesa ?? "?"} — erra.`
+    } else if (slotPadrao?.tipo === "habilidade") {
+      textoMeu = this.habilidade(meu, slotPadrao, eventos1)
     } else if (slotPadrao?.tipo === "pericia") {
       const r = rolar(`1d20+${meu.pericias[slotPadrao.pericia] ?? 0}`)
       eventos1.push({ tipo: "teste", personagem: meu.id, pericia: slotPadrao.pericia, cd: 15, rolagem: r, sucesso: r.total >= 15 })
@@ -755,6 +894,8 @@ class SimuladorSala {
       eventos1.push({ tipo: "condicao", alvo: "boss_orc", condicao: "atordoado", rodadas: 1 })
       textoMeu = `${meu.nome} improvisa: "${slotPadrao.texto}" — Kargath fica atordoado.`
     }
+    const slotBonus = this.acaoDoJogador?.slots.bonus
+    if (slotBonus?.tipo === "habilidade") textoMeu += ` ${this.habilidade(meu, slotBonus, eventos1)}`
     const fala = this.acaoDoJogador?.slots.livre
     if (fala?.tipo === "fala") eventos1.push({ tipo: "fala", personagem: meu.id, texto: fala.texto })
     acoes.push({ id: "e1", ator_id: meu.id, texto: textoMeu, eventos: eventos1 })

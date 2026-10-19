@@ -81,6 +81,67 @@ export interface Personagem {
   classe?: string
   atributos?: Record<string, number>
   historia?: string
+  // Fichas no modo "classes" (§7, "Habilidades de classe"): calculadas pelo servidor.
+  classe_id?: string
+  nivel?: number
+  habilidades?: Habilidade[]
+  /** habilidade_id → usos restantes (só habilidades com `usos`). */
+  usos?: Record<string, number>
+  magia?: { bonus: number; cd: number; atributo: string }
+  proficiencia?: number
+  armadura?: string
+  escudo?: boolean
+  pericias_treinadas?: string[]
+}
+
+// ---------- Habilidades de classe (§7) ----------
+
+export type AlvoHabilidade = "self" | "aliado" | "inimigo" | "area"
+
+export interface EfeitoHabilidade {
+  ataque?: { bonus?: number; dano_extra?: string | null; tipo_dano_extra?: string }
+  dano?: {
+    expressao: string
+    tipo_dano?: string
+    raio?: number
+    salvaguarda?: string
+    anula?: boolean
+    automatico?: boolean
+    bonus_ataque?: string | number
+    mais_atributo?: string
+    escala_nivel5?: string
+  }
+  cura?: { expressao: string; mais_atributo?: string; mais_nivel?: boolean; por_nivel?: boolean; raio?: number; aliados?: boolean }
+  condicao?: { id: string; rodadas: number; em: "self" | "alvo" | "area"; raio?: number; salvaguarda?: string; bonus?: number; aliados?: boolean }
+  passiva?: {
+    mod_defesa?: number
+    defesa_sem_armadura?: string[]
+    mod_dano?: number
+    mod_dano_dado?: string
+    mod_ataque_distancia?: number
+    mod_salvaguarda?: number
+    reducao_dano?: number
+    furtivo?: string
+    furtivo_por_niveis?: number
+  }
+}
+
+export interface Habilidade {
+  id: string
+  nome: string
+  nivel: number
+  tipo: "ativa" | "passiva"
+  /** Slot em que a habilidade ativa entra (id de `slots_de_acao_por_turno`); padrão "padrao". */
+  slot?: string
+  alvo?: AlvoHabilidade
+  alcance?: number
+  raio?: number
+  descricao: string
+  efeito?: EfeitoHabilidade
+  custo?: { barra: string; valor: number }
+  usos?: { max: number; recupera: "curto" | "longo" }
+  /** Preenchido pelo servidor ao criar a ficha. */
+  usos_restantes?: number
 }
 
 export interface LinhaCronica {
@@ -173,6 +234,7 @@ export interface Eu {
 
 export type Slot =
   | { tipo: "ataque"; ataque_id: string; alvo_id: string; rolagem_id?: string }
+  | { tipo: "habilidade"; habilidade_id: string; alvo_id?: string; ataque_id?: string }
   | { tipo: "pericia"; pericia: string; texto?: string }
   | { tipo: "criativa"; texto: string }
   | { tipo: "fala"; texto: string }
@@ -245,6 +307,13 @@ export type Evento =
   | { tipo: "combate_encerrado" }
   | { tipo: "cena_mudou"; cena_id: string }
   | { tipo: "intencao_rejeitada"; npc: string; motivo: string }
+  // Habilidades de classe (§7)
+  | { tipo: "habilidade"; personagem: string; habilidade: string; nome: string; alvo: string | null }
+  | { tipo: "recurso"; personagem: string; barra: string; valor: number }
+  | { tipo: "uso_gasto"; personagem: string; habilidade: string }
+  | { tipo: "habilidade_erro"; personagem: string; alvo?: string; habilidade: string }
+  | { tipo: "preparar"; personagem: string; motivo?: string }
+  | { tipo: "descanso"; tipo_descanso: "curto" | "longo"; npcs?: boolean }
 
 export interface AcaoDoLog {
   id: string // e1, e2…
@@ -429,6 +498,7 @@ export type ComandoHost =
   | { comando: "revisar_arbitragens"; ativo: boolean }
   | { comando: "editar_arbitragem"; arbitragens: Arbitragem[] }
   | { comando: "aprovar_arbitragens" }
+  | { comando: "descanso"; tipo: "curto" | "longo"; npcs?: boolean }
 
 export interface MsgChat {
   type: "chat"
@@ -506,20 +576,87 @@ export interface LimitesFicha {
   classe: number
   icone: number
   historia: number
+  // Modo "classes"
+  nivel?: Intervalo
+  max_armas?: number
+  pericias_extras?: number
+  /** Soma máxima dos modificadores de atributo no nível 1 (+2 a cada 4 níveis). */
+  soma_atributos?: number
+}
+
+export interface ArmaModelo {
+  id: string
+  nome: string
+  dano: string
+  tipo_dano: string
+  alcance: number
+  /** Atributo do ataque/dano: "FOR" | "DES" | "melhor" (o maior dos dois). */
+  atributo?: string
+  /** Alcance do arremesso; gera um segundo ataque "<nome> (arremesso)". */
+  arremesso?: number
+  duas_maos?: boolean
+}
+
+export interface ArmaduraModelo {
+  id: string
+  nome: string
+  defesa_base: number
+  /** Limite do bônus de DES; null = sem limite. */
+  max_des: number | null
+}
+
+export interface ClasseModelo {
+  id: string
+  nome: string
+  descricao: string
+  dado_vida: number | null
+  pv_nivel1: number | null
+  pv_por_nivel: number | null
+  pm_por_nivel: number | null
+  atributo_principal: string | null
+  conjurador: boolean
+  pericias_de_classe: string[]
+  quantidade_pericias: number
+  pericias_fixas: string[]
+  armas_iniciais: string[]
+  armadura_inicial: string
+  escudo: boolean
+  habilidades: Habilidade[]
+}
+
+export interface ProgressaoModelo {
+  tipo?: "5e" | "t20" | string
+  nivel_max?: number
+  /** 5e: bônus de proficiência por nível (índice nivel-1). */
+  proficiencia?: number[]
+  /** 5e: espaços de magia por nível para classes conjuradoras. */
+  espacos_conjurador?: number[]
+  /** T20: bônus de treino (nível < 7). */
+  treino?: number
 }
 
 export interface ModeloFicha {
   sistema_id: string
   sistema_nome: string
+  /** "classes": o servidor calcula os números a partir de classe + nível + escolhas; "livre": o jogador digita tudo. */
+  modo?: "classes" | "livre"
   atributos: string[]
   pericias: string[]
-  barras: { id: string; nome: string }[]
+  /** perícia → atributo que a modifica (modo "classes"). */
+  pericia_atributo?: Record<string, string>
+  barras: { id: string; nome: string; cor_token?: string }[]
   campo_defesa: string
+  nome_defesa?: string
   tipos_dano: string[]
   icones: string[]
   limites: LimitesFicha
   expressao_ataque: string
   exemplo_dano: string
+  progressao?: ProgressaoModelo
+  armas?: ArmaModelo[]
+  armaduras?: ArmaduraModelo[]
+  escudo?: { bonus: number }
+  classes?: ClasseModelo[]
   monstros_modelo?: { id: string; nome: string }[]
   vozes?: VozDisponivel[]
 }
@@ -538,7 +675,8 @@ export interface AtaqueEnvio {
   alcance: number
 }
 
-export interface FichaEnvio {
+/** Ficha enviada no modo "livre" (sistemas sem classes). */
+export interface FichaEnvioLivre {
   nome: string
   classe?: string
   icone?: string
@@ -553,6 +691,24 @@ export interface FichaEnvio {
   pericias: Record<string, number> // só perícias do modelo
   ataques: AtaqueEnvio[]
 }
+
+/** Ficha enviada no modo "classes": o servidor deriva PV, recurso, Defesa, ataques, perícias e habilidades. */
+export interface FichaEnvioClasses {
+  nome: string
+  classe_id: string
+  nivel: number
+  atributos: Record<string, number> // modificadores
+  pericias: string[] // ids escolhidos (as fixas da classe entram sozinhas)
+  armas: string[] // ids de modelo.armas (≤ limites.max_armas)
+  armadura_id: string
+  escudo: boolean
+  voz?: string | null
+  icone?: string
+  cor?: string
+  historia?: string
+}
+
+export type FichaEnvio = FichaEnvioLivre | FichaEnvioClasses
 
 export interface RespostaCriarFicha {
   personagem_id: string

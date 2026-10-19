@@ -1,0 +1,704 @@
+{
+  "sistema_id": "tormenta20",
+  "sistema_nome": "Tormenta20",
+  "modo": "classes",
+  "atributos": [
+    "FOR",
+    "DES",
+    "CON",
+    "INT",
+    "SAB",
+    "CAR"
+  ],
+  "pericias": [
+    "acrobacia",
+    "adestramento",
+    "atletismo",
+    "atuacao",
+    "cavalgar",
+    "conhecimento",
+    "cura",
+    "diplomacia",
+    "enganacao",
+    "fortitude",
+    "furtividade",
+    "guerra",
+    "iniciativa",
+    "intimidacao",
+    "intuicao",
+    "investigacao",
+    "jogatina",
+    "ladinagem",
+    "luta",
+    "misticismo",
+    "nobreza",
+    "oficio",
+    "percepcao",
+    "pilotagem",
+    "pontaria",
+    "reflexos",
+    "religiao",
+    "sobrevivencia",
+    "vontade"
+  ],
+  "pericia_atributo": {
+    "acrobacia": "DES",
+    "adestramento": "CAR",
+    "atletismo": "FOR",
+    "atuacao": "CAR",
+    "cavalgar": "DES",
+    "conhecimento": "INT",
+    "cura": "SAB",
+    "diplomacia": "CAR",
+    "enganacao": "CAR",
+    "fortitude": "CON",
+    "furtividade": "DES",
+    "guerra": "INT",
+    "iniciativa": "DES",
+    "intimidacao": "CAR",
+    "intuicao": "SAB",
+    "investigacao": "INT",
+    "jogatina": "CAR",
+    "ladinagem": "DES",
+    "luta": "FOR",
+    "misticismo": "INT",
+    "nobreza": "INT",
+    "oficio": "INT",
+    "percepcao": "SAB",
+    "pilotagem": "DES",
+    "pontaria": "DES",
+    "reflexos": "DES",
+    "religiao": "SAB",
+    "sobrevivencia": "SAB",
+    "vontade": "SAB"
+  },
+  "barras": [
+    {
+      "id": "pv",
+      "nome": "Pontos de Vida (PV)",
+      "cor_token": "--status-vida"
+    },
+    {
+      "id": "pm",
+      "nome": "Pontos de Mana (PM)",
+      "cor_token": "--status-recurso"
+    }
+  ],
+  "campo_defesa": "defesa",
+  "nome_defesa": "Defesa",
+  "tipos_dano": [
+    "corte",
+    "perfuracao",
+    "impacto",
+    "fogo",
+    "frio",
+    "eletricidade",
+    "acido",
+    "energia",
+    "luz",
+    "trevas",
+    "veneno",
+    "psiquico"
+  ],
+  "icones": [
+    "⚔️",
+    "🛡️",
+    "🏹",
+    "🔮",
+    "✨",
+    "🗡️",
+    "🪓",
+    "🔥",
+    "🌿",
+    "🎭",
+    "📖",
+    "🐾",
+    "💀",
+    "🎵",
+    "🧪",
+    "🪄"
+  ],
+  "limites": {
+    "atributo": [
+      -5,
+      12
+    ],
+    "pv": [
+      1,
+      400
+    ],
+    "barra": [
+      0,
+      400
+    ],
+    "defesa": [
+      5,
+      35
+    ],
+    "deslocamento": [
+      1,
+      20
+    ],
+    "iniciativa_bonus": [
+      -5,
+      20
+    ],
+    "pericia": [
+      -5,
+      25
+    ],
+    "bonus_ataque": [
+      -5,
+      25
+    ],
+    "alcance": [
+      1,
+      30
+    ],
+    "max_ataques": 6,
+    "max_pericias": 30,
+    "nome": 40,
+    "classe": 60,
+    "icone": 4,
+    "historia": 1500,
+    "nivel": [
+      1,
+      20
+    ],
+    "max_armas": 3,
+    "pericias_extras": 2,
+    "soma_atributos": 12
+  },
+  "expressao_ataque": "1d20+{bonus}",
+  "exemplo_dano": "1d8+3",
+  "progressao": {
+    "tipo": "t20",
+    "nivel_max": 5,
+    "treino": 2,
+    "cd_habilidade": "10 + meio_nivel + atributo_principal"
+  },
+  "armas": [
+    {
+      "id": "adaga",
+      "nome": "Adaga",
+      "dano": "1d4",
+      "tipo_dano": "perfuracao",
+      "alcance": 1,
+      "atributo": "melhor",
+      "arremesso": 4
+    },
+    {
+      "id": "espada_curta",
+      "nome": "Espada Curta",
+      "dano": "1d6",
+      "tipo_dano": "perfuracao",
+      "alcance": 1,
+      "atributo": "melhor"
+    },
+    {
+      "id": "espada_longa",
+      "nome": "Espada Longa",
+      "dano": "1d8",
+      "tipo_dano": "corte",
+      "alcance": 1,
+      "atributo": "FOR"
+    },
+    {
+      "id": "machado_de_batalha",
+      "nome": "Machado de Batalha",
+      "dano": "1d8",
+      "tipo_dano": "corte",
+      "alcance": 1,
+      "atributo": "FOR"
+    },
+    {
+      "id": "maca",
+      "nome": "Maça",
+      "dano": "1d8",
+      "tipo_dano": "impacto",
+      "alcance": 1,
+      "atributo": "FOR"
+    },
+    {
+      "id": "bordao",
+      "nome": "Bordão",
+      "dano": "1d6",
+      "tipo_dano": "impacto",
+      "alcance": 1,
+      "atributo": "FOR"
+    },
+    {
+      "id": "lanca",
+      "nome": "Lança",
+      "dano": "1d6",
+      "tipo_dano": "perfuracao",
+      "alcance": 1,
+      "atributo": "FOR",
+      "arremesso": 4
+    },
+    {
+      "id": "machadinha",
+      "nome": "Machadinha",
+      "dano": "1d6",
+      "tipo_dano": "corte",
+      "alcance": 1,
+      "atributo": "FOR",
+      "arremesso": 4
+    },
+    {
+      "id": "arco_curto",
+      "nome": "Arco Curto",
+      "dano": "1d6",
+      "tipo_dano": "perfuracao",
+      "alcance": 16,
+      "atributo": "DES"
+    },
+    {
+      "id": "arco_longo",
+      "nome": "Arco Longo",
+      "dano": "1d8",
+      "tipo_dano": "perfuracao",
+      "alcance": 20,
+      "atributo": "DES"
+    }
+  ],
+  "armaduras": [
+    {
+      "id": "nenhuma",
+      "nome": "Sem armadura",
+      "defesa_base": 10,
+      "max_des": null
+    },
+    {
+      "id": "couro",
+      "nome": "Couro",
+      "defesa_base": 12,
+      "max_des": null
+    },
+    {
+      "id": "couro_batido",
+      "nome": "Couro Batido",
+      "defesa_base": 13,
+      "max_des": null
+    },
+    {
+      "id": "gibao_de_peles",
+      "nome": "Gibão de Peles",
+      "defesa_base": 14,
+      "max_des": 3
+    },
+    {
+      "id": "cota_de_malha",
+      "nome": "Cota de Malha",
+      "defesa_base": 15,
+      "max_des": 2
+    },
+    {
+      "id": "brunea",
+      "nome": "Brunea",
+      "defesa_base": 16,
+      "max_des": 1
+    },
+    {
+      "id": "meia_armadura",
+      "nome": "Meia Armadura",
+      "defesa_base": 17,
+      "max_des": 0
+    }
+  ],
+  "escudo": {
+    "bonus": 2
+  },
+  "classes": [
+    {
+      "id": "arcanista",
+      "nome": "Arcanista",
+      "descricao": "Conjurador arcano (mago, feiticeiro ou bruxo). Frágil, mas com as magias mais poderosas.",
+      "dado_vida": null,
+      "pv_nivel1": 8,
+      "pv_por_nivel": 2,
+      "pm_por_nivel": 6,
+      "atributo_principal": "INT",
+      "conjurador": true,
+      "pericias_de_classe": [
+        "conhecimento",
+        "diplomacia",
+        "enganacao",
+        "guerra",
+        "iniciativa",
+        "intuicao",
+        "investigacao",
+        "misticismo",
+        "nobreza",
+        "oficio",
+        "percepcao",
+        "vontade"
+      ],
+      "quantidade_pericias": 2,
+      "pericias_fixas": [
+        "misticismo",
+        "vontade"
+      ],
+      "armas_iniciais": [
+        "adaga",
+        "bordao"
+      ],
+      "armadura_inicial": "nenhuma",
+      "escudo": false,
+      "habilidades": [
+        {
+          "id": "raio_arcano",
+          "nome": "Raio Arcano",
+          "nivel": 1,
+          "tipo": "ativa",
+          "slot": "padrao",
+          "alvo": "inimigo",
+          "alcance": 10,
+          "descricao": "Projétil de energia: 1d8 (sem custo).",
+          "efeito": {
+            "dano": {
+              "expressao": "1d8",
+              "tipo_dano": "energia",
+              "bonus_ataque": "magia"
+            }
+          }
+        },
+        {
+          "id": "seta_infalivel",
+          "nome": "Seta Infalível de Talude",
+          "nivel": 1,
+          "tipo": "ativa",
+          "slot": "padrao",
+          "alvo": "inimigo",
+          "alcance": 10,
+          "descricao": "Seta mágica que não erra: 2d4+2.",
+          "efeito": {
+            "dano": {
+              "expressao": "2d4+2",
+              "tipo_dano": "energia",
+              "automatico": true
+            }
+          },
+          "custo": {
+            "barra": "pm",
+            "valor": 1
+          }
+        },
+        {
+          "id": "explosao_de_chamas",
+          "nome": "Explosão de Chamas",
+          "nivel": 1,
+          "tipo": "ativa",
+          "slot": "padrao",
+          "alvo": "area",
+          "alcance": 0,
+          "raio": 2,
+          "descricao": "Cone de fogo: 2d6 (Reflexos reduz à metade).",
+          "efeito": {
+            "dano": {
+              "expressao": "2d6",
+              "tipo_dano": "fogo",
+              "raio": 2,
+              "salvaguarda": "reflexos"
+            }
+          },
+          "custo": {
+            "barra": "pm",
+            "valor": 1
+          }
+        },
+        {
+          "id": "armadura_arcana",
+          "nome": "Armadura Arcana",
+          "nivel": 1,
+          "tipo": "ativa",
+          "slot": "bonus",
+          "alvo": "self",
+          "descricao": "+5 na Defesa por 3 rodadas.",
+          "efeito": {
+            "condicao": {
+              "id": "escudo_arcano",
+              "rodadas": 3,
+              "em": "self"
+            }
+          },
+          "custo": {
+            "barra": "pm",
+            "valor": 1
+          }
+        },
+        {
+          "id": "bola_de_fogo",
+          "nome": "Bola de Fogo",
+          "nivel": 5,
+          "tipo": "ativa",
+          "slot": "padrao",
+          "alvo": "area",
+          "alcance": 20,
+          "raio": 4,
+          "descricao": "6d6 de fogo na área (Reflexos reduz).",
+          "efeito": {
+            "dano": {
+              "expressao": "6d6",
+              "tipo_dano": "fogo",
+              "raio": 4,
+              "salvaguarda": "reflexos"
+            }
+          },
+          "custo": {
+            "barra": "pm",
+            "valor": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "barbaro",
+      "nome": "Bárbaro",
+      "descricao": "Combatente primitivo movido pela fúria; o mais resistente das classes.",
+      "dado_vida": null,
+      "pv_nivel1": 24,
+      "pv_por_nivel": 6,
+      "pm_por_nivel": 3,
+      "atributo_principal": "FOR",
+      "conjurador": false,
+      "pericias_de_classe": [
+        "adestramento",
+        "atletismo",
+        "cavalgar",
+        "iniciativa",
+        "intimidacao",
+        "luta",
+        "percepcao",
+        "pontaria",
+        "sobrevivencia",
+        "vontade"
+      ],
+      "quantidade_pericias": 4,
+      "pericias_fixas": [
+        "fortitude",
+        "luta"
+      ],
+      "armas_iniciais": [
+        "machado_de_batalha",
+        "machadinha"
+      ],
+      "armadura_inicial": "couro",
+      "escudo": false,
+      "habilidades": [
+        {
+          "id": "furia",
+          "nome": "Fúria",
+          "nivel": 1,
+          "tipo": "ativa",
+          "slot": "bonus",
+          "alvo": "self",
+          "descricao": "+2 nos ataques e no dano corpo a corpo por 3 rodadas (custo 1 PM).",
+          "efeito": {
+            "condicao": {
+              "id": "furioso",
+              "rodadas": 3,
+              "em": "self"
+            }
+          },
+          "custo": {
+            "barra": "pm",
+            "valor": 1
+          }
+        },
+        {
+          "id": "vigor_primal",
+          "nome": "Vigor Primal",
+          "nivel": 2,
+          "tipo": "ativa",
+          "slot": "bonus",
+          "alvo": "self",
+          "descricao": "Recupera 1d12 + CON PV (custo 1 PM).",
+          "efeito": {
+            "cura": {
+              "expressao": "1d12",
+              "mais_atributo": "CON"
+            }
+          },
+          "custo": {
+            "barra": "pm",
+            "valor": 1
+          }
+        },
+        {
+          "id": "resistencia_a_dano",
+          "nome": "Resistência a Dano",
+          "nivel": 3,
+          "tipo": "passiva",
+          "descricao": "Reduz em 2 todo dano recebido.",
+          "efeito": {
+            "passiva": {
+              "reducao_dano": 2
+            }
+          }
+        },
+        {
+          "id": "ataque_brutal",
+          "nome": "Ataque Brutal",
+          "nivel": 5,
+          "tipo": "ativa",
+          "slot": "padrao",
+          "alvo": "inimigo",
+          "alcance": 1,
+          "descricao": "Ataque com +1d8 de dano (custo 1 PM).",
+          "efeito": {
+            "ataque": {
+              "bonus": 0,
+              "dano_extra": "1d8"
+            }
+          },
+          "custo": {
+            "barra": "pm",
+            "valor": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "clerigo",
+      "nome": "Clérigo",
+      "descricao": "Devoto de um deus; cura, protege e canaliza energia divina.",
+      "dado_vida": null,
+      "pv_nivel1": 16,
+      "pv_por_nivel": 4,
+      "pm_por_nivel": 5,
+      "atributo_principal": "SAB",
+      "conjurador": true,
+      "pericias_de_classe": [
+        "conhecimento",
+        "cura",
+        "diplomacia",
+        "fortitude",
+        "iniciativa",
+        "intuicao",
+        "luta",
+        "misticismo",
+        "nobreza",
+        "oficio",
+        "percepcao",
+        "religiao"
+      ],
+      "quantidade_pericias": 2,
+      "pericias_fixas": [
+        "religiao",
+        "vontade"
+      ],
+      "armas_iniciais": [
+        "maca"
+      ],
+      "armadura_inicial": "cota_de_malha",
+      "escudo": true,
+      "habilidades": [
+        {
+          "id": "curar_ferimentos",
+          "nome": "Curar Ferimentos",
+          "nivel": 1,
+          "tipo": "ativa",
+          "slot": "padrao",
+          "alvo": "aliado",
+          "alcance": 1,
+          "descricao": "Cura 2d8 + SAB.",
+          "efeito": {
+            "cura": {
+              "expressao": "2d8",
+              "mais_atributo": "SAB"
+            }
+          },
+          "custo": {
+            "barra": "pm",
+            "valor": 1
+          }
+        },
+        {
+          "id": "luz_sagrada",
+          "nome": "Luz Sagrada",
+          "nivel": 1,
+          "tipo": "ativa",
+          "slot": "padrao",
+          "alvo": "inimigo",
+          "alcance": 6,
+          "descricao": "Raio de luz: 1d8 (sem custo).",
+          "efeito": {
+            "dano": {
+              "expressao": "1d8",
+              "tipo_dano": "luz",
+              "bonus_ataque": "magia"
+            }
+          }
+        },
+        {
+          "id": "abencoar",
+          "nome": "Abençoar",
+          "nivel": 1,
+          "tipo": "ativa",
+          "slot": "padrao",
+          "alvo": "aliado",
+          "alcance": 6,
+          "descricao": "+2 em ataques e resistências por 3 rodadas.",
+          "efeito": {
+            "condicao": {
+              "id": "abencoado",
+              "rodadas": 3,
+              "em": "alvo"
+            }
+          },
+          "custo": {
+            "barra": "pm",
+            "valor": 1
+          }
+        },
+        {
+          "id": "canalizar_energia",
+          "nome": "Canalizar Energia Positiva",
+          "nivel": 3,
+          "tipo": "ativa",
+          "slot": "padrao",
+          "alvo": "area",
+          "alcance": 0,
+          "raio": 3,
+          "aliados": true,
+          "descricao": "Cura 1d8 em todos os aliados a 3 quadrados.",
+          "efeito": {
+            "cura": {
+              "expressao": "1d8",
+              "raio": 3,
+              "aliados": true
+            }
+          },
+          "custo": {
+            "barra": "pm",
+            "valor": 2
+          }
+        }
+      ]
+    }
+  ],
+  "monstros_modelo": [
+    {
+      "id": "goblin",
+      "nome": "Goblin"
+    }
+  ],
+  "vozes": [
+    {
+      "id": "grave",
+      "descricao": "Masculina grave (chefes, guerreiros)",
+      "motor": "edge"
+    },
+    {
+      "id": "agudo_kokoro",
+      "descricao": "Aguda (Kokoro, offline)",
+      "motor": "kokoro"
+    },
+    {
+      "id": "feminina",
+      "descricao": "Feminina (Francisca, neural)",
+      "motor": "edge"
+    }
+  ]
+}
