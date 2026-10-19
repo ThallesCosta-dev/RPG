@@ -52,6 +52,17 @@ Se o Kokoro reclamar de espeak, instale o eSpeak NG (MSI em https://github.com/e
 (SDXL-Lightning + ControlNet de segmentação). O tilemap lógico vem primeiro; a imagem é gerada a partir dele
 na faixa pesada do GPU Scheduler, nunca durante a narração. Sem ComfyUI, o cliente desenha o tilemap estilizado.
 
+### Classes e habilidades
+
+Cada sistema traz `compilado/classes.json` (classes, dado de vida ou PV/PM por nível, perícias de classe, equipamento inicial,
+habilidades por nível com efeito mecânico) e, no `system_config.json`, as listas de `armas`, `armaduras`, a `progressao`
+(5e: proficiência; T20: meio nível + treino) e `pericia_atributo`. O construtor (`server/fichas.py:construir_ficha`) recebe
+só as escolhas do jogador (classe, nível, modificadores de atributo, perícias, armas, armadura, escudo) e calcula PV, recurso,
+Defesa/CA, bônus de ataque e de perícia, CD de magia e a lista de habilidades. Em jogo, habilidades ativas entram no slot
+`habilidade` (ataque especial, dano/área com resistência, cura, condição/buff) com custo de recurso ou usos por descanso;
+passivas (estilo de combate, ataque furtivo, redução de dano, defesa sem armadura) entram sozinhas nos cálculos. O Host
+concede descanso curto/longo. `python scripts/gerar_pregens.py` regera os personagens prontos das campanhas pelo construtor.
+
 ### Fichas, chat e revisão de arbitragens
 
 - **Fichas**: no lobby de convite (ou dentro da mesa, se ainda não tiver personagem) o jogador cria a ficha num formulário
@@ -81,6 +92,8 @@ python scripts/cliente_teste.py                       # ponta a ponta contra o s
 python -m server.compiler sistema tormenta20          # compila um cartucho a partir do .md (precisa de LLM)
 python -m server.compiler campanha coracao-de-rubi
 python -m server.compiler aprovar campanha coracao-de-rubi
+python scripts/pdf_para_md.py "../dnd 5e/livro.pdf" cartuchos/sistemas/dnd5e/sistema.md --titulo "Livro do Jogador"   # PDF → Markdown
+python -m server.compiler rag sistema dnd5e                 # só o índice de busca (sem LLM), todas as fontes do manifest
 cd web && VITE_MOCK=1 npm run dev                     # SPA com servidor simulado (/sala/mock)
 ```
 
