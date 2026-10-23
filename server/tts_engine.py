@@ -120,8 +120,17 @@ class PipelineNarracao:
         texto = " ".join(TAG_FALA.sub("", texto).split())
         if not texto and not eventos:
             return
-        if voz != "NARRADOR" and texto and not any(q in texto for q in ('"', "“", "”", "«")):
+        tem_aspas = any(q in texto for q in ('"', "“", "”", "«", "»"))
+        if voz != "NARRADOR" and texto and not tem_aspas and not ctx.get("dentro_de_aspas"):
             voz = "NARRADOR"                              # narração colocada dentro da tag do NPC: volta para o narrador
+        if tem_aspas:                                     # fala dividida em várias frases: acompanha abertura/fechamento das aspas
+            abre = texto.count("“") + texto.count("«")
+            fecha = texto.count("”") + texto.count("»")
+            retas = texto.count('"')
+            if retas % 2 == 1:
+                ctx["dentro_de_aspas"] = not ctx.get("dentro_de_aspas", False)
+            elif abre != fecha:
+                ctx["dentro_de_aspas"] = abre > fecha
         if not texto:                                     # só marcadores (ex.: [EVENTO:e3] logo antes de [VOZ:x]): passam para o próximo trecho
             ctx["eventos_pendentes"] = ctx.get("eventos_pendentes", []) + list(eventos)
             return
