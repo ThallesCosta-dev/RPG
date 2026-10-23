@@ -120,6 +120,8 @@ class PipelineNarracao:
         texto = " ".join(TAG_FALA.sub("", texto).split())
         if not texto and not eventos:
             return
+        if voz != "NARRADOR" and texto and not any(q in texto for q in ('"', "“", "”", "«")):
+            voz = "NARRADOR"                              # narração colocada dentro da tag do NPC: volta para o narrador
         if not texto:                                     # só marcadores (ex.: [EVENTO:e3] logo antes de [VOZ:x]): passam para o próximo trecho
             ctx["eventos_pendentes"] = ctx.get("eventos_pendentes", []) + list(eventos)
             return
@@ -284,12 +286,59 @@ def criar_handler_edge() -> Callable | None:
     return sintetizar
 
 
+def criar_handler_voicestudio() -> Callable | None:
+    """VoiceStudio (debpalash/VoiceStudio): backend local em http://127.0.0.1:3900 com API OpenAI-compatível
+    `POST /v1/audio/speech`. `voz` do ator = nome/id do perfil de voz no VoiceStudio; `VOICESTUDIO_MODELO` = engine."""
+    import httpx
+    url = os.getenv("VOICESTUDIO_URL", "http://127.0.0.1:3900").rstrip("/")
+    try:
+        r = httpx.get(f"{url}/.well-known/voicestudio-speech", timeout=3)
+        if r.status_code != 200:
+            return None
+    except Exception:
+        return None
+    chave = os.getenv("OMNIVOICE_API_KEY", "")
+    modelo = os.getenv("VOICESTUDIO_MODELO", "voicestudio")
+    idioma = os.getenv("VOICESTUDIO_IDIOMA", "pt")
+    timeout = float(os.getenv("VOICESTUDIO_TIMEOUT", "60"))
+
+    def sintetizar(texto: str, cfg: dict) -> str:
+        corpo = {"model": cfg.get("modelo") or modelo, "voice": cfg.get("voz") or os.getenv("VOICESTUDIO_VOZ_PADRAO", "default"),
+                 "input": texto, "response_format": "wav", "language": cfg.get("idioma") or idioma}
+        vel = float(cfg.get("velocidade", 1.0))
+        if vel and vel != 1.0:
+            corpo["speed"] = vel
+        passos = os.getenv("VOICESTUDIO_NUM_STEP")                 # 16 = padrão do app; 32 = preset "qualidade"
+        if passos:
+            corpo["num_step"] = int(passos)
+        if cfg.get("instruct"):
+            corpo["instruct"] = cfg["instruct"]
+        headers = {"Authorization": f"Bearer {chave}"} if chave else {}
+        with httpx.Client(timeout=timeout) as cli:
+            r = cli.post(f"{url}/v1/audio/speech", json=corpo, headers=headers)
+            r.raise_for_status()
+            dados = r.content
+        if not dados:
+            raise RuntimeError("VoiceStudio não devolveu áudio")
+        DIR_AUDIO.mkdir(parents=True, exist_ok=True)
+        audio_id = uuid.uuid4().hex
+        ext = ".wav" if dados[:4] == b"RIFF" else (".ogg" if dados[:4] == b"OggS" else ".mp3")
+        (DIR_AUDIO / f"{audio_id}{ext}").write_bytes(dados)
+        return audio_id
+    log.info("TTS: VoiceStudio disponível em %s", url)
+    return sintetizar
+
+
 def escolher_handler_tts(voices: dict | None = None) -> Callable | None:
     """Um handler que despacha pelo `motor` do ator (edge / kokoro / piper) e cai para a reserva do ator ou o 1º motor que houver."""
     modo = os.getenv("TTS_MOTOR", "auto").lower()
     if modo == "nenhum":
         return None
     motores: dict[str, Callable] = {}
+    if modo in ("auto", "voicestudio"):
+        h = criar_handler_voicestudio()
+        if h:
+            motores["voicestudio"] = h
     if modo in ("auto", "edge"):
         h = criar_handler_edge()
         if h:
@@ -338,7 +387,7 @@ def caminho_audio(audio_id: str) -> Path | None:
     """Só aceita 32 hexadecimais (ou amostra_<ator>): impede acessar outros arquivos do disco."""
     if not re.fullmatch(r"[0-9a-f]{32}|amostra_[A-Za-z0-9_]{1,40}", audio_id or ""):
         return None
-    for ext in (".ogg", ".mp3"):
+    for ext in (".ogg", ".mp3", ".wav"):
         p = DIR_AUDIO / f"{audio_id}{ext}"
         if p.exists():
             return p
@@ -370,7 +419,7 @@ def limpar_audio_antigo(max_idade_h: float = 24) -> int:
     limite = time.time() - max_idade_h * 3600
     n = 0
     if DIR_AUDIO.exists():
-        for f in list(DIR_AUDIO.glob("*.ogg")) + list(DIR_AUDIO.glob("*.mp3")):
+        for f in list(DIR_AUDIO.glob("*.ogg")) + list(DIR_AUDIO.glob("*.mp3")) + list(DIR_AUDIO.glob("*.wav")):
             if f.name.startswith("amostra_"):
                 continue
             if f.stat().st_mtime < limite:

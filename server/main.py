@@ -181,7 +181,7 @@ async def audio(audio_id: str):
     caminho = appctx.caminho_audio(audio_id)        # só aceita 32 hexadecimais ou amostra_<ator>
     if caminho is None:
         raise HTTPException(404)
-    tipo = "audio/mpeg" if caminho.suffix == ".mp3" else "audio/ogg"
+    tipo = {".mp3": "audio/mpeg", ".wav": "audio/wav"}.get(caminho.suffix, "audio/ogg")
     return FileResponse(caminho, media_type=tipo, headers={"Cache-Control": "public, max-age=86400"})
 
 

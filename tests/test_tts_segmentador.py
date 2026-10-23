@@ -116,3 +116,12 @@ async def test_marcador_antes_da_troca_de_voz_vai_para_o_proximo_segmento():
     segs = [s async for s in pipe.narrar(_stream([texto]), vozes)]
     assert all(s["texto"] or s["eventos"] for s in segs)
     assert [(s["voz"], s["eventos"]) for s in segs] == [("NARRADOR", ["e1"]), ("bram", ["e2"]), ("NARRADOR", ["e3"])]   # e3 órfão junta-se ao último
+
+
+@pytest.mark.asyncio
+async def test_narracao_sem_aspas_na_tag_do_npc_volta_para_o_narrador():
+    pipe = PipelineNarracao(GPUScheduler({}))
+    vozes = {"NARRADOR": {}, "bram": {}}
+    texto = '[VOZ:bram] "Eles foram para o norte." [VOZ:bram] O taverneiro junta as mãos em súplica.'
+    segs = [s async for s in pipe.narrar(_stream([texto]), vozes)]
+    assert [s["voz"] for s in segs] == ["bram", "NARRADOR"]

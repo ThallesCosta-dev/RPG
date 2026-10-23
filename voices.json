@@ -1,11 +1,13 @@
 {
   "NARRADOR": {
-    "motor": "edge",
-    "voz": "pt-BR-AntonioNeural",
-    "velocidade": 1.22,
+    "motor": "voicestudio",
+    "voz": "b3820ebe",
+    "perfil": "aivtt_NARRADOR",
+    "velocidade": 1.0,
     "pitch_semitons": 0,
-    "reserva": "narrador_kokoro",
-    "descricao": "Narrador (Antonio, neural)"
+    "idioma": "pt",
+    "descricao": "Narrador (VoiceStudio, clonado)",
+    "reserva": "narrador_kokoro"
   },
   "narrador_kokoro": {
     "motor": "kokoro",
@@ -15,12 +17,14 @@
     "descricao": "Narrador alternativo (Kokoro, offline)"
   },
   "grave": {
-    "motor": "edge",
-    "voz": "pt-BR-AntonioNeural",
-    "velocidade": 1.08,
-    "pitch_semitons": -4,
-    "reserva": "grave_kokoro",
-    "descricao": "Masculina grave (chefes, guerreiros)"
+    "motor": "voicestudio",
+    "voz": "91d12050",
+    "perfil": "aivtt_grave",
+    "velocidade": 0.95,
+    "pitch_semitons": 0,
+    "idioma": "pt",
+    "descricao": "Masculina grave (chefes, guerreiros)",
+    "reserva": "grave_kokoro"
   },
   "grave_kokoro": {
     "motor": "kokoro",
@@ -30,20 +34,24 @@
     "descricao": "Masculina grave (Kokoro, offline)"
   },
   "masculina": {
-    "motor": "edge",
-    "voz": "pt-BR-AntonioNeural",
-    "velocidade": 1.18,
+    "motor": "voicestudio",
+    "voz": "2cfe7657",
+    "perfil": "aivtt_masculina",
+    "velocidade": 1.0,
     "pitch_semitons": 0,
-    "reserva": "narrador_kokoro",
-    "descricao": "Masculina neutra"
+    "idioma": "pt",
+    "descricao": "Masculina neutra",
+    "reserva": "narrador_kokoro"
   },
   "agudo": {
-    "motor": "edge",
-    "voz": "pt-BR-AntonioNeural",
-    "velocidade": 1.3,
-    "pitch_semitons": 5,
-    "reserva": "agudo_kokoro",
-    "descricao": "Masculina aguda e rápida (goblins, trapaceiros)"
+    "motor": "voicestudio",
+    "voz": "d51dbe24",
+    "perfil": "aivtt_agudo",
+    "velocidade": 1.15,
+    "pitch_semitons": 0,
+    "idioma": "pt",
+    "descricao": "Masculina aguda e rápida (goblins, trapaceiros)",
+    "reserva": "agudo_kokoro"
   },
   "agudo_kokoro": {
     "motor": "kokoro",
@@ -53,12 +61,14 @@
     "descricao": "Aguda (Kokoro, offline)"
   },
   "feminina": {
-    "motor": "edge",
-    "voz": "pt-BR-FranciscaNeural",
-    "velocidade": 1.18,
+    "motor": "voicestudio",
+    "voz": "c151c645",
+    "perfil": "aivtt_feminina",
+    "velocidade": 1.0,
     "pitch_semitons": 0,
-    "reserva": "feminina_kokoro",
-    "descricao": "Feminina (Francisca, neural)"
+    "idioma": "pt",
+    "descricao": "Feminina",
+    "reserva": "feminina_kokoro"
   },
   "feminina_kokoro": {
     "motor": "kokoro",
@@ -68,28 +78,34 @@
     "descricao": "Feminina (Kokoro, offline)"
   },
   "jovem": {
-    "motor": "edge",
-    "voz": "pt-BR-ThalitaMultilingualNeural",
-    "velocidade": 1.22,
+    "motor": "voicestudio",
+    "voz": "99ac5398",
+    "perfil": "aivtt_jovem",
+    "velocidade": 1.05,
     "pitch_semitons": 0,
-    "reserva": "feminina_kokoro",
-    "descricao": "Feminina jovem (Thalita, neural)"
+    "idioma": "pt",
+    "descricao": "Feminina jovem",
+    "reserva": "feminina_kokoro"
   },
   "anciao": {
-    "motor": "edge",
-    "voz": "pt-BR-AntonioNeural",
-    "velocidade": 0.98,
-    "pitch_semitons": -2,
-    "reserva": "grave_kokoro",
-    "descricao": "Masculina lenta e cansada (anciãos, eruditos)"
+    "motor": "voicestudio",
+    "voz": "bbdc7800",
+    "perfil": "aivtt_anciao",
+    "velocidade": 0.9,
+    "pitch_semitons": 0,
+    "idioma": "pt",
+    "descricao": "Masculina lenta e cansada (anciãos, eruditos)",
+    "reserva": "grave_kokoro"
   },
   "sussurro": {
-    "motor": "edge",
-    "voz": "pt-BR-FranciscaNeural",
-    "velocidade": 1.05,
-    "pitch_semitons": -3,
-    "reserva": "grave_kokoro",
-    "descricao": "Sussurrada e grave (cultistas, espíritos)"
+    "motor": "voicestudio",
+    "voz": "b92a77d7",
+    "perfil": "aivtt_sussurro",
+    "velocidade": 0.9,
+    "pitch_semitons": 0,
+    "idioma": "pt",
+    "descricao": "Sussurrada e grave (cultistas, espíritos)",
+    "reserva": "grave_kokoro"
   },
   "_reserva": {
     "motor": "piper",

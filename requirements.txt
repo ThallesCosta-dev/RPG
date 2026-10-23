@@ -15,8 +15,8 @@ pytest-asyncio>=0.23
 # IA na nuvem (Sprint 3)
 google-genai>=1.0
 
-# Mídia local (Sprint 4) — opcionais; o servidor funciona sem eles
-# kokoro>=0.9            # TTS principal (GPU). Requer espeak-ng instalado no sistema.
-# piper-tts              # TTS de reserva (CPU)
+# Voz: VoiceStudio (app separado, backend em :3900 — ver README). Alternativas opcionais:
+# edge-tts               # vozes neurais online (reserva)
+# kokoro / piper-tts     # TTS offline leve
 # sentence-transformers  # embeddings para o RAG (bge-m3); sem ele usa BM25 puro
 # sqlite-vec             # índice vetorial; sem ele o RAG usa numpy

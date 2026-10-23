@@ -35,16 +35,23 @@ Sem `GEMINI_API_KEY` e sem LLM local o jogo roda no **nível 4** (IA heurística
 
 O Host pode forçar o nível no painel (`mudar_nivel_ia`).
 
-### Voz (opcional)
+### Voz
+
+Motor padrão: **VoiceStudio** (github.com/debpalash/VoiceStudio, OmniVoice na GPU, clonagem de voz em pt-BR). O app é
+instalado por usuário (`VoiceStudio-Electron-x.y.z-win-x64.exe /S`); o AI-VTT usa só o backend dele, sem a interface:
 
 ```bash
-pip install torch --index-url https://download.pytorch.org/whl/cu128   # GPU (RTX 50xx precisa de cu128+); sem isso roda em CPU
-pip install kokoro soundfile
-python scripts/testar_voz.py        # sintetiza uma frase por ator de voices.json
-# ou: pip install piper-tts e modelos em modelos/piper/pt_BR-faber-medium.onnx
+python scripts/iniciar_voicestudio.py --sync     # 1ª vez: cria o ambiente (uv, Python 3.11, torch CUDA ≈ 8 GB)
+python scripts/iniciar_voicestudio.py            # sobe o backend em http://127.0.0.1:3900 e espera /health
+curl -X POST http://127.0.0.1:3900/models/install -H "Content-Type: application/json" -d '{"repo_id":"k2-fsa/OmniVoice"}'   # 1ª vez: modelo (3,3 GB)
+python scripts/criar_vozes_voicestudio.py --testar   # clona os atores de data/vozes_ref/*.mp3 e escreve voices.json
 ```
-`TTS_MOTOR=auto|kokoro|piper|nenhum`. Sem motor, os segmentos chegam só com legenda (o jogo não para).
-Se o Kokoro reclamar de espeak, instale o eSpeak NG (MSI em https://github.com/espeak-ng/espeak-ng/releases).
+
+Cada ator de `voices.json` aponta para um perfil de voz (`voz` = id do perfil). Para trocar a voz do narrador ou de um
+NPC, grave um clipe limpo de 5–15 s em `data/vozes_ref/<ator>.mp3` (com o texto em `<ator>.txt`) e rode o script de novo.
+Latência medida na RTX 5060 Ti: ~2,5 s por frase de 5–6 s (fator de tempo real ≈ 0,45). `VOICESTUDIO_NUM_STEP=12` acelera
+um pouco; `32` prioriza qualidade. Sem o VoiceStudio no ar, a cadeia tenta Edge-TTS/Kokoro se estiverem instalados; sem
+nenhum, a narração segue só com legenda.
 
 ### Battlemaps (opcional)
 
