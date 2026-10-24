@@ -11,10 +11,10 @@ from dataclasses import dataclass, field
 
 BLOQUEIA_MOVIMENTO = {"#", "P", "~"}   # parede, pilastra, água funda
 BLOQUEIA_VISAO = {"#", "P"}
-TERRENO_DIFICIL = {"^"}
+TERRENO_DIFICIL = {"^", "w"}            # terreno difícil e água rasa: custo x2
 COBERTURA = {"C"}
 VIZINHOS = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
-SIMBOLOS_VALIDOS = set("#.P~^CD")
+SIMBOLOS_VALIDOS = set("#.P~^CDw")      # w = água rasa
 
 # Obstáculos dinâmicos (eventos por cima do tilemap): tipo → (bloqueia movimento, bloqueia visão)
 OBSTACULOS = {

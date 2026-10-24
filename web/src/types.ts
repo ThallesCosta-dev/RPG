@@ -15,7 +15,7 @@ export interface Cena {
   nome: string
   descricao: string
   tema: string
-  tilemap: string[] // tilemap[y][x]; símbolos: # . P ~ ^ C D
+  tilemap: string[] // tilemap[y][x]; símbolos: # . P ~ (funda) w (rasa, custo x2) ^ C D
   largura: number
   altura: number
   imagem_url: string | null

@@ -3,7 +3,7 @@ import type { CelulaAlcance, Coord, MetricaDiagonal } from "../types"
 export const TAMANHO_QUADRADO = 48
 
 export const BLOQUEIA_MOVIMENTO = new Set(["#", "P", "~"])
-export const TERRENO_DIFICIL = new Set(["^"])
+export const TERRENO_DIFICIL = new Set(["^", "w"]) // terreno difícil e água rasa: custo x2
 
 const VIZINHOS: Coord[] = [
   [1, 0], [-1, 0], [0, 1], [0, -1],

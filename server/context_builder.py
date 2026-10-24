@@ -101,7 +101,7 @@ def bloco_cena(estado: dict, motor, opcoes: dict) -> str:
     cena = estado["cena"]
     modo = estado["modo"].upper()
     linhas = [f"=== CENA: {cena['nome']} — rodada {estado['rodada'] + 1} — {modo} ===",
-              f"MAPA {cena['largura']}x{cena['altura']}  (# parede  . chão  P pilastra  ~ água funda  ^ terreno difícil  C cobertura  D porta)",
+              f"MAPA {cena['largura']}x{cena['altura']}  (# parede  . chão  P pilastra  ~ água funda (bloqueia)  w água rasa (custo dobrado)  ^ terreno difícil  C cobertura  D porta)",
               "    " + "".join(str(x % 10) for x in range(cena["largura"]))]
     for y, linha in enumerate(cena["tilemap"]):
         linhas.append(f"{y:02d}  {linha}")

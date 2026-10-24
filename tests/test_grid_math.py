@@ -84,3 +84,12 @@ def test_validar_tilemap():
     assert gm.validar_tilemap(["##", "#."]) == []
     assert gm.validar_tilemap(["##", "#"]) != []
     assert gm.validar_tilemap(["#X"]) != []
+
+
+def test_agua_rasa_passavel_com_custo_dobrado():
+    mapa = gm.MapaLogico(["....", ".w~.", "...."])
+    custos = gm.custos_de_movimento((0, 1), mapa, "1-1-1")
+    assert custos[(1, 1)] == 2                                   # água rasa: custo x2
+    assert (2, 1) not in custos                                  # água funda bloqueia
+    assert gm.linha_de_visao((0, 1), (3, 1), mapa) is True       # nenhuma das duas bloqueia visão
+    assert gm.validar_tilemap(["w~"]) == []

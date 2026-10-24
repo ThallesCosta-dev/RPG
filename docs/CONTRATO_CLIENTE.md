@@ -11,7 +11,7 @@ interface Estado {
   modo: "exploracao" | "combate"
   cena: {
     id: string; nome: string; descricao: string; tema: string
-    tilemap: string[]            // tilemap[y][x]; símbolos: # . P ~ ^ C D
+    tilemap: string[]            // tilemap[y][x]; símbolos: # . P ~ (água funda, bloqueia) w (água rasa, custo x2) ^ C D
     largura: number; altura: number
     imagem_url: string | null    // Camada 0; null = desenhar versão estilizada do tilemap
   }

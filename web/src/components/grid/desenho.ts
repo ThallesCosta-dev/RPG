@@ -7,6 +7,7 @@ const CORES_TILE: Record<string, number> = {
   ".": 0x3a332c,
   P: 0x5a5047,
   "~": 0x1e4d7a,
+  w: 0x2f6f99,
   "^": 0x4a3f2a,
   C: 0x5c4a30,
   D: 0x7a5a2a,
@@ -30,6 +31,12 @@ export function desenharTile(g: Graphics, simbolo: string, x: number, y: number,
         const yy = py + T * (0.25 + i * 0.25)
         g.moveTo(px + 6, yy).lineTo(px + T / 2, yy - 4).lineTo(px + T - 6, yy).stroke({ width: 1.5, color: 0x6fb3e8, alpha: 0.7 })
       }
+      break
+    case "w":
+      // água rasa: fundo mais claro, uma ondulação só e pedras do vau
+      g.moveTo(px + 6, py + T * 0.55).lineTo(px + T / 2, py + T * 0.47).lineTo(px + T - 6, py + T * 0.55).stroke({ width: 1.5, color: 0x9fd3f5, alpha: 0.7 })
+      g.circle(px + T * 0.3, py + T * 0.75, 2.2).fill({ color: 0x8c8c86, alpha: 0.8 })
+      g.circle(px + T * 0.68, py + T * 0.3, 1.8).fill({ color: 0x8c8c86, alpha: 0.8 })
       break
     case "^":
       // hachura diagonal

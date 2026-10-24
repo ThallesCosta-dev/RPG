@@ -22,7 +22,7 @@ from . import grid_math as gm
 log = logging.getLogger("ai_vtt.mapas")
 DIR_MAPAS = Path(os.getenv("DIR_DADOS", "data")) / "mapas_cache"
 
-CORES_CONTROLE = {"#": (40, 40, 40), ".": (200, 190, 160), "P": (90, 90, 90), "~": (60, 100, 200),
+CORES_CONTROLE = {"#": (40, 40, 40), ".": (200, 190, 160), "P": (90, 90, 90), "~": (60, 100, 200), "w": (120, 170, 220),
                   "^": (120, 140, 80), "C": (150, 110, 70), "D": (170, 120, 60)}
 ESTILO_TEMA = {"medieval": "fantasy medieval, hand painted, parchment tones",
                "cyberpunk": "neon lit sci-fi interior, metal floor panels, holographic accents",
